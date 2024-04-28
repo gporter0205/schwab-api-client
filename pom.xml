@@ -34,6 +34,12 @@
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-test</artifactId>
       <scope>test</scope>
+      <exclusions>
+        <exclusion>
+          <groupId>junit</groupId>
+          <artifactId>junit</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.projectlombok</groupId>
@@ -53,20 +59,12 @@
         <artifactId>maven-compiler-plugin</artifactId>
       </plugin>
     </plugins>
-    <resources>
-      <resource>
-        <directory>src/main/resources</directory>
-        <includes>
-          <include>schwabapiclient-application.yml</include>
-        </includes>
-      </resource>
-    </resources>
   </build>
   <distributionManagement>
-    <snapshotRepository>
-      <id>server-lx</id>
-      <name>serverlx-snapshot</name>
-      <url>http://192.168.1.123:8082/repository/maven-snapshots/</url>
-    </snapshotRepository>
+    <repository>
+      <id>snapshot</id>
+      <name>Snapshot Repository</name>
+      <url>https://maven-snapshots.theporters.me/repository/maven-snapshots/</url>
+    </repository>
   </distributionManagement>
 </project>

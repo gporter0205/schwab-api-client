@@ -18,14 +18,16 @@ public class QuoteResponseDeserializer extends JsonDeserializer<QuoteResponseHas
         JsonToken token = jsonParser.nextToken();
         while(token == JsonToken.FIELD_NAME) {
             String symbol = jsonParser.getCurrentName();
-            token = jsonParser.nextToken();
-            if(token == JsonToken.START_OBJECT) {
-                 QuoteResponse quote = jsonParser.readValueAs(QuoteResponse.class);
-                 quoteResponseHashMap.quoteMap.put(symbol, quote);
-            }
-            token = jsonParser.nextToken();
-            if(token == JsonToken.END_OBJECT) {
+            if(!symbol.equalsIgnoreCase("errors")) {
                 token = jsonParser.nextToken();
+                if (token == JsonToken.START_OBJECT) {
+                    QuoteResponse quote = jsonParser.readValueAs(QuoteResponse.class);
+                    quoteResponseHashMap.quoteMap.put(symbol, quote);
+                }
+                token = jsonParser.nextToken();
+                if (token == JsonToken.END_OBJECT) {
+                    token = jsonParser.nextToken();
+                }
             }
         }
         return quoteResponseHashMap;

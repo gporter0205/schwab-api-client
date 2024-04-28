@@ -22,7 +22,7 @@ public class ReferenceOption extends Reference {
   private String expirationType;
   private Integer expirationYear;
   private Boolean isPennyPilot;
-  private Integer lastTradingDay;
+  private Long lastTradingDay;
   private BigDecimal multiplier;
   private String settlementType;
   private BigDecimal strikePrice;
