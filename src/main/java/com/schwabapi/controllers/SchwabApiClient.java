@@ -155,7 +155,7 @@ public class SchwabApiClient {
 
     public OptionChainResponse fetchOptionChain(@NotNull OptionChainRequest chainRequest)
             throws SymbolNotFoundException {
-        log.info("Fetch option chain for: {}", chainRequest.toString());
+        log.info("Fetch option chain for: {}", chainRequest);
 
         OptionChainResponse optionChainResponse;
         if (chainRequest.getSymbol() == null || chainRequest.getSymbol().isEmpty()) {

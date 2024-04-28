@@ -60,7 +60,7 @@ public class MoversRequest {
     EQUITY_ALL,
     OPTION_ALL,
     OPTION_PUT,
-    OPTION_CALL;
+    OPTION_CALL
   }
   public enum Sort {
     VOLUME,
