@@ -8,9 +8,9 @@
     <relativePath/> <!-- lookup parent from repository -->
   </parent>
 
-  <groupId>com.schwab-api-client</groupId>
+  <groupId>com.pangility</groupId>
   <artifactId>schwab-api-client</artifactId>
-  <version>0.1.1-SNAPSHOT</version>
+  <version>0.1.2-SNAPSHOT</version>
   <name>schwab-api-client</name>
   <packaging>jar</packaging>
 
