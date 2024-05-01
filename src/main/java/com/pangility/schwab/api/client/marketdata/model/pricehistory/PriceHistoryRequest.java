@@ -5,6 +5,8 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 
+import java.time.LocalDate;
+
 @Getter
 @Setter
 @ToString
@@ -15,8 +17,8 @@ public class PriceHistoryRequest {
   private Integer period;
   private FrequencyType frequencyType;
   private Integer frequency;
-  private Long startDate;
-  private Long endDate;
+  private LocalDate startDate;
+  private LocalDate endDate;
   private Boolean needExtendedHoursData;
   private Boolean needPreviousClose;
 
@@ -28,8 +30,8 @@ public class PriceHistoryRequest {
     private Integer period;
     private FrequencyType frequencyType;
     private Integer frequency;
-    private Long startDate;
-    private Long endDate;
+    private LocalDate startDate;
+    private LocalDate endDate;
     private Boolean needExtendedHoursData;
     private Boolean needPreviousClose;
     public static Builder priceHistReq() {
@@ -61,12 +63,12 @@ public class PriceHistoryRequest {
       return this;
     }
 
-    public Builder withStartDate(Long startDate) {
+    public Builder withStartDate(LocalDate startDate) {
       this.startDate = startDate;
       return this;
     }
 
-    public Builder withEndDate(Long endDate) {
+    public Builder withEndDate(LocalDate endDate) {
       this.endDate = endDate;
       return this;
     }

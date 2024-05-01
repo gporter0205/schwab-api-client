@@ -1,6 +1,7 @@
 package com.pangility.schwab.api.client.unittest;
 
 import com.pangility.schwab.api.client.marketdata.EnableSchwabMarketDataApi;
+import com.pangility.schwab.api.client.marketdata.MarketNotFoundException;
 import com.pangility.schwab.api.client.marketdata.SchwabMarketDataApiClient;
 import com.pangility.schwab.api.client.marketdata.SymbolNotFoundException;
 import com.pangility.schwab.api.client.marketdata.model.instruments.InstrumentsRequest;
@@ -111,7 +112,7 @@ public class SchwabMarketDataApiTest {
     }
 
     @Test
-    public void marketsTest() throws SymbolNotFoundException {
+    public void marketsTest() throws MarketNotFoundException {
         List<Hours> hours = schwabMarketDataApiClient.fetchMarkets(Collections.singletonList(SchwabMarketDataApiClient.Market.equity));
         assertThat(hours).isNotNull();
 
