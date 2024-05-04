@@ -3,18 +3,18 @@ package com.pangility.schwab.api.client.marketdata;
 import com.pangility.schwab.api.client.common.SchwabWebClient;
 import com.pangility.schwab.api.client.marketdata.deserializers.MarketsHashMap;
 import com.pangility.schwab.api.client.marketdata.deserializers.QuoteResponseHashMap;
+import com.pangility.schwab.api.client.marketdata.model.chains.OptionChainRequest;
+import com.pangility.schwab.api.client.marketdata.model.chains.OptionChainResponse;
+import com.pangility.schwab.api.client.marketdata.model.expirationchain.ExpirationChainResponse;
 import com.pangility.schwab.api.client.marketdata.model.instruments.InstrumentsRequest;
 import com.pangility.schwab.api.client.marketdata.model.instruments.InstrumentsResponse;
 import com.pangility.schwab.api.client.marketdata.model.markets.Hours;
 import com.pangility.schwab.api.client.marketdata.model.movers.MoversRequest;
 import com.pangility.schwab.api.client.marketdata.model.movers.MoversResponse;
-import com.pangility.schwab.api.client.marketdata.model.optionchain.OptionChainRequest;
-import com.pangility.schwab.api.client.marketdata.model.optionchain.OptionChainResponse;
-import com.pangility.schwab.api.client.marketdata.model.optionexpirationchain.ExpirationChainResponse;
 import com.pangility.schwab.api.client.marketdata.model.pricehistory.Candle;
 import com.pangility.schwab.api.client.marketdata.model.pricehistory.PriceHistoryRequest;
 import com.pangility.schwab.api.client.marketdata.model.pricehistory.PriceHistoryResponse;
-import com.pangility.schwab.api.client.marketdata.model.quote.QuoteResponse;
+import com.pangility.schwab.api.client.marketdata.model.quotes.QuoteResponse;
 import com.pangility.schwab.api.client.oauth2.SchwabAccount;
 import com.pangility.schwab.api.client.oauth2.SchwabOauth2Controller;
 import com.pangility.schwab.api.client.oauth2.SchwabTokenHandler;
@@ -38,6 +38,11 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 
+/**
+ * Main client for interacting with the Schwab Market Data API.
+ * Use {@literal @}Autowire to create the component in any class annotated with
+ * {@literal @}EnableSchwabMarketDataApi or {@literal @}EnableSchwabApi
+ */
 @Service
 @ConditionalOnResource(resources = {"classpath:schwabapiclient.properties"})
 @Slf4j
@@ -57,49 +62,69 @@ public class SchwabMarketDataApiClient {
 
     private String defaultUserId = null;
 
+    /**
+     * Initialize the client controller
+     * @param schwabAccount {@link SchwabAccount}
+     */
     public void init(@NotNull SchwabAccount schwabAccount) {
         this.init(schwabAccount.getUserId(), Collections.singletonList(schwabAccount), null);
     }
+
+    /**
+     * Initialize the client controller
+     * @param schwabAccount {@link SchwabAccount}
+     * @param tokenHandler {@link SchwabTokenHandler}
+     */
     public void init(@NotNull SchwabAccount schwabAccount, SchwabTokenHandler tokenHandler) {
         this.init(schwabAccount.getUserId(), Collections.singletonList(schwabAccount), tokenHandler);
     }
+
+    /**
+     * Initialize the client controller
+     * @param defaultUserId String
+     * @param schwabAccounts List{@literal <}{@link SchwabAccount}{@literal >}
+     */
     public void init(@NotNull String defaultUserId, @NotNull List<SchwabAccount> schwabAccounts) {
         this.init(defaultUserId, schwabAccounts, null);
     }
 
+    /**
+     * Initialize the client controller
+     * @param defaultUserId String
+     * @param schwabAccounts List{@literal <}{@link SchwabAccount}{@literal >}
+     * @param tokenHandler {@link SchwabTokenHandler}
+     */
     public void init(@NotNull String defaultUserId, @NotNull List<SchwabAccount> schwabAccounts, SchwabTokenHandler tokenHandler) {
         this.defaultUserId = defaultUserId;
         schwabOauth2Controller.init(schwabAccounts, tokenHandler);
     }
 
+    /**
+     * determine if the controller has been initialized
+     * @return Boolean
+     */
     public Boolean isInitialized() {
         return this.defaultUserId != null && schwabOauth2Controller.isInitialized();
     }
 
-    public InstrumentsResponse fetchInstrumentsByCusip(@NotNull String cusip)
-            throws SymbolNotFoundException {
-        log.info("Fetch Instruments by cusip for: {}", cusip);
-        InstrumentsResponse response;
-
-        if (!cusip.isEmpty()) {
-            UriComponentsBuilder uriBuilder = UriComponentsBuilder.newInstance()
-                    .pathSegment(schwabMarketDataPath, schwabApiVersion, "instruments", cusip);
-            response = this.callGetAPI(uriBuilder, InstrumentsResponse.class);
-            if (response == null || response.getInstruments() == null || response.getInstruments().size() == 0) {
-                throw new SymbolNotFoundException("Instrument for cusip '" + cusip + "' not found");
-            }
-        } else {
-            throw new IllegalArgumentException("A request for Instruments by cusip must include a cusip.");
-        }
-        return response;
-    }
-
-
+    /**
+     * fetch a quote from the Schwab API
+     * @param symbol {@literal @}NotNull String
+     * @return {@link QuoteResponse}
+     * @throws SymbolNotFoundException API did not find the symbol
+     */
     public QuoteResponse fetchQuote(@NotNull String symbol)
             throws SymbolNotFoundException {
         return fetchQuote(symbol, null);
     }
 
+    /**
+     * fetch a quote from the Schwab API
+     * @param symbol {@literal @}NotNull String
+     * @param fields String (quote, fundamental or all)
+     * @return {@link QuoteResponse}
+     * @throws SymbolNotFoundException API did not find the symbol
+     */
     public QuoteResponse fetchQuote(@NotNull String symbol,
                                     String fields)
             throws SymbolNotFoundException {
@@ -122,17 +147,38 @@ public class SchwabMarketDataApiClient {
         return quoteResponse;
     }
 
+    /**
+     * fetch a list of quotes from the Schwab API
+     * @param symbols {@literal @}NotNull List{@literal <}String{@literal >}
+     * @return {@link List}{@literal <}{@link QuoteResponse}{@literal >}
+     * @throws SymbolNotFoundException API did not find the one or more symbols
+     */
     public List<QuoteResponse> fetchQuotes(@NotNull List<String> symbols)
             throws SymbolNotFoundException {
         return fetchQuotes(symbols, null);
     }
 
+    /**
+     * fetch a list of quotes from the Schwab API
+     * @param symbols {@literal @}NotNull List{@literal <}String{@literal >}
+     * @param fields String (quote, fundamental or all)
+     * @return {@link List}{@literal <}{@link QuoteResponse}{@literal >}
+     * @throws SymbolNotFoundException API did not find the one or more symbols
+     */
     public List<QuoteResponse> fetchQuotes(@NotNull List<String> symbols,
                                            String fields)
             throws SymbolNotFoundException {
         return fetchQuotes(symbols, fields, null);
     }
 
+    /**
+     * fetch a list of quotes from the Schwab API
+     * @param symbols {@literal @}NotNull List{@literal <}String{@literal >}
+     * @param fields String (quote, fundamental or all)
+     * @param indicative Boolean (include indicative symbol quotes for all ETF symbols in request)
+     * @return {@link List}{@literal <}{@link QuoteResponse}{@literal >}
+     * @throws SymbolNotFoundException API did not find the one or more symbols
+     */
     public List<QuoteResponse> fetchQuotes(@NotNull List<String> symbols,
                                            String fields,
                                            Boolean indicative)
@@ -171,6 +217,12 @@ public class SchwabMarketDataApiClient {
     }
 
 
+    /**
+     * fetch an option chain from the Schwab API
+     * @param chainRequest {@literal @}NotNull {@link OptionChainRequest}
+     * @return {@link OptionChainResponse}
+     * @throws SymbolNotFoundException API did not find the symbol
+     */
     public OptionChainResponse fetchOptionChain(@NotNull OptionChainRequest chainRequest)
             throws SymbolNotFoundException {
         log.info("Fetch option chain for: {}", chainRequest);
@@ -236,6 +288,12 @@ public class SchwabMarketDataApiClient {
         return optionChainResponse;
     }
 
+    /**
+     * fetch an expiration chain from the Schwab API
+     * @param symbol {@literal @}NotNull String
+     * @return {@link ExpirationChainResponse}
+     * @throws SymbolNotFoundException API did not find the symbol
+     */
     public ExpirationChainResponse fetchExpirationChain(@NotNull String symbol)
             throws SymbolNotFoundException {
         log.info("Fetch Expiration Chain for: {}", symbol);
@@ -257,6 +315,12 @@ public class SchwabMarketDataApiClient {
         return response;
     }
 
+    /**
+     * fetch the price history from the Schwab API
+     * @param priceHistReq {@literal @}NotNull {@link PriceHistoryRequest}
+     * @return {@link PriceHistoryResponse}
+     * @throws SymbolNotFoundException API did not find the symbol
+     */
     public PriceHistoryResponse fetchPriceHistory(PriceHistoryRequest priceHistReq)
             throws SymbolNotFoundException {
         log.info("Fetch Price History: {}", priceHistReq);
@@ -316,6 +380,12 @@ public class SchwabMarketDataApiClient {
         return response;
     }
 
+    /**
+     * fetch the movers from the Schwab API
+     * @param moversRequest {@literal @}NotNull {@link MoversRequest}
+     * @return {@link MoversResponse}
+     * @throws SymbolNotFoundException API did not find the index symbol
+     */
     public MoversResponse fetchMovers(@NotNull MoversRequest moversRequest) throws SymbolNotFoundException {
         log.info("Fetch Movers for: {}", moversRequest.getIndexSymbol());
         MoversResponse response = null;
@@ -331,22 +401,48 @@ public class SchwabMarketDataApiClient {
         return response;
     }
 
+    /**
+     * fetch the market hours for today from the Schwab API
+     * @param market {@literal @}NotNull {@link Market}
+     * @return {@link List}{@literal <}{@link Hours}{@literal >}
+     * @throws MarketNotFoundException API did not find the market
+     */
     public List<Hours> fetchMarket(@NotNull Market market)
             throws MarketNotFoundException {
         return fetchMarket(market, null);
     }
 
+    /**
+     * fetch the market hours from the Schwab API
+     * @param market {@literal @}NotNull {@link Market}
+     * @param date LocalDate
+     * @return {@link List}{@literal <}{@link Hours}{@literal >}
+     * @throws MarketNotFoundException API did not find the market
+     */
     public List<Hours> fetchMarket(@NotNull Market market,
                                    LocalDate date)
             throws MarketNotFoundException {
         return this.fetchMarkets(Collections.singletonList(market), date);
     }
 
+    /**
+     * fetch the market hours from the Schwab API
+     * @param markets {@literal @}NotNull {@link List}{@literal <}{@link Market}{@literal >}
+     * @return {@link List}{@literal <}{@link Hours}{@literal >}
+     * @throws MarketNotFoundException API did not find the market
+     */
     public List<Hours> fetchMarkets(@NotNull List<Market> markets)
             throws MarketNotFoundException {
         return fetchMarkets(markets, null);
     }
 
+    /**
+     * fetch the market hours from the Schwab API
+     * @param markets {@literal @}NotNull {@link List}{@literal <}{@link Market}{@literal >}
+     * @param date LocalDate
+     * @return {@link List}{@literal <}{@link Hours}{@literal >}
+     * @throws MarketNotFoundException API did not find the market
+     */
     public List<Hours> fetchMarkets(@NotNull List<Market> markets,
                                     LocalDate date)
             throws MarketNotFoundException {
@@ -384,6 +480,12 @@ public class SchwabMarketDataApiClient {
         return ret;
     }
 
+    /**
+     * fetch instruments from the Schwab API
+     * @param instrumentsRequest {@literal @}NotNull {@link InstrumentsRequest}
+     * @return {@link InstrumentsResponse}
+     * @throws SymbolNotFoundException API did not find the symbol
+     */
     public InstrumentsResponse fetchInstruments(@NotNull InstrumentsRequest instrumentsRequest)
             throws SymbolNotFoundException {
         log.info("Fetch Instruments for: {}", instrumentsRequest);
@@ -400,6 +502,30 @@ public class SchwabMarketDataApiClient {
             }
         } else {
             throw new IllegalArgumentException("A request for Instruments must include a symbol and a projection.");
+        }
+        return response;
+    }
+
+    /**
+     * fetch instruments by cusip from the Schwab API
+     * @param cusip {@literal @}NotNull String
+     * @return {@link InstrumentsResponse}
+     * @throws SymbolNotFoundException API did not find the cusip
+     */
+    public InstrumentsResponse fetchInstrumentsByCusip(@NotNull String cusip)
+            throws SymbolNotFoundException {
+        log.info("Fetch Instruments by cusip for: {}", cusip);
+        InstrumentsResponse response;
+
+        if (!cusip.isEmpty()) {
+            UriComponentsBuilder uriBuilder = UriComponentsBuilder.newInstance()
+                    .pathSegment(schwabMarketDataPath, schwabApiVersion, "instruments", cusip);
+            response = this.callGetAPI(uriBuilder, InstrumentsResponse.class);
+            if (response == null || response.getInstruments() == null || response.getInstruments().size() == 0) {
+                throw new SymbolNotFoundException("Instrument for cusip '" + cusip + "' not found");
+            }
+        } else {
+            throw new IllegalArgumentException("A request for Instruments by cusip must include a cusip.");
         }
         return response;
     }
@@ -437,11 +563,33 @@ public class SchwabMarketDataApiClient {
         return ret;
     }
 
+    /**
+     * Available markets for requesting hours
+     */
     public enum Market {
-        equity, option, bond, future, forex
+        /**
+         * equity
+         */
+        equity,
+        /**
+         * option
+         */
+        option,
+        /**
+         * bond
+         */
+        bond,
+        /**
+         * future
+         */
+        future,
+        /**
+         * forex
+         */
+        forex
     }
 
-    public String getMarketsCsv(@NotNull List<Market> marketList) {
+    private String getMarketsCsv(@NotNull List<Market> marketList) {
         StringBuilder csv = new StringBuilder();
         for(Market market : marketList) {
             if(csv.length() > 0) {

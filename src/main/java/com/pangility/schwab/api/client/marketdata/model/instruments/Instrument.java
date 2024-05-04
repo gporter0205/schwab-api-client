@@ -11,6 +11,7 @@ import java.util.Map;
 
 /**
  * Instrument
+ * See the <a href="https://developer.schwab.com">Schwab Developer Portal</a> for more information
  */
 @Getter
 @Setter
@@ -36,6 +37,9 @@ public class Instrument {
   @JsonAnySetter
   private Map<String, Object> otherFields = new HashMap<>();
 
+  /**
+   * Instrument
+   */
   @Getter
   @Setter
   @ToString
@@ -45,17 +49,62 @@ public class Instrument {
     private String bondMultiplier;
     private BigDecimal bondPrice;
   }
+
+  /**
+   * Instrument AssetType
+   */
   public enum AssetType {
+    /**
+     * Bond
+     */
+    BOND,
+    /**
+     * Equity
+     */
     EQUITY,
+    /**
+     * ETF
+     */
     ETF,
+    /**
+     * Extended
+     */
+    EXTENDED,
+    /**
+     * Forex
+     */
     FOREX,
+    /**
+     * Future
+     */
     FUTURE,
+    /**
+     * Future Option
+     */
     FUTURE_OPTION,
+    /**
+     * Fundamental
+     */
+    FUNDAMENTAL,
+    /**
+     * Index
+     */
     INDEX,
+    /**
+     * Indicator
+     */
     INDICATOR,
+    /**
+     * Mutual Fund
+     */
     MUTUAL_FUND,
+    /**
+     * Option
+     */
     OPTION,
-    UNKNOWN,
-    BOND
+    /**
+     * Unknown
+     */
+    UNKNOWN
   }
 }

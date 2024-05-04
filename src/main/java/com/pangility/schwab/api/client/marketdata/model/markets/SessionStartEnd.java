@@ -15,6 +15,10 @@ import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * SessionStartEnd
+ * See the <a href="https://developer.schwab.com">Schwab Developer Portal</a> for more information
+ */
 @Getter
 @Setter
 @ToString

@@ -10,6 +10,9 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 
+/**
+ * Class for deserializing Schwab date json into {@link LocalDate}
+ */
 public class LocalDateDeserializer extends JsonDeserializer<LocalDate> {
 
   @Override

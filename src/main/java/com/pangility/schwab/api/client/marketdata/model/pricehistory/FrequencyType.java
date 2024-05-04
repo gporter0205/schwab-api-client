@@ -7,7 +7,7 @@ package com.pangility.schwab.api.client.marketdata.model.pricehistory;
  *</p>
  *
  * <p>
- * According to TDA docs with regard to the {@link PeriodType}, if the periodType is:
+ * According to Schwab docs with regard to the {@link PeriodType}, if the periodType is:
  * </p>
  * <ul>
  *   <li><em>DAY</em> - the frequency type can be <em>minute</em> only</li>
@@ -27,8 +27,20 @@ package com.pangility.schwab.api.client.marketdata.model.pricehistory;
  * </ul>
  */
 public enum FrequencyType {
+  /**
+   * minute
+   */
   minute,
+  /**
+   * daily
+   */
   daily,
+  /**
+   * weekly
+   */
   weekly,
+  /**
+   * monthly
+   */
   monthly
 }

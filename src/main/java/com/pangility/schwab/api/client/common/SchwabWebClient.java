@@ -15,6 +15,11 @@ import org.springframework.web.util.UriComponentsBuilder;
 import java.math.BigDecimal;
 import java.net.URI;
 
+/**
+ * A wrapper for the WebClient interface to avoid Spring bean collisions when the client
+ * {@literal @}Autowire a WebClient bean. This class wraps the WebClient along with
+ * any settings and deserializers that it needs to interact with the Schwab API.
+ */
 @Component
 @Conditional(OnApiEnabledCondition.class)
 public class SchwabWebClient {
@@ -22,6 +27,10 @@ public class SchwabWebClient {
     @Value("${schwab-api.targetUrl}")
     private String schwabTargetUrl;
 
+    /**
+     * get a web client initialized with defaults for the Schwab API
+     * @return {@link WebClient}
+     */
     public WebClient getSchwabWebClient() {
         URI schwabUri = UriComponentsBuilder.newInstance()
                 .scheme("https")

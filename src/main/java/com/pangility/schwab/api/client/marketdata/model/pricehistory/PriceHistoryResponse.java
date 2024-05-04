@@ -18,7 +18,8 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * PriceHistory meant to display on a graph
+ * Object used to receive the response from the Schwab API <em>pricehistory</em> endpoint
+ * See the <a href="https://developer.schwab.com">Schwab Developer Portal</a> for more information
  */
 @Getter
 @Setter

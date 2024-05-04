@@ -9,6 +9,10 @@ import com.pangility.schwab.api.client.marketdata.model.markets.Hours;
 import java.io.IOException;
 import java.util.HashMap;
 
+/**
+ * Deserializer for capturing the markets response json formatted as a map
+ * Couldn't find a clean way for Jackson to parse it.
+ */
 public class MarketsResponseDeserializer extends JsonDeserializer<MarketsHashMap> {
 
     @Override

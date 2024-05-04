@@ -12,7 +12,24 @@
   <artifactId>schwab-api-client</artifactId>
   <version>0.1.4-SNAPSHOT</version>
   <name>schwab-api-client</name>
+  <description>Java Spring Boot Library for interacting with the Charles Schwab API</description>
   <packaging>jar</packaging>
+
+  <inceptionYear>2024</inceptionYear>
+
+  <licenses>
+    <license>
+      <name>Apache License, Version 2.0</name>
+      <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+      <distribution>repo</distribution>
+    </license>
+  </licenses>
+
+  <scm>
+    <connection>git@github.com:gporter0205/schwab-api-client.git</connection>
+    <developerConnection>git@github.com:gporter0205/schwab-api-client.git</developerConnection>
+    <url>https://github.com/gporter0205/schwab-api-client</url>
+  </scm>
 
   <properties>
     <java.version>17</java.version>
@@ -58,13 +75,58 @@
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
       </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-javadoc-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>attach-javadocs</id>
+            <goals>
+              <goal>jar</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-source-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>attach-sources</id>
+            <goals>
+              <goal>jar</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.simplify4u.plugins</groupId>
+        <artifactId>sign-maven-plugin</artifactId>
+        <version>1.1.0</version>
+        <executions>
+          <execution>
+            <goals>
+              <goal>sign</goal>
+            </goals>
+            <configuration>
+              <keyPass>qnN!2fpFFHpTZcrauY-w</keyPass>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.sonatype.plugins</groupId>
+        <artifactId>nexus-staging-maven-plugin</artifactId>
+        <version>1.6.7</version>
+        <extensions>true</extensions>
+      </plugin>
     </plugins>
   </build>
   <distributionManagement>
-    <repository>
+    <snapshotRepository>
       <id>snapshot</id>
       <name>Snapshot Repository</name>
       <url>https://maven-snapshots.theporters.me/repository/maven-snapshots/</url>
-    </repository>
+    </snapshotRepository>
   </distributionManagement>
 </project>

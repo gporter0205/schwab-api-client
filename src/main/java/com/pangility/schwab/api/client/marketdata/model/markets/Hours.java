@@ -16,6 +16,7 @@ import java.util.Map;
 
 /**
  * Market Hours.
+ * See the <a href="https://developer.schwab.com">Schwab Developer Portal</a> for more information
  */
 @Getter
 @Setter
@@ -36,18 +37,29 @@ public class Hours {
     @JsonAnySetter
     private Map<String, Object> otherFields = new HashMap<>();
 
+    /**
+     * List of market types used to request market hours.
+     */
     public enum MarketType {
-      BOND,
-      EQUITY,
-      ETF,
-      FOREX,
-      FUTURE,
-      FUTURE_OPTION,
-      FUNDAMENTAL,
-      INDEX,
-      INDICATOR,
-      MUTUAL_FUND,
-      OPTION,
-      UNKNOWN
+        /**
+         * Bond market type
+         */
+        BOND,
+        /**
+         * Equity market type
+         */
+        EQUITY,
+        /**
+         * Forex market type
+         */
+        FOREX,
+        /**
+         * Future market type
+         */
+        FUTURE,
+        /**
+         * Option market type
+         */
+        OPTION
     }
 }

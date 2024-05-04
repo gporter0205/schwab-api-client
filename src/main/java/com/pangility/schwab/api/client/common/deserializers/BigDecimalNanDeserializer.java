@@ -8,8 +8,9 @@ import java.io.IOException;
 import java.math.BigDecimal;
 
 /**
- * TDA seems to return invalid JSON sometimes with an OptionChain.theta. When it gets very close to
- * 0, the JSON returns '{theta: "NAN"}'.
+ * Schwab sometimes returns invalid numeric data in it's JSON responses. When it gets very close to
+ * 0, the JSON returns '{theta: "NAN"}'.  This class deserializes all BigDecimal model types as well as ignoring
+ * (by returning null) "null" or "nan" values when passed as a numeric value.
  */
 public class BigDecimalNanDeserializer extends JsonDeserializer<BigDecimal> {
   @Override

@@ -4,10 +4,14 @@ import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonDeserializer;
-import com.pangility.schwab.api.client.marketdata.model.quote.QuoteResponse;
+import com.pangility.schwab.api.client.marketdata.model.quotes.QuoteResponse;
 
 import java.io.IOException;
 
+/**
+ * Deserializer for capturing the quote response json formatted as a map.
+ * Couldn't find a clean way for Jackson to parse it.
+ */
 public class QuoteResponseDeserializer extends JsonDeserializer<QuoteResponseHashMap> {
 
     @Override

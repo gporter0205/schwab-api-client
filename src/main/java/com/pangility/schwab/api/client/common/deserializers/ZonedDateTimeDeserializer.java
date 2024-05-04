@@ -8,6 +8,9 @@ import java.io.IOException;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 
+/**
+ * Class for deserializing Schwab zoned date/time json into {@link ZonedDateTime}
+ */
 public class ZonedDateTimeDeserializer extends JsonDeserializer<ZonedDateTime> {
 
   @Override

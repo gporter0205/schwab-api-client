@@ -8,6 +8,9 @@ import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
+/**
+ * Class for deserializing Schwab date/time json into {@link LocalDateTime}
+ */
 public class LocalDateTimeDeserializer extends JsonDeserializer<LocalDateTime> {
 
   @Override

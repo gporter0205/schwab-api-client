@@ -11,6 +11,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Object used to receive the response from the Schwab API <em>movers</em> endpoint
+ * See the <a href="https://developer.schwab.com">Schwab Developer Portal</a> for more information
+ */
 @Getter
 @Setter
 @ToString

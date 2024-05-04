@@ -1,6 +1,5 @@
 package com.pangility.schwab.api.client.oauth2;
 
-import com.pangility.schwab.api.client.common.InvalidRefreshTokenException;
 import com.pangility.schwab.api.client.common.OnApiEnabledCondition;
 import com.pangility.schwab.api.client.common.SchwabWebClient;
 import lombok.Getter;
@@ -33,6 +32,12 @@ import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.*;
 
+/**
+ * Controller used by the client controllers
+ * for delegating the oauth2 authentication tasks for the Schwab API.
+ * See the <a href="https://developer.schwab.com/user-guides/get-started/authenticate-with-oauth">Authenticate with OAuth</a>
+ * Getting Started Guide found on the <a href="https://developer.schwab.com">Schwab Developer Portal</a> for more information
+ */
 @RestController
 @Conditional(OnApiEnabledCondition.class)
 @Slf4j
@@ -70,10 +75,19 @@ public class SchwabOauth2Controller {
 
     private SchwabTokenHandler tokenHandler = null;
 
+    /**
+     * initialize the controller with the Schwab account information
+     * @param schwabAccounts {@link List}{@literal <}{@link SchwabAccount}{@literal >}
+     */
     public void init(@NotNull List<SchwabAccount> schwabAccounts) {
         this.init(schwabAccounts, null);
     }
 
+    /**
+     * initialize the controller with the Schwab account information
+     * @param schwabAccounts {@link List}{@literal <}{@link SchwabAccount}{@literal >}
+     * @param tokenHandler {@link SchwabTokenHandler}
+     */
     public void init(@NotNull List<SchwabAccount> schwabAccounts, SchwabTokenHandler tokenHandler) {
         for(SchwabAccount schwabAccount : schwabAccounts) {
             accountMapByUserId.put(schwabAccount.getUserId(), schwabAccount);
@@ -81,10 +95,19 @@ public class SchwabOauth2Controller {
         this.tokenHandler = tokenHandler;
     }
 
+    /**
+     * has the controller been initialized
+     * @return Boolean
+     */
     public Boolean isInitialized() {
         return this.accountMapByUserId.size() > 0;
     }
 
+    /**
+     * validate the refresh token (i.e. is it present and not expired)
+     * @param schwabUserId {@literal @}NotNull String
+     * @throws InvalidRefreshTokenException throws if the refresh token is not present or expired
+     */
     public void validateRefreshToken(@NotNull String schwabUserId) throws InvalidRefreshTokenException {
         SchwabAccount schwabAccount = accountMapByUserId.get(schwabUserId);
         if(schwabAccount.getRefreshToken() == null) {
@@ -94,10 +117,21 @@ public class SchwabOauth2Controller {
         }
     }
 
+    /**
+     * gets the Schwab account info for the user id
+     * @param schwabUserId {@literal @}NotNull String
+     * @return {@link SchwabAccount}
+     */
     public SchwabAccount getSchwabAccount(@NotNull String schwabUserId) {
         return accountMapByUserId.get(schwabUserId);
     }
 
+    /**
+     * gets the Schwab access token for the user id and retrieves a
+     * new one if it's expired.
+     * @param schwabUserId {@literal @}NotNull String
+     * @return String
+     */
     public String getAccessToken(@NotNull String schwabUserId) {
         String accessToken = null;
         SchwabAccount schwabAccount = accountMapByUserId.get(schwabUserId);
@@ -111,6 +145,11 @@ public class SchwabOauth2Controller {
         return accessToken;
     }
 
+    /**
+     * refresh the Schwab access token for the user id
+     * @param schwabAccount {@literal @}NotNull {@link SchwabAccount}
+     * @return String
+     */
     public String refreshAccessToken(@NotNull SchwabAccount schwabAccount) {
         String accessToken = null;
         try {
@@ -170,6 +209,12 @@ public class SchwabOauth2Controller {
         return accessToken;
     }
 
+    /**
+     * end point for retrieving the refresh and access tokens
+     * @param code {@literal @}RequestParam String
+     * @param state {@literal @}RequestParam String
+     * @return {@link RedirectView}
+     */
     @GetMapping(value = {"/login/oauth2/code/schwab", "/oauth2/schwab/code"})
     public RedirectView processCode(@RequestParam String code,
                             @RequestParam String state) {
@@ -258,6 +303,13 @@ public class SchwabOauth2Controller {
         return redirectView;
     }
 
+    /**
+     * end point for calling the Schwab authentication end point.
+     * @param attributes {@link RedirectAttributes}
+     * @param schwabUserId {@literal @}RequestParam String
+     * @param callback {@literal @}RequestParam String
+     * @return {@link RedirectView}
+     */
     @GetMapping("/oauth2/schwab/authorization")
     public RedirectView authorize(RedirectAttributes attributes,
                                   @RequestParam String schwabUserId,

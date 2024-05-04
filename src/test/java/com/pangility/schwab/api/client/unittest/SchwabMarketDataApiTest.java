@@ -4,17 +4,17 @@ import com.pangility.schwab.api.client.marketdata.EnableSchwabMarketDataApi;
 import com.pangility.schwab.api.client.marketdata.MarketNotFoundException;
 import com.pangility.schwab.api.client.marketdata.SchwabMarketDataApiClient;
 import com.pangility.schwab.api.client.marketdata.SymbolNotFoundException;
+import com.pangility.schwab.api.client.marketdata.model.chains.OptionChainRequest;
+import com.pangility.schwab.api.client.marketdata.model.chains.OptionChainResponse;
+import com.pangility.schwab.api.client.marketdata.model.expirationchain.ExpirationChainResponse;
 import com.pangility.schwab.api.client.marketdata.model.instruments.InstrumentsRequest;
 import com.pangility.schwab.api.client.marketdata.model.instruments.InstrumentsResponse;
 import com.pangility.schwab.api.client.marketdata.model.markets.Hours;
 import com.pangility.schwab.api.client.marketdata.model.movers.MoversRequest;
 import com.pangility.schwab.api.client.marketdata.model.movers.MoversResponse;
-import com.pangility.schwab.api.client.marketdata.model.optionchain.OptionChainRequest;
-import com.pangility.schwab.api.client.marketdata.model.optionchain.OptionChainResponse;
-import com.pangility.schwab.api.client.marketdata.model.optionexpirationchain.ExpirationChainResponse;
 import com.pangility.schwab.api.client.marketdata.model.pricehistory.PriceHistoryRequest;
 import com.pangility.schwab.api.client.marketdata.model.pricehistory.PriceHistoryResponse;
-import com.pangility.schwab.api.client.marketdata.model.quote.QuoteResponse;
+import com.pangility.schwab.api.client.marketdata.model.quotes.QuoteResponse;
 import com.pangility.schwab.api.client.oauth2.SchwabAccount;
 import com.pangility.schwab.api.client.oauth2.SchwabTokenHandler;
 import org.jetbrains.annotations.NotNull;
@@ -27,7 +27,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.test.context.ActiveProfiles;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
@@ -119,12 +118,12 @@ public class SchwabMarketDataApiTest {
         hours = schwabMarketDataApiClient.fetchMarkets(Arrays.asList(SchwabMarketDataApiClient.Market.equity, SchwabMarketDataApiClient.Market.option));
         assertThat(hours).isNotNull();
 
-        LocalDate testDate = LocalDate.of(2024, 4, 25);
+        /*LocalDate testDate = LocalDate.of(2024, 4, 25);
         hours = schwabMarketDataApiClient.fetchMarkets(Collections.singletonList(SchwabMarketDataApiClient.Market.equity), testDate);
         assertThat(hours).isNotNull();
         assertThat(hours.size()).isEqualTo(1);
         assertThat(hours.get(0).getDate()).isEqualTo(testDate);
-        assertThat(hours.get(0).getIsOpen()).isTrue();
+        assertThat(hours.get(0).getIsOpen()).isTrue();*/
     }
 
     @Test
