@@ -10,7 +10,7 @@
 
   <groupId>com.pangility</groupId>
   <artifactId>schwab-api-client</artifactId>
-  <version>0.1.4-SNAPSHOT</version>
+  <version>0.1.1</version>
   <name>schwab-api-client</name>
   <description>Java Spring Boot Library for interacting with the Charles Schwab API</description>
   <packaging>jar</packaging>
@@ -114,18 +114,51 @@
           </execution>
         </executions>
       </plugin>
-      <plugin>
-        <groupId>org.sonatype.plugins</groupId>
-        <artifactId>nexus-staging-maven-plugin</artifactId>
-        <version>1.6.7</version>
-        <extensions>true</extensions>
-      </plugin>
     </plugins>
   </build>
+  <profiles>
+    <profile>
+      <id>deploy-snapshot</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.sonatype.plugins</groupId>
+            <artifactId>nexus-staging-maven-plugin</artifactId>
+            <version>1.6.7</version>
+            <extensions>true</extensions>
+            <configuration>
+              <serverId>nexus</serverId>
+              <nexusUrl>https://maven-snapshots.theporters.me/</nexusUrl>
+              <skipStaging>true</skipStaging>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+    <profile>
+      <id>deploy-release</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.sonatype.central</groupId>
+            <artifactId>central-publishing-maven-plugin</artifactId>
+            <version>0.4.0</version>
+            <extensions>true</extensions>
+            <configuration>
+              <publishingServerId>central</publishingServerId>
+              <tokenAuth>true</tokenAuth>
+              <autoPublish>true</autoPublish>
+              <waitUntil>published</waitUntil>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
   <distributionManagement>
     <snapshotRepository>
-      <id>snapshot</id>
-      <name>Snapshot Repository</name>
+      <id>nexus-snapshots</id>
+      <name>Local Snapshot Repository</name>
       <url>https://maven-snapshots.theporters.me/repository/maven-snapshots/</url>
     </snapshotRepository>
   </distributionManagement>
