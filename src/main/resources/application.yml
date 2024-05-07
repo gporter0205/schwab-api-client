@@ -1,0 +1,5 @@
+schwab-api:
+  oauth2:
+    clientId: <YOUR-SCHWAB-CLIENT-ID>
+    clientSecret: <YOUR-SCHWAB-CLIENT-SECRET>
+    redirect-uri: <YOUR-SCHWAB-REDIRECT-URI>
