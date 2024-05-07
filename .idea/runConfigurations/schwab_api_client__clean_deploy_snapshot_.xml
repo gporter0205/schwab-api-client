@@ -14,6 +14,7 @@
               <option value="deploy" />
               <option value="-P" />
               <option value="deploy-snapshot" />
+              <option value="-DskipTests" />
             </list>
           </option>
           <option name="pomFileName" value="pom.xml" />
