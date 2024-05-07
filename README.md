@@ -1,8 +1,8 @@
 # Charles Schwab Java API Client
 
 Spring Boot Java rest client for the [Charles Schwab API](https://developer.schwab.com/).  
-Currently, only the happy path of the Schwab Market Data API is implemented.  I'll be adding
-the Accounts and Trading API endpoints as well as better error handling in the future.
+Currently, only the happy path of the [Schwab Market Data API](https://developer.schwab.com/products/trader-api--individual/details/specifications/Market%20Data%20Production) is implemented.  I'll be adding
+the [Accounts and Trading API](https://developer.schwab.com/products/trader-api--individual/details/specifications/Retail%20Trader%20API%20Production) endpoints as well as better error handling in the future.
 
 * Javadocs and Source is included when building the jar or by downloading it as a dependency from Maven.
 * [How-To Guide](https://github.com/gporter0205/schwab-api-client/wiki/home) on the Wiki shows specifics on how to use this Java API.
