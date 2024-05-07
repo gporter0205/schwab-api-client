@@ -66,6 +66,7 @@ public class SchwabMarketDataApiClient {
      * Initialize the client controller
      * @param schwabAccount {@link SchwabAccount}
      */
+    @SuppressWarnings("unused")
     public void init(@NotNull SchwabAccount schwabAccount) {
         this.init(schwabAccount.getUserId(), Collections.singletonList(schwabAccount), null);
     }
@@ -84,6 +85,7 @@ public class SchwabMarketDataApiClient {
      * @param defaultUserId String
      * @param schwabAccounts List{@literal <}{@link SchwabAccount}{@literal >}
      */
+    @SuppressWarnings("unused")
     public void init(@NotNull String defaultUserId, @NotNull List<SchwabAccount> schwabAccounts) {
         this.init(defaultUserId, schwabAccounts, null);
     }
@@ -103,6 +105,7 @@ public class SchwabMarketDataApiClient {
      * determine if the controller has been initialized
      * @return Boolean
      */
+    @SuppressWarnings("unused")
     public Boolean isInitialized() {
         return this.defaultUserId != null && schwabOauth2Controller.isInitialized();
     }
@@ -131,12 +134,14 @@ public class SchwabMarketDataApiClient {
         log.info("Fetch Quote for: {}", symbol);
         QuoteResponse quoteResponse = null;
 
+        if(fields == null || fields.isEmpty()) {
+            fields = "all";
+        }
+
         if (symbol.length() > 0) {
             UriComponentsBuilder uriBuilder = UriComponentsBuilder.newInstance()
-                    .pathSegment(schwabMarketDataPath, schwabApiVersion, symbol.toUpperCase(), "quotes");
-            if(fields != null) {
-                uriBuilder.queryParam("fields", fields);
-            }
+                    .pathSegment(schwabMarketDataPath, schwabApiVersion, symbol.toUpperCase(), "quotes")
+                    .queryParam("fields", fields);
             QuoteResponseHashMap response = this.callGetAPI(uriBuilder, QuoteResponseHashMap.class);
             if (response != null && response.quoteMap.size() > 0 && response.quoteMap.containsKey(symbol)) {
                 quoteResponse = response.quoteMap.get(symbol);
@@ -407,6 +412,7 @@ public class SchwabMarketDataApiClient {
      * @return {@link List}{@literal <}{@link Hours}{@literal >}
      * @throws MarketNotFoundException API did not find the market
      */
+    @SuppressWarnings("unused")
     public List<Hours> fetchMarket(@NotNull Market market)
             throws MarketNotFoundException {
         return fetchMarket(market, null);
@@ -578,14 +584,17 @@ public class SchwabMarketDataApiClient {
         /**
          * bond
          */
+        @SuppressWarnings("unused")
         bond,
         /**
          * future
          */
+        @SuppressWarnings("unused")
         future,
         /**
          * forex
          */
+        @SuppressWarnings("unused")
         forex
     }
 

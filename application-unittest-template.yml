@@ -1,0 +1,8 @@
+schwab-api:
+  oauth2:
+    userId:
+    refreshToken:
+    refreshExpiration: yyyy-mm-ddThh:mm:ss.ffffff
+    clientId:
+    clientSecret:
+    redirect-uri:
