@@ -138,7 +138,7 @@ public class SchwabOauth2Controller {
         if(schwabAccount != null) {
             accessToken = schwabAccount.getAccessToken();
             LocalDateTime accessExpiration = schwabAccount.getAccessExpiration();
-            if(accessToken == null || LocalDateTime.now().plusMinutes(1).isAfter(accessExpiration)) {
+            if(accessToken == null || LocalDateTime.now().plusMinutes(5).isAfter(accessExpiration)) {
                 accessToken = this.refreshAccessToken(schwabAccount);
             }
         }
@@ -215,7 +215,7 @@ public class SchwabOauth2Controller {
      * @param state {@literal @}RequestParam String
      * @return {@link RedirectView}
      */
-    @GetMapping(value = {"/login/oauth2/code/schwab", "/oauth2/schwab/code"})
+    @GetMapping(value = {"/oauth2/schwab/code"})
     public RedirectView processCode(@RequestParam String code,
                             @RequestParam String state) {
         String tokenAuthorizationHeader = "Basic " + new String(Base64.getMimeEncoder().encode((schwabClientId + ":" + schwabClientSecret).getBytes(StandardCharsets.UTF_8)), StandardCharsets.UTF_8);
