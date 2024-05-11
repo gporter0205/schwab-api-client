@@ -1,8 +1,6 @@
 package com.pangility.schwab.api.client.marketdata;
 
-import com.pangility.schwab.api.client.common.SchwabWebClient;
-import com.pangility.schwab.api.client.marketdata.deserializers.MarketsHashMap;
-import com.pangility.schwab.api.client.marketdata.deserializers.QuoteResponseHashMap;
+import com.pangility.schwab.api.client.common.SchwabBaseApiClient;
 import com.pangility.schwab.api.client.marketdata.model.chains.OptionChainRequest;
 import com.pangility.schwab.api.client.marketdata.model.chains.OptionChainResponse;
 import com.pangility.schwab.api.client.marketdata.model.expirationchain.ExpirationChainResponse;
@@ -15,28 +13,22 @@ import com.pangility.schwab.api.client.marketdata.model.pricehistory.Candle;
 import com.pangility.schwab.api.client.marketdata.model.pricehistory.PriceHistoryRequest;
 import com.pangility.schwab.api.client.marketdata.model.pricehistory.PriceHistoryResponse;
 import com.pangility.schwab.api.client.marketdata.model.quotes.QuoteResponse;
-import com.pangility.schwab.api.client.oauth2.SchwabAccount;
-import com.pangility.schwab.api.client.oauth2.SchwabOauth2Controller;
-import com.pangility.schwab.api.client.oauth2.SchwabTokenHandler;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnResource;
-import org.springframework.http.ResponseEntity;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.stereotype.Service;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import java.net.URI;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Main client for interacting with the Schwab Market Data API.
@@ -46,69 +38,10 @@ import java.util.List;
 @Service
 @ConditionalOnResource(resources = {"classpath:schwabapiclient.properties"})
 @Slf4j
-public class SchwabMarketDataApiClient {
+public class SchwabMarketDataApiClient extends SchwabBaseApiClient {
 
-    @Value("${schwab-api.targetUrl}")
-    private String schwabTargetUrl;
-    @Value("${schwab-api.apiVersion}")
-    private String schwabApiVersion;
     @Value("${schwab-api.marketDataPath}")
     private String schwabMarketDataPath;
-
-    @Autowired
-    private SchwabOauth2Controller schwabOauth2Controller;
-    @Autowired
-    private SchwabWebClient schwabWebClient;
-
-    private String defaultUserId = null;
-
-    /**
-     * Initialize the client controller
-     * @param schwabAccount {@link SchwabAccount}
-     */
-    @SuppressWarnings("unused")
-    public void init(@NotNull SchwabAccount schwabAccount) {
-        this.init(schwabAccount.getUserId(), Collections.singletonList(schwabAccount), null);
-    }
-
-    /**
-     * Initialize the client controller
-     * @param schwabAccount {@link SchwabAccount}
-     * @param tokenHandler {@link SchwabTokenHandler}
-     */
-    public void init(@NotNull SchwabAccount schwabAccount, SchwabTokenHandler tokenHandler) {
-        this.init(schwabAccount.getUserId(), Collections.singletonList(schwabAccount), tokenHandler);
-    }
-
-    /**
-     * Initialize the client controller
-     * @param defaultUserId String
-     * @param schwabAccounts List{@literal <}{@link SchwabAccount}{@literal >}
-     */
-    @SuppressWarnings("unused")
-    public void init(@NotNull String defaultUserId, @NotNull List<SchwabAccount> schwabAccounts) {
-        this.init(defaultUserId, schwabAccounts, null);
-    }
-
-    /**
-     * Initialize the client controller
-     * @param defaultUserId String
-     * @param schwabAccounts List{@literal <}{@link SchwabAccount}{@literal >}
-     * @param tokenHandler {@link SchwabTokenHandler}
-     */
-    public void init(@NotNull String defaultUserId, @NotNull List<SchwabAccount> schwabAccounts, SchwabTokenHandler tokenHandler) {
-        this.defaultUserId = defaultUserId;
-        schwabOauth2Controller.init(schwabAccounts, tokenHandler);
-    }
-
-    /**
-     * determine if the controller has been initialized
-     * @return Boolean
-     */
-    @SuppressWarnings("unused")
-    public Boolean isInitialized() {
-        return this.defaultUserId != null && schwabOauth2Controller.isInitialized();
-    }
 
     /**
      * fetch a quote from the Schwab API
@@ -129,7 +62,7 @@ public class SchwabMarketDataApiClient {
      * @throws SymbolNotFoundException API did not find the symbol
      */
     public QuoteResponse fetchQuote(@NotNull String symbol,
-                                    String fields)
+                                                 String fields)
             throws SymbolNotFoundException {
         log.info("Fetch Quote for: {}", symbol);
         QuoteResponse quoteResponse = null;
@@ -142,9 +75,9 @@ public class SchwabMarketDataApiClient {
             UriComponentsBuilder uriBuilder = UriComponentsBuilder.newInstance()
                     .pathSegment(schwabMarketDataPath, schwabApiVersion, symbol.toUpperCase(), "quotes")
                     .queryParam("fields", fields);
-            QuoteResponseHashMap response = this.callGetAPI(uriBuilder, QuoteResponseHashMap.class);
-            if (response != null && response.quoteMap.size() > 0 && response.quoteMap.containsKey(symbol)) {
-                quoteResponse = response.quoteMap.get(symbol);
+            Map<String, QuoteResponse> response = this.callGetAPIAsMap(uriBuilder, new ParameterizedTypeReference<>() {});
+            if (response != null && response.size() > 0 && response.containsKey(symbol)) {
+                quoteResponse = response.get(symbol);
             } else {
                 throw new SymbolNotFoundException("'" + symbol + "' not found");
             }
@@ -153,47 +86,47 @@ public class SchwabMarketDataApiClient {
     }
 
     /**
-     * fetch a list of quotes from the Schwab API
+     * fetch a map of quotes from the Schwab API
      * @param symbols {@literal @}NotNull List{@literal <}String{@literal >}
      * @return {@link List}{@literal <}{@link QuoteResponse}{@literal >}
      * @throws SymbolNotFoundException API did not find the one or more symbols
      */
-    public List<QuoteResponse> fetchQuotes(@NotNull List<String> symbols)
+    public Map<String, QuoteResponse> fetchQuotes(@NotNull List<String> symbols)
             throws SymbolNotFoundException {
         return fetchQuotes(symbols, null);
     }
 
     /**
-     * fetch a list of quotes from the Schwab API
+     * fetch a map of quotes from the Schwab API
      * @param symbols {@literal @}NotNull List{@literal <}String{@literal >}
      * @param fields String (quote, fundamental or all)
      * @return {@link List}{@literal <}{@link QuoteResponse}{@literal >}
      * @throws SymbolNotFoundException API did not find the one or more symbols
      */
-    public List<QuoteResponse> fetchQuotes(@NotNull List<String> symbols,
+    public Map<String, QuoteResponse> fetchQuotes(@NotNull List<String> symbols,
                                            String fields)
             throws SymbolNotFoundException {
         return fetchQuotes(symbols, fields, null);
     }
 
     /**
-     * fetch a list of quotes from the Schwab API
+     * fetch a map of quotes from the Schwab API
      * @param symbols {@literal @}NotNull List{@literal <}String{@literal >}
      * @param fields String (quote, fundamental or all)
      * @param indicative Boolean (include indicative symbol quotes for all ETF symbols in request)
      * @return {@link List}{@literal <}{@link QuoteResponse}{@literal >}
      * @throws SymbolNotFoundException API did not find the one or more symbols
      */
-    public List<QuoteResponse> fetchQuotes(@NotNull List<String> symbols,
-                                           String fields,
-                                           Boolean indicative)
+    public Map<String, QuoteResponse> fetchQuotes(@NotNull List<String> symbols,
+                                                  String fields,
+                                                  Boolean indicative)
             throws SymbolNotFoundException {
         log.info("Fetch Quotes for: {}", symbols);
 
         if(fields == null || fields.isEmpty()) {
             fields = "all";
         }
-        List<QuoteResponse> quotes = null;
+        Map<String, QuoteResponse> response = null;
         if (symbols.size() > 0) {
             String symbolsParam = String.join(",", symbols).toUpperCase();
             UriComponentsBuilder uriBuilder = UriComponentsBuilder.newInstance()
@@ -203,22 +136,12 @@ public class SchwabMarketDataApiClient {
             if(indicative != null) {
                 uriBuilder.queryParam("indicative", indicative);
             }
-            QuoteResponseHashMap response = this.callGetAPI(uriBuilder, QuoteResponseHashMap.class);
-            if(response != null && response.quoteMap.size() > 0) {
-                for(String symbol: symbols) {
-                    QuoteResponse quoteResponse = response.quoteMap.get(symbol);
-                    if(quoteResponse != null) {
-                        if(quotes == null) {
-                            quotes = new ArrayList<>();
-                        }
-                        quotes.add(quoteResponse);
-                    }
-                }
-            } else {
+            response = this.callGetAPIAsMap(uriBuilder, new ParameterizedTypeReference<>() {});
+            if(response == null || response.size() == 0) {
                 throw new SymbolNotFoundException("'" + symbols + "' not found");
             }
         }
-        return quotes;
+        return response;
     }
 
 
@@ -413,7 +336,7 @@ public class SchwabMarketDataApiClient {
      * @throws MarketNotFoundException API did not find the market
      */
     @SuppressWarnings("unused")
-    public List<Hours> fetchMarket(@NotNull Market market)
+    public Map<String, Map<String, Hours>> fetchMarket(@NotNull Market market)
             throws MarketNotFoundException {
         return fetchMarket(market, null);
     }
@@ -425,7 +348,7 @@ public class SchwabMarketDataApiClient {
      * @return {@link List}{@literal <}{@link Hours}{@literal >}
      * @throws MarketNotFoundException API did not find the market
      */
-    public List<Hours> fetchMarket(@NotNull Market market,
+    public Map<String, Map<String, Hours>> fetchMarket(@NotNull Market market,
                                    LocalDate date)
             throws MarketNotFoundException {
         return this.fetchMarkets(Collections.singletonList(market), date);
@@ -437,7 +360,7 @@ public class SchwabMarketDataApiClient {
      * @return {@link List}{@literal <}{@link Hours}{@literal >}
      * @throws MarketNotFoundException API did not find the market
      */
-    public List<Hours> fetchMarkets(@NotNull List<Market> markets)
+    public Map<String, Map<String, Hours>> fetchMarkets(@NotNull List<Market> markets)
             throws MarketNotFoundException {
         return fetchMarkets(markets, null);
     }
@@ -449,11 +372,11 @@ public class SchwabMarketDataApiClient {
      * @return {@link List}{@literal <}{@link Hours}{@literal >}
      * @throws MarketNotFoundException API did not find the market
      */
-    public List<Hours> fetchMarkets(@NotNull List<Market> markets,
+    public Map<String, Map<String, Hours>> fetchMarkets(@NotNull List<Market> markets,
                                     LocalDate date)
             throws MarketNotFoundException {
         log.info("Fetch Markets for: {}", markets);
-        List<Hours> ret = null;
+        Map<String, Map<String, Hours>> marketsMap;
 
         if (markets.size() > 0) {
             String marketsString = getMarketsCsv(markets);
@@ -463,27 +386,14 @@ public class SchwabMarketDataApiClient {
             if (date != null) {
                 uriBuilder.queryParam("date", date.format(DateTimeFormatter.ISO_DATE));
             }
-            MarketsHashMap marketsMap = this.callGetAPI(uriBuilder, MarketsHashMap.class);
-            if (marketsMap != null && marketsMap.map != null && marketsMap.map.size() > 0) {
-                for(String product : marketsMap.map.keySet()) {
-                    HashMap<String, Hours> productMap = marketsMap.map.get(product);
-                    if(productMap != null && productMap.size() > 0) {
-                        for(String productName : productMap.keySet()) {
-                            Hours hours = productMap.get(productName);
-                            if(ret == null) {
-                                ret = new ArrayList<>();
-                            }
-                            ret.add(hours);
-                        }
-                    }
-                }
-            } else {
+            marketsMap = this.callGetAPIAsMap(uriBuilder, new ParameterizedTypeReference<>() {});
+            if (marketsMap == null || marketsMap.size() == 0) {
                 throw new MarketNotFoundException("Market Hours for '" + markets + "' not found");
             }
         } else {
             throw new IllegalArgumentException("At least one market is required to fetch Market Hours.");
         }
-        return ret;
+        return marketsMap;
     }
 
     /**
@@ -534,39 +444,6 @@ public class SchwabMarketDataApiClient {
             throw new IllegalArgumentException("A request for Instruments by cusip must include a cusip.");
         }
         return response;
-    }
-
-    private <T> T callGetAPI(@NotNull UriComponentsBuilder uriComponentsBuilder,
-                             @NotNull Class<T> clazz) {
-
-        T ret = null;
-
-        //Validate refresh token
-        schwabOauth2Controller.validateRefreshToken(defaultUserId);
-
-        String accessToken = schwabOauth2Controller.getAccessToken(defaultUserId);
-        if(accessToken != null) {
-            URI uri = uriComponentsBuilder
-                    .scheme("https")
-                    .host(schwabTargetUrl)
-                    .build()
-                    .toUri();
-            ResponseEntity<T> retMono = schwabWebClient.getSchwabWebClient()
-                    .get()
-                    .uri(uriBuilder -> uriBuilder
-                            .path(uri.getPath())
-                            .query(uri.getQuery())
-                            .build()
-                    )
-                    .headers(h -> h.setBearerAuth(accessToken))
-                    .retrieve()
-                    .toEntity(clazz)
-                    .block();
-            if (retMono != null && retMono.hasBody()) {
-                ret = retMono.getBody();
-            }
-        }
-        return ret;
     }
 
     /**

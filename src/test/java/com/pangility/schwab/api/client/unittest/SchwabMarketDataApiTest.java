@@ -31,7 +31,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.List;
+import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -73,14 +73,15 @@ public class SchwabMarketDataApiTest {
 
     @Test
     public void quotesTest() throws SymbolNotFoundException {
-        List<QuoteResponse> quoteResponses = schwabMarketDataApiClient.fetchQuotes(Arrays.asList("TQQQ","UPRO"));
+        Map<String, QuoteResponse> quoteResponses = schwabMarketDataApiClient.fetchQuotes(Arrays.asList("TQQQ","UPRO"));
         assertThat(quoteResponses).isNotNull();
         assertThat(quoteResponses.size()).isEqualTo(2);
-        assertThat(quoteResponses.get(0).getSymbol()).isNotNull();
-        assertThat(quoteResponses.get(0).getSymbol()).isEqualToIgnoringCase("TQQQ");
-        assertThat(quoteResponses.get(1).getSymbol()).isNotNull();
-        assertThat(quoteResponses.get(1).getSymbol()).isEqualToIgnoringCase("UPRO");
+        assertThat(quoteResponses.get("TQQQ").getSymbol()).isNotNull();
+        assertThat(quoteResponses.get("TQQQ").getSymbol()).isEqualToIgnoringCase("TQQQ");
+        assertThat(quoteResponses.get("UPRO").getSymbol()).isNotNull();
+        assertThat(quoteResponses.get("UPRO").getSymbol()).isEqualToIgnoringCase("UPRO");
     }
+
     @Test
     public void chainsTest() throws SymbolNotFoundException {
         OptionChainRequest optionChainRequest = OptionChainRequest.Builder.optionChainRequest().withSymbol("TQQQ").build();
@@ -112,7 +113,7 @@ public class SchwabMarketDataApiTest {
 
     @Test
     public void marketsTest() throws MarketNotFoundException {
-        List<Hours> hours = schwabMarketDataApiClient.fetchMarkets(Collections.singletonList(SchwabMarketDataApiClient.Market.equity));
+        Map<String, Map<String, Hours>> hours = schwabMarketDataApiClient.fetchMarkets(Collections.singletonList(SchwabMarketDataApiClient.Market.equity));
         assertThat(hours).isNotNull();
 
         hours = schwabMarketDataApiClient.fetchMarkets(Arrays.asList(SchwabMarketDataApiClient.Market.equity, SchwabMarketDataApiClient.Market.option));

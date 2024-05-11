@@ -1,15 +1,14 @@
 package com.pangility.schwab.api.client.accountsandtrading;
 
-import com.pangility.schwab.api.client.common.SchwabWebClient;
-import com.pangility.schwab.api.client.oauth2.SchwabAccount;
-import com.pangility.schwab.api.client.oauth2.SchwabOauth2Controller;
+import com.pangility.schwab.api.client.accountsandtrading.model.encryptedaccounts.EncryptedAccount;
+import com.pangility.schwab.api.client.common.SchwabBaseApiClient;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnResource;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.stereotype.Service;
+import org.springframework.web.util.UriComponentsBuilder;
 
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -20,33 +19,21 @@ import java.util.List;
 @Service
 @ConditionalOnResource(resources = {"classpath:schwabapiclient.properties"})
 @Slf4j
-public class SchwabAccountsAndTradingApiClient {
+public class SchwabAccountsAndTradingApiClient extends SchwabBaseApiClient {
 
-    @Value("${schwab-api.targetUrl}")
-    private String schwabTargetUrl;
-    @Value("${schwab-api.apiVersion}")
-    private String schwabApiVersion;
     @Value("${schwab-api.traderPath}")
     private String schwabTraderPath;
 
-    @Autowired
-    private SchwabOauth2Controller schwabOauth2Controller;
-    @Autowired
-    private SchwabWebClient schwabWebClient;
-
     /**
-     * initialize the Accounts and Trading Schwab API client controller.
-     * @param schwabAccount {@link SchwabAccount}
+     * fetch the list of accounts and encrypted account numbers to be
+     * used for subsequent requests that require account number;
+     * @return {@link List}{@literal <}{@link EncryptedAccount}{@literal >}
      */
-    public void init(SchwabAccount schwabAccount) {
-        this.init(Collections.singletonList(schwabAccount));
-    }
+    public List<EncryptedAccount> fetchEncryptedAccounts() {
+        log.info("Fetch Encrypted Accounts");
 
-    /**
-     * initialize the Accounts and Trading Schwab API client controller.
-     * @param schwabAccounts List{@literal <}{@link SchwabAccount}{@literal >}
-     */
-    public void init(List<SchwabAccount> schwabAccounts) {
-        schwabOauth2Controller.init(schwabAccounts);
+        UriComponentsBuilder uriBuilder = UriComponentsBuilder.newInstance()
+                .pathSegment(schwabTraderPath, schwabApiVersion, "accounts", "accountNumbers");
+        return this.callGetApiAsList(uriBuilder, new ParameterizedTypeReference<>() {});
     }
 }
