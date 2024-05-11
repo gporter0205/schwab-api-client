@@ -2,6 +2,7 @@ package com.pangility.schwab.api.client.unittest;
 
 import com.pangility.schwab.api.client.accountsandtrading.EnableSchwabAccountsAndTradingApi;
 import com.pangility.schwab.api.client.accountsandtrading.SchwabAccountsAndTradingApiClient;
+import com.pangility.schwab.api.client.accountsandtrading.model.accounts.Account;
 import com.pangility.schwab.api.client.accountsandtrading.model.encryptedaccounts.EncryptedAccount;
 import com.pangility.schwab.api.client.oauth2.SchwabAccount;
 import com.pangility.schwab.api.client.oauth2.SchwabTokenHandler;
@@ -50,6 +51,17 @@ public class SchwabAccountsAndTradingApiTest {
     @Test
     public void encryptedAccountsTest() {
         List<EncryptedAccount> response = schwabAccountsAndTradingApiClient.fetchEncryptedAccounts();
+        assertThat(response).isNotNull();
+        assertThat(response.size()).isGreaterThan(0);
+    }
+
+    @Test
+    public void accountsTest() {
+        List<Account> response = schwabAccountsAndTradingApiClient.fetchAccounts();
+        assertThat(response).isNotNull();
+        assertThat(response.size()).isGreaterThan(0);
+
+        response = schwabAccountsAndTradingApiClient.fetchAccounts("positions");
         assertThat(response).isNotNull();
         assertThat(response.size()).isGreaterThan(0);
     }

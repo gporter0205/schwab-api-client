@@ -1,5 +1,6 @@
 package com.pangility.schwab.api.client.accountsandtrading;
 
+import com.pangility.schwab.api.client.accountsandtrading.model.accounts.Account;
 import com.pangility.schwab.api.client.accountsandtrading.model.encryptedaccounts.EncryptedAccount;
 import com.pangility.schwab.api.client.common.SchwabBaseApiClient;
 import lombok.extern.slf4j.Slf4j;
@@ -34,6 +35,30 @@ public class SchwabAccountsAndTradingApiClient extends SchwabBaseApiClient {
 
         UriComponentsBuilder uriBuilder = UriComponentsBuilder.newInstance()
                 .pathSegment(schwabTraderPath, schwabApiVersion, "accounts", "accountNumbers");
+        return this.callGetApiAsList(uriBuilder, new ParameterizedTypeReference<>() {});
+    }
+
+    /**
+     * fetch the list of accounts without positions
+     * @return {@link List}{@literal <}{@link Account}{@literal >}
+     */
+    public List<Account> fetchAccounts() {
+        return fetchAccounts(null);
+    }
+
+    /**
+     * fetch the list of accounts
+     * @param fields positions to include account position data or null
+     * @return {@link List}{@literal <}{@link Account}{@literal >}
+     */
+    public List<Account> fetchAccounts(String fields) {
+        log.info("Fetch Accounts");
+
+        UriComponentsBuilder uriBuilder = UriComponentsBuilder.newInstance()
+                .pathSegment(schwabTraderPath, schwabApiVersion, "accounts");
+        if(fields != null) {
+            uriBuilder.queryParam("fields", fields);
+        }
         return this.callGetApiAsList(uriBuilder, new ParameterizedTypeReference<>() {});
     }
 }
