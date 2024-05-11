@@ -145,7 +145,6 @@ public class SchwabMarketDataApiClient extends SchwabBaseApiClient {
         return response;
     }
 
-
     /**
      * fetch an option chain from the Schwab API
      * @param chainRequest {@literal @}NotNull {@link OptionChainRequest}
@@ -331,7 +330,7 @@ public class SchwabMarketDataApiClient extends SchwabBaseApiClient {
     }
 
     /**
-     * fetch the market hours for today from the Schwab API
+     * fetch a map of market hours for today from the Schwab API
      * @param market {@literal @}NotNull {@link Market}
      * @return {@link List}{@literal <}{@link Hours}{@literal >}
      * @throws MarketNotFoundException API did not find the market
@@ -343,7 +342,7 @@ public class SchwabMarketDataApiClient extends SchwabBaseApiClient {
     }
 
     /**
-     * fetch the market hours from the Schwab API
+     * fetch a map of market hours from the Schwab API
      * @param market {@literal @}NotNull {@link Market}
      * @param date LocalDate
      * @return {@link List}{@literal <}{@link Hours}{@literal >}
@@ -356,7 +355,7 @@ public class SchwabMarketDataApiClient extends SchwabBaseApiClient {
     }
 
     /**
-     * fetch the market hours from the Schwab API
+     * fetch a map of market hours from the Schwab API
      * @param markets {@literal @}NotNull {@link List}{@literal <}{@link Market}{@literal >}
      * @return {@link List}{@literal <}{@link Hours}{@literal >}
      * @throws MarketNotFoundException API did not find the market
@@ -367,7 +366,7 @@ public class SchwabMarketDataApiClient extends SchwabBaseApiClient {
     }
 
     /**
-     * fetch the market hours from the Schwab API
+     * fetch a map of market hours from the Schwab API
      * @param markets {@literal @}NotNull {@link List}{@literal <}{@link Market}{@literal >}
      * @param date LocalDate
      * @return {@link List}{@literal <}{@link Hours}{@literal >}
