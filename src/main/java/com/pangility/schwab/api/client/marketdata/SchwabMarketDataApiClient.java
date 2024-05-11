@@ -29,6 +29,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Stream;
 
 /**
  * Main client for interacting with the Schwab Market Data API.
@@ -379,7 +380,7 @@ public class SchwabMarketDataApiClient extends SchwabBaseApiClient {
         Map<String, Map<String, Hours>> marketsMap;
 
         if (markets.size() > 0) {
-            String marketsString = getMarketsCsv(markets);
+            String marketsString = String.join(",", markets.stream().map(Enum::name).toArray(String[]::new));
             UriComponentsBuilder uriBuilder = UriComponentsBuilder.newInstance()
                     .pathSegment(schwabMarketDataPath, schwabApiVersion, "markets")
                     .queryParam("markets", marketsString);
@@ -449,6 +450,7 @@ public class SchwabMarketDataApiClient extends SchwabBaseApiClient {
     /**
      * Available markets for requesting hours
      */
+    /* TODO standardize these and add a value to get the info to send to the API */
     public enum Market {
         /**
          * equity
@@ -473,16 +475,5 @@ public class SchwabMarketDataApiClient extends SchwabBaseApiClient {
          */
         @SuppressWarnings("unused")
         forex
-    }
-
-    private String getMarketsCsv(@NotNull List<Market> marketList) {
-        StringBuilder csv = new StringBuilder();
-        for(Market market : marketList) {
-            if(csv.length() > 0) {
-                csv.append(",");
-            }
-            csv.append(market);
-        }
-        return csv.toString();
     }
 }
