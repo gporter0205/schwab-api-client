@@ -26,7 +26,7 @@ public class SchwabAccountsAndTradingApiClient extends SchwabBaseApiClient {
 
     /**
      * fetch the list of accounts and encrypted account numbers to be
-     * used for subsequent requests that require account number;
+     * used for subsequent API requests that require account number;
      * @return {@link List}{@literal <}{@link EncryptedAccount}{@literal >}
      */
     public List<EncryptedAccount> fetchEncryptedAccounts() {

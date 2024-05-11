@@ -89,7 +89,7 @@ public class SchwabMarketDataApiClient extends SchwabBaseApiClient {
     /**
      * fetch a map of quotes from the Schwab API
      * @param symbols {@literal @}NotNull List{@literal <}String{@literal >}
-     * @return {@link List}{@literal <}{@link QuoteResponse}{@literal >}
+     * @return {@link Map}{@literal <}String, {@link QuoteResponse}{@literal >}
      * @throws SymbolNotFoundException API did not find the one or more symbols
      */
     public Map<String, QuoteResponse> fetchQuotes(@NotNull List<String> symbols)
@@ -101,7 +101,7 @@ public class SchwabMarketDataApiClient extends SchwabBaseApiClient {
      * fetch a map of quotes from the Schwab API
      * @param symbols {@literal @}NotNull List{@literal <}String{@literal >}
      * @param fields String (quote, fundamental or all)
-     * @return {@link List}{@literal <}{@link QuoteResponse}{@literal >}
+     * @return {@link Map}{@literal <}String, {@link QuoteResponse}{@literal >}
      * @throws SymbolNotFoundException API did not find the one or more symbols
      */
     public Map<String, QuoteResponse> fetchQuotes(@NotNull List<String> symbols,
@@ -115,7 +115,7 @@ public class SchwabMarketDataApiClient extends SchwabBaseApiClient {
      * @param symbols {@literal @}NotNull List{@literal <}String{@literal >}
      * @param fields String (quote, fundamental or all)
      * @param indicative Boolean (include indicative symbol quotes for all ETF symbols in request)
-     * @return {@link List}{@literal <}{@link QuoteResponse}{@literal >}
+     * @return {@link Map}{@literal <}String, {@link QuoteResponse}{@literal >}
      * @throws SymbolNotFoundException API did not find the one or more symbols
      */
     public Map<String, QuoteResponse> fetchQuotes(@NotNull List<String> symbols,
@@ -345,7 +345,7 @@ public class SchwabMarketDataApiClient extends SchwabBaseApiClient {
      * fetch a map of market hours from the Schwab API
      * @param market {@literal @}NotNull {@link Market}
      * @param date LocalDate
-     * @return {@link List}{@literal <}{@link Hours}{@literal >}
+     * @return {@link Map}{@literal <}String, {@link Map}{@literal <}String, {@link Hours}{@literal >}{@literal >}
      * @throws MarketNotFoundException API did not find the market
      */
     public Map<String, Map<String, Hours>> fetchMarket(@NotNull Market market,
@@ -357,7 +357,7 @@ public class SchwabMarketDataApiClient extends SchwabBaseApiClient {
     /**
      * fetch a map of market hours from the Schwab API
      * @param markets {@literal @}NotNull {@link List}{@literal <}{@link Market}{@literal >}
-     * @return {@link List}{@literal <}{@link Hours}{@literal >}
+     * @return {@link Map}{@literal <}String, {@link Map}{@literal <}String, {@link Hours}{@literal >}{@literal >}
      * @throws MarketNotFoundException API did not find the market
      */
     public Map<String, Map<String, Hours>> fetchMarkets(@NotNull List<Market> markets)
@@ -369,7 +369,7 @@ public class SchwabMarketDataApiClient extends SchwabBaseApiClient {
      * fetch a map of market hours from the Schwab API
      * @param markets {@literal @}NotNull {@link List}{@literal <}{@link Market}{@literal >}
      * @param date LocalDate
-     * @return {@link List}{@literal <}{@link Hours}{@literal >}
+     * @return {@link Map}{@literal <}String, {@link Map}{@literal <}String, {@link Hours}{@literal >}{@literal >}
      * @throws MarketNotFoundException API did not find the market
      */
     public Map<String, Map<String, Hours>> fetchMarkets(@NotNull List<Market> markets,
