@@ -27,9 +27,9 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Stream;
 
 /**
  * Main client for interacting with the Schwab Market Data API.
@@ -380,7 +380,7 @@ public class SchwabMarketDataApiClient extends SchwabBaseApiClient {
         Map<String, Map<String, Hours>> marketsMap;
 
         if (markets.size() > 0) {
-            String marketsString = String.join(",", markets.stream().map(Enum::name).toArray(String[]::new));
+            String marketsString = String.join(",", markets.stream().map(Market::value).toArray(String[]::new));
             UriComponentsBuilder uriBuilder = UriComponentsBuilder.newInstance()
                     .pathSegment(schwabMarketDataPath, schwabApiVersion, "markets")
                     .queryParam("markets", marketsString);
@@ -450,30 +450,55 @@ public class SchwabMarketDataApiClient extends SchwabBaseApiClient {
     /**
      * Available markets for requesting hours
      */
-    /* TODO standardize these and add a value to get the info to send to the API */
     public enum Market {
         /**
          * equity
          */
-        equity,
+        EQUITY("equity"),
         /**
          * option
          */
-        option,
+        OPTION("option"),
         /**
          * bond
          */
         @SuppressWarnings("unused")
-        bond,
+        BOND("bond"),
         /**
          * future
          */
         @SuppressWarnings("unused")
-        future,
+        FUTURE("future"),
         /**
          * forex
          */
         @SuppressWarnings("unused")
-        forex
+        FOREX("forex");
+
+        private final String value;
+        private final static Map<String, Market> CONSTANTS = new HashMap<>();
+
+        static {
+            for (Market c: values()) {
+                CONSTANTS.put(c.value, c);
+            }
+        }
+
+        Market(String value) {
+            this.value = value;
+        }
+
+        public String value() {
+            return this.value;
+        }
+
+        public static Market fromValue(String value) {
+            Market constant = CONSTANTS.get(value);
+            if (constant == null) {
+                throw new IllegalArgumentException(value);
+            } else {
+                return constant;
+            }
+        }
     }
 }

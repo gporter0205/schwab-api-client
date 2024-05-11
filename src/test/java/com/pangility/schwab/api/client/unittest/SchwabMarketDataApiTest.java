@@ -113,14 +113,14 @@ public class SchwabMarketDataApiTest {
 
     @Test
     public void marketsTest() throws MarketNotFoundException {
-        Map<String, Map<String, Hours>> hours = schwabMarketDataApiClient.fetchMarkets(Collections.singletonList(SchwabMarketDataApiClient.Market.equity));
+        Map<String, Map<String, Hours>> hours = schwabMarketDataApiClient.fetchMarkets(Collections.singletonList(SchwabMarketDataApiClient.Market.EQUITY));
         assertThat(hours).isNotNull();
 
-        hours = schwabMarketDataApiClient.fetchMarkets(Arrays.asList(SchwabMarketDataApiClient.Market.equity, SchwabMarketDataApiClient.Market.option));
+        hours = schwabMarketDataApiClient.fetchMarkets(Arrays.asList(SchwabMarketDataApiClient.Market.EQUITY, SchwabMarketDataApiClient.Market.OPTION));
         assertThat(hours).isNotNull();
 
         /*LocalDate testDate = LocalDate.of(2024, 4, 25);
-        hours = schwabMarketDataApiClient.fetchMarkets(Collections.singletonList(SchwabMarketDataApiClient.Market.equity), testDate);
+        hours = schwabMarketDataApiClient.fetchMarkets(Collections.singletonList(SchwabMarketDataApiClient.Market.EQUITY), testDate);
         assertThat(hours).isNotNull();
         assertThat(hours.size()).isEqualTo(1);
         assertThat(hours.get(0).getDate()).isEqualTo(testDate);
