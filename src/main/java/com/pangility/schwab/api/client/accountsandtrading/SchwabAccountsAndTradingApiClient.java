@@ -4,6 +4,7 @@ import com.pangility.schwab.api.client.accountsandtrading.model.accounts.Account
 import com.pangility.schwab.api.client.accountsandtrading.model.encryptedaccounts.EncryptedAccount;
 import com.pangility.schwab.api.client.common.SchwabBaseApiClient;
 import lombok.extern.slf4j.Slf4j;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnResource;
 import org.springframework.core.ParameterizedTypeReference;
@@ -60,5 +61,36 @@ public class SchwabAccountsAndTradingApiClient extends SchwabBaseApiClient {
             uriBuilder.queryParam("fields", fields);
         }
         return this.callGetApiAsList(uriBuilder, new ParameterizedTypeReference<>() {});
+    }
+
+    /**
+     * fetch an account without position data
+     * @param encryptedAccount encrypted account id
+     * @return {@link List}{@literal <}{@link Account}{@literal >}
+     */
+    public Account fetchAccount(@NotNull String encryptedAccount) {
+        return fetchAccount(encryptedAccount, null);
+    }
+
+    /**
+     * fetch an account
+     * @param encryptedAccount encrypted account id
+     * @param fields positions to include account position data or null
+     * @return {@link List}{@literal <}{@link Account}{@literal >}
+     */
+    public Account fetchAccount(@NotNull String encryptedAccount,
+                                      String fields) {
+        log.info("Fetch Accounts");
+
+        if(encryptedAccount.isEmpty()) {
+            throw new IllegalArgumentException("Encrypted Account must not be empty");
+        }
+
+        UriComponentsBuilder uriBuilder = UriComponentsBuilder.newInstance()
+                .pathSegment(schwabTraderPath, schwabApiVersion, "accounts", encryptedAccount);
+        if(fields != null) {
+            uriBuilder.queryParam("fields", fields);
+        }
+        return this.callGetAPI(uriBuilder, Account.class);
     }
 }

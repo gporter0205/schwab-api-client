@@ -66,6 +66,18 @@ public class SchwabAccountsAndTradingApiTest {
         assertThat(response.size()).isGreaterThan(0);
     }
 
+    @Test
+    public void accountTest() {
+
+        List<EncryptedAccount> encryptedAccounts = schwabAccountsAndTradingApiClient.fetchEncryptedAccounts();
+        assertThat(encryptedAccounts).isNotNull();
+        assertThat(encryptedAccounts.size()).isGreaterThan(0);
+
+        Account response = schwabAccountsAndTradingApiClient.fetchAccount(encryptedAccounts.get(0).getHashValue());
+        assertThat(response).isNotNull();
+        assertThat(response.getSecuritiesAccount().getAccountNumber()).isEqualToIgnoringCase(encryptedAccounts.get(0).getAccountNumber());
+    }
+
     public static class TestTokenHandler implements SchwabTokenHandler {
 
         @Override
