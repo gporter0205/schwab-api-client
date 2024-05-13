@@ -6,6 +6,8 @@ import com.pangility.schwab.api.client.accountsandtrading.model.account.Account;
 import com.pangility.schwab.api.client.accountsandtrading.model.encryptedaccounts.EncryptedAccount;
 import com.pangility.schwab.api.client.accountsandtrading.model.order.Order;
 import com.pangility.schwab.api.client.accountsandtrading.model.order.OrderRequest;
+import com.pangility.schwab.api.client.accountsandtrading.model.transaction.Transaction;
+import com.pangility.schwab.api.client.accountsandtrading.model.transaction.TransactionRequest;
 import com.pangility.schwab.api.client.oauth2.SchwabAccount;
 import com.pangility.schwab.api.client.oauth2.SchwabTokenHandler;
 import org.jetbrains.annotations.NotNull;
@@ -119,6 +121,31 @@ public class SchwabAccountsAndTradingApiTest {
         Order response = schwabAccountsAndTradingApiClient.fetchOrder(encryptedAccounts.get(0).getHashValue(), 1000292980781L);
         assertThat(response).isNotNull();
         assertThat(response.getOrderId()).isEqualTo(1000292980781L);
+    }
+
+    @Test
+    public void transactionsForAccountTest() {
+
+        List<EncryptedAccount> encryptedAccounts = schwabAccountsAndTradingApiClient.fetchEncryptedAccounts();
+        assertThat(encryptedAccounts).isNotNull();
+        assertThat(encryptedAccounts.size()).isGreaterThan(0);
+
+        TransactionRequest transactionRequest = new TransactionRequest();
+        transactionRequest.setStartDate(ZonedDateTime.now().minusDays(80));
+        transactionRequest.setEndDate(ZonedDateTime.now());
+        List<Transaction> response = schwabAccountsAndTradingApiClient.fetchTransactions(encryptedAccounts.get(0).getHashValue(), transactionRequest);
+        assertThat(response).isNotNull();
+    }
+
+    @Test
+    public void transactionForAccountActivityIdTest() {
+
+        List<EncryptedAccount> encryptedAccounts = schwabAccountsAndTradingApiClient.fetchEncryptedAccounts();
+        assertThat(encryptedAccounts).isNotNull();
+        assertThat(encryptedAccounts.size()).isGreaterThan(0);
+
+        Transaction response = schwabAccountsAndTradingApiClient.fetchTransaction(encryptedAccounts.get(0).getHashValue(), 80570034343L);
+        assertThat(response).isNotNull();
     }
 
     public static class TestTokenHandler implements SchwabTokenHandler {

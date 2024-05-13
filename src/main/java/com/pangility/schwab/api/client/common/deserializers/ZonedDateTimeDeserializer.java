@@ -16,6 +16,6 @@ public class ZonedDateTimeDeserializer extends JsonDeserializer<ZonedDateTime> {
   @Override
   public ZonedDateTime deserialize(JsonParser jp, DeserializationContext ctxt) throws IOException {
     final String valueAsString = jp.getValueAsString();
-      return ZonedDateTime.parse(valueAsString, DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssZ"));
+    return ZonedDateTime.parse(valueAsString, DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssZ"));
   }
 }

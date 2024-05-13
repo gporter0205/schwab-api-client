@@ -4,6 +4,8 @@ import com.pangility.schwab.api.client.accountsandtrading.model.account.Account;
 import com.pangility.schwab.api.client.accountsandtrading.model.encryptedaccounts.EncryptedAccount;
 import com.pangility.schwab.api.client.accountsandtrading.model.order.Order;
 import com.pangility.schwab.api.client.accountsandtrading.model.order.OrderRequest;
+import com.pangility.schwab.api.client.accountsandtrading.model.transaction.Transaction;
+import com.pangility.schwab.api.client.accountsandtrading.model.transaction.TransactionRequest;
 import com.pangility.schwab.api.client.common.SchwabBaseApiClient;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
@@ -155,4 +157,57 @@ public class SchwabAccountsAndTradingApiClient extends SchwabBaseApiClient {
                 .pathSegment(schwabTraderPath, schwabApiVersion, "accounts", encryptedAccount, "orders", orderId.toString());
         return this.callGetAPI(uriBuilder, Order.class);
     }
+
+    /**
+     * fetch the list of transactions for a specified account
+     * @param encryptedAccount encrypted account id
+     * @param transactionRequest parameters of the orders.  FromEnteredDate and ToEnteredDate are required.
+     * @return {@link List}{@literal <}{@link Transaction}{@literal >}
+     */
+    public List<Transaction> fetchTransactions(@NotNull String encryptedAccount,
+                                         @NotNull TransactionRequest transactionRequest) {
+        log.info("Fetch Transactions {} for {}", transactionRequest, encryptedAccount);
+
+        if(encryptedAccount.isEmpty()) {
+            throw new IllegalArgumentException("Encrypted Account is required");
+        }
+        if(transactionRequest.getStartDate() == null || transactionRequest.getEndDate() == null) {
+            throw new IllegalArgumentException("Both Start and End date/times are required");
+        }
+
+        UriComponentsBuilder uriBuilder = UriComponentsBuilder.newInstance()
+                .pathSegment(schwabTraderPath, schwabApiVersion, "accounts", encryptedAccount, "transactions")
+                .queryParam("startDate", transactionRequest.getStartDate().format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssZZZZZ")))
+                .queryParam("endDate", transactionRequest.getEndDate().format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssZZZZZ")));
+        if(transactionRequest.getSymbol() != null) {
+            uriBuilder.queryParam("symbol", transactionRequest.getSymbol());
+        }
+        if(transactionRequest.getTypes() != null) {
+            uriBuilder.queryParam("types", transactionRequest.getTypes());
+        }
+        return this.callGetApiAsList(uriBuilder, new ParameterizedTypeReference<>() {});
+    }
+
+    /**
+     * fetch a transaction for a specified account and activity/transaction id
+     * @param encryptedAccount encrypted account id
+     * @param activityId activity/transaction id
+     * @return {@link Transaction}
+     */
+    public Transaction fetchTransaction(@NotNull String encryptedAccount,
+                                        @NotNull Long activityId) {
+        log.info("Fetch a Transaction for account number {} and activity id {}", encryptedAccount, activityId);
+
+        if(encryptedAccount.isEmpty()) {
+            throw new IllegalArgumentException("Encrypted Account is required");
+        }
+        if(activityId <= 0) {
+            throw new IllegalArgumentException("Activity ID is required");
+        }
+
+        UriComponentsBuilder uriBuilder = UriComponentsBuilder.newInstance()
+                .pathSegment(schwabTraderPath, schwabApiVersion, "accounts", encryptedAccount, "transactions", activityId.toString());
+        return this.callGetAPI(uriBuilder, Transaction.class);
+    }
+
 }
