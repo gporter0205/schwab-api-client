@@ -3,6 +3,7 @@ package com.pangility.schwab.api.client.accountsandtrading.model.account;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.pangility.schwab.api.client.accountsandtrading.model.instrument.Instrument;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -26,6 +27,12 @@ public class Position {
   private BigDecimal agedQuantity;
   private Instrument instrument;
   private BigDecimal marketValue;
+  private BigDecimal longOpenProfitLoss;
+  private BigDecimal taxLotAverageLongPrice;
+  private BigDecimal maintenanceRequirement;
+  private BigDecimal previousSessionLongQuantity;
+  private BigDecimal averageLongPrice;
+  private BigDecimal currentDayCost;
   @JsonIgnore
   @JsonAnySetter
   private Map<String, Object> otherFields = new HashMap<>();

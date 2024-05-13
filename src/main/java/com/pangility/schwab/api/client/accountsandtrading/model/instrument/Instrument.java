@@ -1,4 +1,4 @@
-package com.pangility.schwab.api.client.accountsandtrading.model.account;
+package com.pangility.schwab.api.client.accountsandtrading.model.instrument;
 
 import com.fasterxml.jackson.annotation.*;
 import com.fasterxml.jackson.annotation.JsonTypeInfo.Id;
@@ -33,6 +33,7 @@ public abstract class Instrument {
   protected String cusip;
   protected String symbol;
   protected String description;
+  protected Long instrumentId;
   @JsonIgnore
   @JsonAnySetter
   private Map<String, Object> otherFields = new HashMap<>();

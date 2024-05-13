@@ -1,4 +1,4 @@
-package com.pangility.schwab.api.client.accountsandtrading.model.account;
+package com.pangility.schwab.api.client.accountsandtrading.model.instrument;
 
 /**
  * Currency Instrument

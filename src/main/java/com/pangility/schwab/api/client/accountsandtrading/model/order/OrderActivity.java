@@ -32,6 +32,7 @@ public class OrderActivity {
   private Map<String, Object> otherFields = new HashMap<>();
 
   public enum ExecutionType {
-    FILL
+    FILL,
+    CANCELED
   }
 }

@@ -4,6 +4,8 @@ import com.pangility.schwab.api.client.accountsandtrading.EnableSchwabAccountsAn
 import com.pangility.schwab.api.client.accountsandtrading.SchwabAccountsAndTradingApiClient;
 import com.pangility.schwab.api.client.accountsandtrading.model.account.Account;
 import com.pangility.schwab.api.client.accountsandtrading.model.encryptedaccounts.EncryptedAccount;
+import com.pangility.schwab.api.client.accountsandtrading.model.order.Order;
+import com.pangility.schwab.api.client.accountsandtrading.model.order.OrderRequest;
 import com.pangility.schwab.api.client.oauth2.SchwabAccount;
 import com.pangility.schwab.api.client.oauth2.SchwabTokenHandler;
 import org.jetbrains.annotations.NotNull;
@@ -17,6 +19,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.test.context.ActiveProfiles;
 
 import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
@@ -76,18 +79,58 @@ public class SchwabAccountsAndTradingApiTest {
         Account response = schwabAccountsAndTradingApiClient.fetchAccount(encryptedAccounts.get(0).getHashValue());
         assertThat(response).isNotNull();
         assertThat(response.getSecuritiesAccount().getAccountNumber()).isEqualToIgnoringCase(encryptedAccounts.get(0).getAccountNumber());
+
+        response = schwabAccountsAndTradingApiClient.fetchAccount(encryptedAccounts.get(0).getHashValue(), "positions");
+        assertThat(response).isNotNull();
+        assertThat(response.getSecuritiesAccount().getAccountNumber()).isEqualToIgnoringCase(encryptedAccounts.get(0).getAccountNumber());
+    }
+
+    @Test
+    public void ordersTest() {
+
+        OrderRequest orderRequest = new OrderRequest();
+        orderRequest.setFromEnteredTime(ZonedDateTime.now().minusDays(80));
+        orderRequest.setToEnteredTime(ZonedDateTime.now());
+        List<Order> response = schwabAccountsAndTradingApiClient.fetchOrders(orderRequest);
+        assertThat(response).isNotNull();
+    }
+
+    @Test
+    public void ordersForAccountTest() {
+
+        List<EncryptedAccount> encryptedAccounts = schwabAccountsAndTradingApiClient.fetchEncryptedAccounts();
+        assertThat(encryptedAccounts).isNotNull();
+        assertThat(encryptedAccounts.size()).isGreaterThan(0);
+
+        OrderRequest orderRequest = new OrderRequest();
+        orderRequest.setFromEnteredTime(ZonedDateTime.now().minusDays(80));
+        orderRequest.setToEnteredTime(ZonedDateTime.now());
+        List<Order> response = schwabAccountsAndTradingApiClient.fetchOrders(encryptedAccounts.get(0).getHashValue(), orderRequest);
+        assertThat(response).isNotNull();
+    }
+
+    @Test
+    public void orderByOrderIdTest() {
+
+        List<EncryptedAccount> encryptedAccounts = schwabAccountsAndTradingApiClient.fetchEncryptedAccounts();
+        assertThat(encryptedAccounts).isNotNull();
+        assertThat(encryptedAccounts.size()).isGreaterThan(0);
+
+        Order response = schwabAccountsAndTradingApiClient.fetchOrder(encryptedAccounts.get(0).getHashValue(), 1000292980781L);
+        assertThat(response).isNotNull();
+        assertThat(response.getOrderId()).isEqualTo(1000292980781L);
     }
 
     public static class TestTokenHandler implements SchwabTokenHandler {
 
         @Override
         public void onAccessTokenChange(@NotNull SchwabAccount schwabAccount) {
-            System.out.println("Test Access Token Change");
+            System.out.println("Testing - Access Token Change");
         }
 
         @Override
         public void onRefreshTokenChange(@NotNull SchwabAccount schwabAccount) {
-            System.out.println("Test Refresh Token Change");
+            System.out.println("Testing - Refresh Token Change");
         }
     }
 

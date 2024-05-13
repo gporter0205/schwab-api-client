@@ -3,6 +3,7 @@ package com.pangility.schwab.api.client.accountsandtrading;
 import com.pangility.schwab.api.client.accountsandtrading.model.account.Account;
 import com.pangility.schwab.api.client.accountsandtrading.model.encryptedaccounts.EncryptedAccount;
 import com.pangility.schwab.api.client.accountsandtrading.model.order.Order;
+import com.pangility.schwab.api.client.accountsandtrading.model.order.OrderRequest;
 import com.pangility.schwab.api.client.common.SchwabBaseApiClient;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
@@ -12,7 +13,7 @@ import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.stereotype.Service;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 /**
@@ -98,25 +99,60 @@ public class SchwabAccountsAndTradingApiClient extends SchwabBaseApiClient {
 
     /**
      * fetch the list of orders for all accounts
-     * @return {@link List}{@literal <}{@link Account}{@literal >}
+     * @param orderRequest parameters of the orders.  FromEnteredDate and ToEnteredDate are required.
+     * @return {@link List}{@literal <}{@link Order}{@literal >}
      */
-    public List<Order> fetchOrders(@NotNull LocalDateTime fromEnteredTime,
-                                   @NotNull LocalDateTime toEnteredDateTime,
-                                   Integer maxResults,
-                                   String status) {
-        log.info("Fetch Orders");
+    public List<Order> fetchOrders(@NotNull OrderRequest orderRequest) {
+        return fetchOrders(null, orderRequest);
+    }
+
+    /**
+     * fetch the list of orders for all accounts or a specified account
+     * @param encryptedAccount encrypted account id
+     * @param orderRequest parameters of the orders.  FromEnteredDate and ToEnteredDate are required.
+     * @return {@link List}{@literal <}{@link Order}{@literal >}
+     */
+    public List<Order> fetchOrders(String encryptedAccount,
+                                   @NotNull OrderRequest orderRequest) {
+        log.info("Fetch Orders {} for {}", orderRequest, encryptedAccount == null ? "all accounts" : encryptedAccount);
+
+        if(orderRequest.getFromEnteredTime() == null || orderRequest.getToEnteredTime() == null) {
+            throw new IllegalArgumentException("Both From and To Entered date/times are required");
+        }
 
         UriComponentsBuilder uriBuilder = UriComponentsBuilder.newInstance()
-                .pathSegment(schwabTraderPath, schwabApiVersion, "orders")
-                .queryParam("fromEnteredTime", fromEnteredTime)
-                .queryParam("toEnteredDateTime", toEnteredDateTime);
-        if(maxResults != null) {
-            uriBuilder.queryParam("maxResults", maxResults);
+                .pathSegment(schwabTraderPath, schwabApiVersion);
+        if(encryptedAccount != null) {
+            uriBuilder.pathSegment("accounts", encryptedAccount);
         }
-        if(status != null) {
-            uriBuilder.queryParam("status", status);
+        uriBuilder.pathSegment( "orders")
+                .queryParam("fromEnteredTime", orderRequest.getFromEnteredTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssZZZZZ")))
+                .queryParam("toEnteredTime", orderRequest.getToEnteredTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssZZZZZ")));
+        if(orderRequest.getMaxResults() != null) {
+            uriBuilder.queryParam("maxResults", orderRequest.getMaxResults());
+        }
+        if(orderRequest.getStatus() != null) {
+            uriBuilder.queryParam("status", orderRequest.getStatus());
         }
         return this.callGetApiAsList(uriBuilder, new ParameterizedTypeReference<>() {});
     }
 
+    /**
+     * fetch an order for a specified account and order id
+     * @param encryptedAccount encrypted account id
+     * @param orderId order id to fetch
+     * @return {@link Order}
+     */
+    public Order fetchOrder(@NotNull String encryptedAccount,
+                                   @NotNull Long orderId) {
+        log.info("Fetch an Order for account number {} and order id {}", encryptedAccount, orderId);
+
+        if(encryptedAccount.isEmpty() || orderId <= 0) {
+            throw new IllegalArgumentException("Account Number and Order ID are required");
+        }
+
+        UriComponentsBuilder uriBuilder = UriComponentsBuilder.newInstance()
+                .pathSegment(schwabTraderPath, schwabApiVersion, "accounts", encryptedAccount, "orders", orderId.toString());
+        return this.callGetAPI(uriBuilder, Order.class);
+    }
 }

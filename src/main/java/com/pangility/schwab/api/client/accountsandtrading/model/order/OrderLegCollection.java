@@ -3,7 +3,7 @@ package com.pangility.schwab.api.client.accountsandtrading.model.order;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.pangility.schwab.api.client.accountsandtrading.model.account.Instrument;
+import com.pangility.schwab.api.client.accountsandtrading.model.instrument.Instrument;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;

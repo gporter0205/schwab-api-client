@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonAnySetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.pangility.schwab.api.client.common.deserializers.LocalDateDeserializer;
 import com.pangility.schwab.api.client.common.deserializers.ZonedDateTimeDeserializer;
 import lombok.Getter;
 import lombok.Setter;
@@ -12,9 +11,11 @@ import lombok.ToString;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.time.ZonedDateTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Order both sent and received when making trades. Some of the easier examples are described on the
@@ -30,15 +31,16 @@ public class Order implements Serializable {
   private Session session;
   private Duration duration;
   private OrderType orderType;
-  @JsonDeserialize(using = LocalDateDeserializer.class)
-  private LocalDate cancelTime;
+  @JsonDeserialize(using = ZonedDateTimeDeserializer.class)
+  private ZonedDateTime cancelTime;
   private ComplexOrderStrategyType complexOrderStrategyType;
   private BigDecimal quantity;
   private BigDecimal filledQuantity;
   private BigDecimal remainingQuantity;
   private RequestedDestination requestedDestination;
   private String destinationLinkName;
-  private Date releaseTime;
+  @JsonDeserialize(using = ZonedDateTimeDeserializer.class)
+  private ZonedDateTime releaseTime;
   private BigDecimal stopPrice;
   private StopPriceLinkBasis stopPriceLinkBasis;
   private StopPriceLinkType stopPriceLinkType;
@@ -61,7 +63,7 @@ public class Order implements Serializable {
   @JsonDeserialize(using = ZonedDateTimeDeserializer.class)
   private ZonedDateTime closeTime;
   private String tag;
-  private Long accountId;
+  private Long accountNumber;
   private List<OrderActivity> orderActivityCollection = new ArrayList<>();
   private List<Object> replacingOrderCollection = new ArrayList<>();
   private List<Object> childOrderStrategies = new ArrayList<>();
