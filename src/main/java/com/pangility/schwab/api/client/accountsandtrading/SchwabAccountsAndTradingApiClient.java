@@ -6,6 +6,7 @@ import com.pangility.schwab.api.client.accountsandtrading.model.order.Order;
 import com.pangility.schwab.api.client.accountsandtrading.model.order.OrderRequest;
 import com.pangility.schwab.api.client.accountsandtrading.model.transaction.Transaction;
 import com.pangility.schwab.api.client.accountsandtrading.model.transaction.TransactionRequest;
+import com.pangility.schwab.api.client.accountsandtrading.model.userpreference.UserPreferenceResponse;
 import com.pangility.schwab.api.client.common.SchwabBaseApiClient;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
@@ -210,4 +211,15 @@ public class SchwabAccountsAndTradingApiClient extends SchwabBaseApiClient {
         return this.callGetAPI(uriBuilder, Transaction.class);
     }
 
+    /**
+     * fetch the user preferences
+     * @return {@link UserPreferenceResponse}
+     */
+    public UserPreferenceResponse fetchUserPreference() {
+        log.info("Fetch User Preference");
+
+        UriComponentsBuilder uriBuilder = UriComponentsBuilder.newInstance()
+                .pathSegment(schwabTraderPath, schwabApiVersion, "userPreference");
+        return this.callGetAPI(uriBuilder, UserPreferenceResponse.class);
+    }
 }

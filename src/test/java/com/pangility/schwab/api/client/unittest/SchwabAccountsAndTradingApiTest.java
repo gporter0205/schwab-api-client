@@ -8,6 +8,7 @@ import com.pangility.schwab.api.client.accountsandtrading.model.order.Order;
 import com.pangility.schwab.api.client.accountsandtrading.model.order.OrderRequest;
 import com.pangility.schwab.api.client.accountsandtrading.model.transaction.Transaction;
 import com.pangility.schwab.api.client.accountsandtrading.model.transaction.TransactionRequest;
+import com.pangility.schwab.api.client.accountsandtrading.model.userpreference.UserPreferenceResponse;
 import com.pangility.schwab.api.client.oauth2.SchwabAccount;
 import com.pangility.schwab.api.client.oauth2.SchwabTokenHandler;
 import org.jetbrains.annotations.NotNull;
@@ -145,6 +146,13 @@ public class SchwabAccountsAndTradingApiTest {
         assertThat(encryptedAccounts.size()).isGreaterThan(0);
 
         Transaction response = schwabAccountsAndTradingApiClient.fetchTransaction(encryptedAccounts.get(0).getHashValue(), 80570034343L);
+        assertThat(response).isNotNull();
+    }
+
+    @Test
+    public void userPreferenceTest() {
+
+        UserPreferenceResponse response = schwabAccountsAndTradingApiClient.fetchUserPreference();
         assertThat(response).isNotNull();
     }
 
