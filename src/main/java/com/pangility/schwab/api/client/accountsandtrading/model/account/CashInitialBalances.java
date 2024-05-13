@@ -1,4 +1,4 @@
-package com.pangility.schwab.api.client.accountsandtrading.model.accounts;
+package com.pangility.schwab.api.client.accountsandtrading.model.account;
 
 import com.fasterxml.jackson.annotation.JsonAnySetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -11,35 +11,32 @@ import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.Map;
 
-
 /**
- * Projected Balances of a Cash Account
+ * Initial Balances of a Cash Account
  */
 @Getter
 @Setter
 @ToString
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
-public class CashProjectedBalances {
+public class CashInitialBalances {
   private BigDecimal accruedInterest;
-  private BigDecimal cashBalance;
-  private BigDecimal cashReceipts;
-  private BigDecimal longOptionMarketValue;
-  private BigDecimal liquidationValue;
-  private BigDecimal longMarketValue;
-  private BigDecimal moneyMarketFund;
-  private BigDecimal savings;
-  private BigDecimal shortMarketValue;
-  private BigDecimal pendingDeposits;
   private BigDecimal cashAvailableForTrading;
   private BigDecimal cashAvailableForWithdrawal;
-  private BigDecimal cashCall;
-  private BigDecimal longNonMarginableMarketValue;
-  private BigDecimal totalCash;
-  private BigDecimal shortOptionMarketValue;
-  private BigDecimal mutualFundValue;
+  private BigDecimal cashBalance;
   private BigDecimal bondValue;
-  private BigDecimal cashDebitCallValue;
+  private BigDecimal cashReceipts;
+  private BigDecimal liquidationValue;
+  private BigDecimal longOptionMarketValue;
+  private BigDecimal longStockValue;
+  private BigDecimal moneyMarketFund;
+  private BigDecimal mutualFundValue;
+  private BigDecimal shortOptionMarketValue;
+  private BigDecimal shortStockValue;
+  private Boolean isInCall;
   private BigDecimal unsettledCash;
+  private BigDecimal cashDebitCallValue;
+  private BigDecimal pendingDeposits;
+  private BigDecimal accountValue;
   @JsonIgnore
   @JsonAnySetter
   private Map<String, Object> otherFields = new HashMap<>();

@@ -1,4 +1,4 @@
-package com.pangility.schwab.api.client.accountsandtrading.model.accounts;
+package com.pangility.schwab.api.client.accountsandtrading.model.account;
 
 import com.fasterxml.jackson.annotation.JsonAnySetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -7,20 +7,18 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 
-import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.Map;
 
-
 /**
- * Current Balances of a Margin Account
+ * Current Balances of a Cash Account
  */
 @Getter
 @Setter
 @ToString
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
-public class MarginCurrentBalances implements Serializable {
+public class CashCurrentBalances {
   private BigDecimal accruedInterest;
   private BigDecimal cashBalance;
   private BigDecimal cashReceipts;
@@ -31,28 +29,16 @@ public class MarginCurrentBalances implements Serializable {
   private BigDecimal savings;
   private BigDecimal shortMarketValue;
   private BigDecimal pendingDeposits;
-  private BigDecimal availableFunds;
-  private BigDecimal availableFundsNonMarginableTrade;
-  private BigDecimal buyingPower;
-  private BigDecimal buyingPowerNonMarginableTrade;
-  private BigDecimal dayTradingBuyingPower;
-  private BigDecimal dayTradingBuyingPowerCall;
-  private BigDecimal equity;
-  private BigDecimal equityPercentage;
-  private BigDecimal longMarginValue;
-  private BigDecimal maintenanceCall;
-  private BigDecimal maintenanceRequirement;
-  private BigDecimal marginBalance;
-  private BigDecimal regTCall;
-  private BigDecimal shortBalance;
-  private BigDecimal shortMarginValue;
+  private BigDecimal cashAvailableForTrading;
+  private BigDecimal cashAvailableForWithdrawal;
+  private BigDecimal cashCall;
+  private BigDecimal longNonMarginableMarketValue;
+  private BigDecimal totalCash;
   private BigDecimal shortOptionMarketValue;
-  private BigDecimal sma;
   private BigDecimal mutualFundValue;
   private BigDecimal bondValue;
-  private Boolean isInCall;
-  private BigDecimal stockBuyingPower;
-  private BigDecimal optionBuyingPower;
+  private BigDecimal cashDebitCallValue;
+  private BigDecimal unsettledCash;
   @JsonIgnore
   @JsonAnySetter
   private Map<String, Object> otherFields = new HashMap<>();

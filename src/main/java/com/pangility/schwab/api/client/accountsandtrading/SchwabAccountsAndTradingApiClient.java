@@ -1,7 +1,8 @@
 package com.pangility.schwab.api.client.accountsandtrading;
 
-import com.pangility.schwab.api.client.accountsandtrading.model.accounts.Account;
+import com.pangility.schwab.api.client.accountsandtrading.model.account.Account;
 import com.pangility.schwab.api.client.accountsandtrading.model.encryptedaccounts.EncryptedAccount;
+import com.pangility.schwab.api.client.accountsandtrading.model.order.Order;
 import com.pangility.schwab.api.client.common.SchwabBaseApiClient;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
@@ -11,6 +12,7 @@ import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.stereotype.Service;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 /**
@@ -93,4 +95,28 @@ public class SchwabAccountsAndTradingApiClient extends SchwabBaseApiClient {
         }
         return this.callGetAPI(uriBuilder, Account.class);
     }
+
+    /**
+     * fetch the list of orders for all accounts
+     * @return {@link List}{@literal <}{@link Account}{@literal >}
+     */
+    public List<Order> fetchOrders(@NotNull LocalDateTime fromEnteredTime,
+                                   @NotNull LocalDateTime toEnteredDateTime,
+                                   Integer maxResults,
+                                   String status) {
+        log.info("Fetch Orders");
+
+        UriComponentsBuilder uriBuilder = UriComponentsBuilder.newInstance()
+                .pathSegment(schwabTraderPath, schwabApiVersion, "orders")
+                .queryParam("fromEnteredTime", fromEnteredTime)
+                .queryParam("toEnteredDateTime", toEnteredDateTime);
+        if(maxResults != null) {
+            uriBuilder.queryParam("maxResults", maxResults);
+        }
+        if(status != null) {
+            uriBuilder.queryParam("status", status);
+        }
+        return this.callGetApiAsList(uriBuilder, new ParameterizedTypeReference<>() {});
+    }
+
 }

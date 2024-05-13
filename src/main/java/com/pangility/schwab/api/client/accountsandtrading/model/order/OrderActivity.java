@@ -1,4 +1,4 @@
-package com.pangility.schwab.api.client.accountsandtrading.model.accounts;
+package com.pangility.schwab.api.client.accountsandtrading.model.order;
 
 import com.fasterxml.jackson.annotation.JsonAnySetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -7,6 +7,7 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -14,30 +15,23 @@ import java.util.Map;
 
 
 /**
- * Option Instrument
+ * Order Activity
  */
 @Getter
 @Setter
 @ToString
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
-public class OptionInstrument extends Instrument {
-  private Type type;
-  private PutCall putCall;
-  private String underlyingSymbol;
-  private Long optionMultiplier;
-  private List<OptionDeliverable> optionDeliverables = new ArrayList<>();
+public class OrderActivity {
+  private ActivityType activityType;
+  private ExecutionType executionType;
+  private BigDecimal quantity;
+  private BigDecimal orderRemainingQuantity;
+  private List<ExecutionLeg> executionLegs = new ArrayList<>();
   @JsonIgnore
   @JsonAnySetter
   private Map<String, Object> otherFields = new HashMap<>();
 
-  public enum PutCall {
-    PUT,
-    CALL
-  }
-
-  public enum Type {
-    VANILLA,
-    BINARY,
-    BARRIER
+  public enum ExecutionType {
+    FILL
   }
 }

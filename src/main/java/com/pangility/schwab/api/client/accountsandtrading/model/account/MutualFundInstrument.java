@@ -1,4 +1,4 @@
-package com.pangility.schwab.api.client.accountsandtrading.model.accounts;
+package com.pangility.schwab.api.client.accountsandtrading.model.account;
 
 /**
  * Mutual Fund Instrument
