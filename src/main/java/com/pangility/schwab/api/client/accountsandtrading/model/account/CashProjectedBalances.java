@@ -14,6 +14,7 @@ import java.util.Map;
 
 /**
  * Projected Balances of a Cash Account
+ * See the <a href="https://developer.schwab.com">Schwab Developer Portal</a> for more information
  */
 @Getter
 @Setter

@@ -1,9 +1,6 @@
 package com.pangility.schwab.api.client.unittest;
 
-import com.pangility.schwab.api.client.marketdata.EnableSchwabMarketDataApi;
-import com.pangility.schwab.api.client.marketdata.MarketNotFoundException;
-import com.pangility.schwab.api.client.marketdata.SchwabMarketDataApiClient;
-import com.pangility.schwab.api.client.marketdata.SymbolNotFoundException;
+import com.pangility.schwab.api.client.marketdata.*;
 import com.pangility.schwab.api.client.marketdata.model.chains.OptionChainRequest;
 import com.pangility.schwab.api.client.marketdata.model.chains.OptionChainResponse;
 import com.pangility.schwab.api.client.marketdata.model.expirationchain.ExpirationChainResponse;
@@ -64,6 +61,7 @@ public class SchwabMarketDataApiTest {
     @Test
     public void quoteTest() throws SymbolNotFoundException {
         QuoteResponse optionResponse = schwabMarketDataApiClient.fetchQuote("TQQQ  240920C00051000");
+        assertThat(optionResponse).isNotNull();
 
         QuoteResponse quoteResponse = schwabMarketDataApiClient.fetchQuote("TQQQ");
         assertThat(quoteResponse).isNotNull();
@@ -105,7 +103,7 @@ public class SchwabMarketDataApiTest {
     }
 
     @Test
-    public void moversTest() throws SymbolNotFoundException {
+    public void moversTest() throws IndexNotFoundException {
         MoversRequest moversRequest = MoversRequest.Builder.moversRequest().withIndexSymbol(MoversRequest.IndexSymbol.$DJI).build();
         MoversResponse moversResponse = schwabMarketDataApiClient.fetchMovers(moversRequest);
         assertThat(moversResponse).isNotNull();

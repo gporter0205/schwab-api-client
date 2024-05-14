@@ -10,8 +10,7 @@ import java.time.ZonedDateTime;
 /**
  * Class used for simple order requests. If an empty request is sent, then all orders
  * from all valid dates will be returned for the account.
- * If a {@code fromEnteredTime} is used, a {@code toEnteredTime} must also be used, and vice versa.
- * There is a 60 day max from today's date for the {@code fromEnteredTime} param.
+ * See the <a href="https://developer.schwab.com">Schwab Developer Portal</a> for more information
  */
 @Getter
 @Setter
@@ -23,16 +22,75 @@ public class OrderRequest {
   private ZonedDateTime toEnteredTime;
   private Status status;
 
-  public OrderRequest(ZonedDateTime fromEnteredTime, ZonedDateTime toEnteredTime) {
-    this.fromEnteredTime = fromEnteredTime;
-    this.toEnteredTime = toEnteredTime;
-  }
+  /**
+   * Nested class for building request
+   */
+  @NoArgsConstructor
+  public static final class Builder {
+    private Integer maxResults;
+    private ZonedDateTime fromEnteredTime;
+    private ZonedDateTime toEnteredTime;
+    private Status status;
 
-  public OrderRequest(Integer maxResults, ZonedDateTime fromEnteredTime, ZonedDateTime toEnteredTime,
-                      Status status) {
-    this.maxResults = maxResults;
-    this.fromEnteredTime = fromEnteredTime;
-    this.toEnteredTime = toEnteredTime;
-    this.status = status;
+    /**
+     * Create a builder for the request
+     * @return {@link OrderRequest.Builder}
+     */
+    public static OrderRequest.Builder orderRequest() {
+      return new OrderRequest.Builder();
+    }
+
+    /**
+     * Add max results to the request
+     * @param maxResults Integer
+     * @return {@link OrderRequest.Builder}
+     */
+    public OrderRequest.Builder withMaxResults(Integer maxResults) {
+      this.maxResults = maxResults;
+      return this;
+    }
+
+    /**
+     * Add from entered date to the request
+     * @param fromEnteredDate {@link ZonedDateTime}
+     * @return {@link OrderRequest.Builder}
+     */
+    public OrderRequest.Builder withFromEnteredDate(ZonedDateTime fromEnteredDate) {
+      this.fromEnteredTime = fromEnteredDate;
+      return this;
+    }
+
+    /**
+     * Add to entered date to the request
+     * @param toEnteredDate {@link ZonedDateTime}
+     * @return {@link OrderRequest.Builder}
+     */
+    public OrderRequest.Builder withToEnteredDate(ZonedDateTime toEnteredDate) {
+      this.toEnteredTime = toEnteredDate;
+      return this;
+    }
+
+    /**
+     * Add status to the request
+     * @param status {@link Status}
+     * @return {@link OrderRequest.Builder}
+     */
+    public OrderRequest.Builder withStatus(Status status) {
+      this.status = status;
+      return this;
+    }
+
+    /**
+     * Build the request with the passed values
+     * @return {@link OrderRequest}
+     */
+    public OrderRequest build() {
+      OrderRequest orderRequest = new OrderRequest();
+      orderRequest.maxResults = this.maxResults;
+      orderRequest.fromEnteredTime = this.fromEnteredTime;
+      orderRequest.toEnteredTime = this.toEnteredTime;
+      orderRequest.status = this.status;
+      return orderRequest;
+    }
   }
 }

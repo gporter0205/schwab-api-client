@@ -1,6 +1,7 @@
 package com.pangility.schwab.api.client.accountsandtrading.model.transaction;
 
 import com.fasterxml.jackson.annotation.*;
+import com.pangility.schwab.api.client.accountsandtrading.model.instrument.AssetType;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -9,6 +10,10 @@ import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * TransactionInstrument
+ * See the <a href="https://developer.schwab.com">Schwab Developer Portal</a> for more information
+ */
 @Getter
 @Setter
 @ToString
@@ -44,18 +49,4 @@ public class TransactionInstrument {
   @JsonIgnore
   @JsonAnySetter
   private Map<String, Object> otherFields = new HashMap<>();
-
-  public enum AssetType {
-    CASH_EQUIVALENT,
-    COLLECTIVE_INVESTMENT,
-    CURRENCY,
-    EQUITY,
-    FIXED_INCOME,
-    FOREX,
-    FUTURE,
-    INDEX,
-    MUTUAL_FUND,
-    OPTION,
-    PRODUCT
-  }
 }

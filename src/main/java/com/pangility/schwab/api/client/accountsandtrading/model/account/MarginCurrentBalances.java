@@ -7,7 +7,6 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 
-import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.Map;
@@ -15,12 +14,13 @@ import java.util.Map;
 
 /**
  * Current Balances of a Margin Account
+ * See the <a href="https://developer.schwab.com">Schwab Developer Portal</a> for more information
  */
 @Getter
 @Setter
 @ToString
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
-public class MarginCurrentBalances implements Serializable {
+public class MarginCurrentBalances {
   private BigDecimal accruedInterest;
   private BigDecimal cashBalance;
   private BigDecimal cashReceipts;

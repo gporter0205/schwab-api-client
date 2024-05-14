@@ -17,6 +17,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnResource;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.stereotype.Service;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -64,7 +65,7 @@ public class SchwabMarketDataApiClient extends SchwabBaseApiClient {
     public QuoteResponse fetchQuote(@NotNull String symbol,
                                                  String fields)
             throws SymbolNotFoundException {
-        log.info("Fetch Quote for: {}", symbol);
+        log.info("Fetch Quote [{}]", symbol);
         QuoteResponse quoteResponse = null;
 
         if(fields == null || fields.isEmpty()) {
@@ -76,7 +77,7 @@ public class SchwabMarketDataApiClient extends SchwabBaseApiClient {
             uriBuilder = this.getUriBuilder()
                     .pathSegment(symbol.toUpperCase(), "quotes")
                     .queryParam("fields", fields);
-            Map<String, QuoteResponse> response = this.callGetAPIAsMap(uriBuilder);
+            Map<String, QuoteResponse> response = this.callGetAPIAsMap(uriBuilder, new ParameterizedTypeReference<>() {});
             if (response != null && !response.isEmpty() && response.containsKey(symbol)) {
                 quoteResponse = response.get(symbol);
             } else {
@@ -122,7 +123,7 @@ public class SchwabMarketDataApiClient extends SchwabBaseApiClient {
                                                   String fields,
                                                   Boolean indicative)
             throws SymbolNotFoundException {
-        log.info("Fetch Quotes for: {}", symbols);
+        log.info("Fetch Quotes -> [{}]", symbols);
 
         if(fields == null || fields.isEmpty()) {
             fields = "all";
@@ -137,7 +138,7 @@ public class SchwabMarketDataApiClient extends SchwabBaseApiClient {
             if(indicative != null) {
                 uriBuilder.queryParam("indicative", indicative);
             }
-            response = this.callGetAPIAsMap(uriBuilder);
+            response = this.callGetAPIAsMap(uriBuilder, new ParameterizedTypeReference<>() {});
             if(response == null || response.isEmpty()) {
                 throw new SymbolNotFoundException("'" + symbols + "' not found");
             }
@@ -153,7 +154,7 @@ public class SchwabMarketDataApiClient extends SchwabBaseApiClient {
      */
     public OptionChainResponse fetchOptionChain(@NotNull OptionChainRequest chainRequest)
             throws SymbolNotFoundException {
-        log.info("Fetch option chain for: {}", chainRequest);
+        log.info("Fetch Option Chain -> {}", chainRequest);
 
         OptionChainResponse optionChainResponse;
         if (chainRequest.getSymbol() == null || chainRequest.getSymbol().isEmpty()) {
@@ -224,7 +225,7 @@ public class SchwabMarketDataApiClient extends SchwabBaseApiClient {
      */
     public ExpirationChainResponse fetchExpirationChain(@NotNull String symbol)
             throws SymbolNotFoundException {
-        log.info("Fetch Expiration Chain for: {}", symbol);
+        log.info("Fetch Expiration Chain -> [{}]", symbol);
         ExpirationChainResponse response = null;
 
         if (!symbol.isEmpty()) {
@@ -251,7 +252,7 @@ public class SchwabMarketDataApiClient extends SchwabBaseApiClient {
      */
     public PriceHistoryResponse fetchPriceHistory(PriceHistoryRequest priceHistReq)
             throws SymbolNotFoundException {
-        log.info("Fetch Price History: {}", priceHistReq);
+        log.info("Fetch Price History -> {}", priceHistReq);
 
         if (priceHistReq.getSymbol() == null || priceHistReq.getSymbol().isEmpty()) {
             throw new IllegalArgumentException("Symbol cannot be blank.");
@@ -312,10 +313,11 @@ public class SchwabMarketDataApiClient extends SchwabBaseApiClient {
      * fetch the movers from the Schwab API
      * @param moversRequest {@literal @}NotNull {@link MoversRequest}
      * @return {@link MoversResponse}
-     * @throws SymbolNotFoundException API did not find the index symbol
+     * @throws IndexNotFoundException API did not find the index symbol
      */
-    public MoversResponse fetchMovers(@NotNull MoversRequest moversRequest) throws SymbolNotFoundException {
-        log.info("Fetch Movers for: {}", moversRequest.getIndexSymbol());
+    public MoversResponse fetchMovers(@NotNull MoversRequest moversRequest)
+            throws IndexNotFoundException {
+        log.info("Fetch Movers -> {}", moversRequest);
         MoversResponse response = null;
 
         if (moversRequest.getIndexSymbol() != null) {
@@ -323,7 +325,7 @@ public class SchwabMarketDataApiClient extends SchwabBaseApiClient {
                 .pathSegment("movers", moversRequest.getIndexSymbol().toString());
             response = this.callGetAPI(uriBuilder, MoversResponse.class);
             if (response == null) {
-                throw new SymbolNotFoundException("Movers for '" + moversRequest.getIndexSymbol().toString() + "' not found");
+                throw new IndexNotFoundException("Movers for '" + moversRequest.getIndexSymbol().toString() + "' not found");
             }
         }
         return response;
@@ -332,8 +334,8 @@ public class SchwabMarketDataApiClient extends SchwabBaseApiClient {
     /**
      * fetch a map of market hours for today from the Schwab API
      * @param market {@literal @}NotNull {@link Market}
-     * @return {@link List}{@literal <}{@link Hours}{@literal >}
-     * @throws MarketNotFoundException API did not find the market
+     * @return {@link Map}{@literal <}String, {@link Map}{@literal <}String, {@link Hours}{@literal >}{@literal >}
+     * @throws MarketNotFoundException API did not find hours for the market
      */
     @SuppressWarnings("unused")
     public Map<String, Map<String, Hours>> fetchMarket(@NotNull Market market)
@@ -349,7 +351,7 @@ public class SchwabMarketDataApiClient extends SchwabBaseApiClient {
      * @throws MarketNotFoundException API did not find the market
      */
     public Map<String, Map<String, Hours>> fetchMarket(@NotNull Market market,
-                                   LocalDate date)
+                                                       LocalDate date)
             throws MarketNotFoundException {
         return this.fetchMarkets(Collections.singletonList(market), date);
     }
@@ -375,7 +377,7 @@ public class SchwabMarketDataApiClient extends SchwabBaseApiClient {
     public Map<String, Map<String, Hours>> fetchMarkets(@NotNull List<Market> markets,
                                     LocalDate date)
             throws MarketNotFoundException {
-        log.info("Fetch Markets for: {}", markets);
+        log.info("Fetch Market Hours -> {}", markets);
         Map<String, Map<String, Hours>> marketsMap;
 
         if (!markets.isEmpty()) {
@@ -386,7 +388,7 @@ public class SchwabMarketDataApiClient extends SchwabBaseApiClient {
             if (date != null) {
                 uriBuilder.queryParam("date", date.format(DateTimeFormatter.ISO_DATE));
             }
-            marketsMap = this.callGetAPIAsMap(uriBuilder);
+            marketsMap = this.callGetAPIAsMap(uriBuilder, new ParameterizedTypeReference<>() {});
             if (marketsMap == null || marketsMap.isEmpty()) {
                 throw new MarketNotFoundException("Market Hours for '" + markets + "' not found");
             }
@@ -404,10 +406,10 @@ public class SchwabMarketDataApiClient extends SchwabBaseApiClient {
      */
     public InstrumentsResponse fetchInstruments(@NotNull InstrumentsRequest instrumentsRequest)
             throws SymbolNotFoundException {
-        log.info("Fetch Instruments for: {}", instrumentsRequest);
+        log.info("Fetch Instruments -> {}", instrumentsRequest);
         InstrumentsResponse response;
 
-        if (instrumentsRequest.getSymbol() != null && instrumentsRequest.getProjection() != null) {
+        if (instrumentsRequest.getSymbol() != null && !instrumentsRequest.getSymbol().isEmpty() && instrumentsRequest.getProjection() != null) {
             UriComponentsBuilder uriBuilder = this.getUriBuilder()
                     .pathSegment("instruments")
                     .queryParam("symbol", instrumentsRequest.getSymbol())
@@ -430,7 +432,7 @@ public class SchwabMarketDataApiClient extends SchwabBaseApiClient {
      */
     public InstrumentsResponse fetchInstrumentsByCusip(@NotNull String cusip)
             throws SymbolNotFoundException {
-        log.info("Fetch Instruments by cusip for: {}", cusip);
+        log.info("Fetch Instruments by cusip [{}]", cusip);
         InstrumentsResponse response;
 
         if (!cusip.isEmpty()) {
@@ -441,7 +443,7 @@ public class SchwabMarketDataApiClient extends SchwabBaseApiClient {
                 throw new SymbolNotFoundException("Instrument for cusip '" + cusip + "' not found");
             }
         } else {
-            throw new IllegalArgumentException("A request for Instruments by cusip must include a cusip.");
+            throw new IllegalArgumentException("Cusip is required");
         }
         return response;
     }
@@ -492,10 +494,19 @@ public class SchwabMarketDataApiClient extends SchwabBaseApiClient {
             this.value = value;
         }
 
+        /**
+         * get the value to be used by the market API
+         * @return String
+         */
         public String value() {
             return this.value;
         }
 
+        /**
+         * convert a string into an enum
+         * @param value String
+         * @return Market enum
+         */
         public static Market fromValue(String value) {
             Market constant = CONSTANTS.get(value);
             if (constant == null) {

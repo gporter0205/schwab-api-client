@@ -5,6 +5,10 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 
+/**
+ * CollectiveInvestmentTransactionInstrument
+ * See the <a href="https://developer.schwab.com">Schwab Developer Portal</a> for more information
+ */
 @Getter
 @Setter
 @ToString
@@ -12,7 +16,29 @@ import lombok.ToString;
 public class CollectiveInvestmentTransactionInstrument extends TransactionInstrument {
     private Type type;
 
+    /**
+     * Collective Investment Transaction Instrument Type
+     */
     public enum Type {
-        UNIT_INVESTMENT_TRUST, EXCHANGE_TRADED_FUND, CLOSED_END_FUND, INDEX, UNITS
+        /**
+         * Unit Investment Trust
+         */
+        UNIT_INVESTMENT_TRUST,
+        /**
+         * Exchange Traded Fund
+         */
+        EXCHANGE_TRADED_FUND,
+        /**
+         * Closed End Fund
+         */
+        CLOSED_END_FUND,
+        /**
+         * Index
+         */
+        INDEX,
+        /**
+         * Units
+         */
+        UNITS
     }
 }

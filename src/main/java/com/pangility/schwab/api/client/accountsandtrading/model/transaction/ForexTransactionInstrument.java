@@ -5,6 +5,10 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 
+/**
+ * ForexTransactionInstrument
+ * See the <a href="https://developer.schwab.com">Schwab Developer Portal</a> for more information
+ */
 @Getter
 @Setter
 @ToString
@@ -14,7 +18,21 @@ public class ForexTransactionInstrument extends TransactionInstrument {
     private CurrencyTransactionInstrument baseCurrency;
     private CurrencyTransactionInstrument counterCurrency;
 
+    /**
+     * Forex Instrument Type
+     */
     public enum Type {
-        STANDARD, NBBO, UNKNOWN
+        /**
+         * Standard
+         */
+        STANDARD,
+        /**
+         * NBBO
+         */
+        NBBO,
+        /**
+         * Unknown
+         */
+        UNKNOWN
     }
 }

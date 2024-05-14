@@ -5,6 +5,10 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 
+/**
+ * IndexTransactionInstrument
+ * See the <a href="https://developer.schwab.com">Schwab Developer Portal</a> for more information
+ */
 @Getter
 @Setter
 @ToString
@@ -13,7 +17,21 @@ public class IndexTransactionInstrument extends TransactionInstrument {
     private Boolean activeContract;
     private Type type;
 
+    /**
+     * Index Instrument Type
+     */
     public enum Type {
-        BROAD_BASED, NARROW_BASED, UNKNOWN
+        /**
+         * Broad Based
+         */
+        BROAD_BASED,
+        /**
+         * Narrow Based
+         */
+        NARROW_BASED,
+        /**
+         * Unknown
+         */
+        UNKNOWN
     }
 }

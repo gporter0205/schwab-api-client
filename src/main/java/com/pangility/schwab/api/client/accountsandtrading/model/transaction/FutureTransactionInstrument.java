@@ -10,6 +10,10 @@ import lombok.ToString;
 import java.math.BigDecimal;
 import java.time.ZonedDateTime;
 
+/**
+ * FutureTransactionInstrument
+ * See the <a href="https://developer.schwab.com">Schwab Developer Portal</a> for more information
+ */
 @Getter
 @Setter
 @ToString
@@ -25,7 +29,17 @@ public class FutureTransactionInstrument extends TransactionInstrument {
     private ZonedDateTime firstNoticeDate;
     private BigDecimal multiplier;
 
+    /**
+     * Future Instrument Type
+     */
     public enum Type {
-        STANDARD, UNKNOWN
+        /**
+         * Standard
+         */
+        STANDARD,
+        /**
+         * Unknown
+         */
+        UNKNOWN
     }
 }

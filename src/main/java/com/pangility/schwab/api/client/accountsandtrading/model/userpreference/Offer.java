@@ -10,6 +10,11 @@ import lombok.ToString;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * User Preference Offer
+ * See the <a href="https://developer.schwab.com">Schwab Developer Portal</a> for more information
+ */
+
 @Getter
 @Setter
 @ToString

@@ -10,7 +10,6 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 
-import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
@@ -20,10 +19,8 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Order both sent and received when making trades. Some of the easier examples are described on the
- * TDA Developer page.
- *
- * @see <a href="https://developer.tdameritrade.com/content/place-order-samples">Place Order Samples</a>
+ * Order both sent and received when making trades.
+ * See the <a href="https://developer.schwab.com">Schwab Developer Portal</a> for more information
  */
 @Getter
 @Setter

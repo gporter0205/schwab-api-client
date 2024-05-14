@@ -7,7 +7,7 @@ import lombok.ToString;
 
 
 /**
- * TDA CashAccount. Most calls return an abstract {@link SecuritiesAccount} instead of the concrete
+ * CashAccount. Most calls return an abstract {@link SecuritiesAccount} instead of the concrete
  * account type so you need to cast to either a {@link CashAccount} or
  * {@link MarginAccount}. For example:
  * <pre class="code">
@@ -21,6 +21,7 @@ import lombok.ToString;
  *   ...
  * </pre>
  *
+ * See the <a href="https://developer.schwab.com">Schwab Developer Portal</a> for more information
  */
 @Getter
 @Setter

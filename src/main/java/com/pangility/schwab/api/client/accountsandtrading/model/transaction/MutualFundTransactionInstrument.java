@@ -9,6 +9,10 @@ import lombok.ToString;
 
 import java.time.ZonedDateTime;
 
+/**
+ * MutualFundTransactionInstrument
+ * See the <a href="https://developer.schwab.com">Schwab Developer Portal</a> for more information
+ */
 @Getter
 @Setter
 @ToString
@@ -25,7 +29,33 @@ public class MutualFundTransactionInstrument extends TransactionInstrument {
     @JsonDeserialize(using = ZonedDateTimeDeserializer.class)
     private ZonedDateTime redemptionCutoffTime;
 
+    /**
+     * Mutual Fund Instrument Type
+     */
     public enum Type {
-        NOT_APPLICABLE, OPEN_END_NON_TAXABLE, OPEN_END_TAXABLE, NO_LOAD_NON_TAXABLE, NO_LOAD_TAXABLE, UNKNOWN
+        /**
+         * Not Applicable
+         */
+        NOT_APPLICABLE,
+        /**
+         * Open End Non-Taxable
+         */
+        OPEN_END_NON_TAXABLE,
+        /**
+         * Open End Taxable
+         */
+        OPEN_END_TAXABLE,
+        /**
+         * No Load Non-Taxable
+         */
+        NO_LOAD_NON_TAXABLE,
+        /**
+         * No Load Taxable
+         */
+        NO_LOAD_TAXABLE,
+        /**
+         * Unknown
+         */
+        UNKNOWN
     }
 }

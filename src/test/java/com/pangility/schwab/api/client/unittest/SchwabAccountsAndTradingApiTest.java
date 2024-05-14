@@ -19,7 +19,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringBootConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Bean;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 
 import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
@@ -27,6 +29,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.fail;
 
 @SpringBootTest
 @EnableSchwabAccountsAndTradingApi
@@ -59,6 +62,23 @@ public class SchwabAccountsAndTradingApiTest {
         List<EncryptedAccount> response = schwabAccountsAndTradingApiClient.fetchEncryptedAccounts();
         assertThat(response).isNotNull();
         assertThat(response.size()).isGreaterThan(0);
+    }
+
+    @Test
+    public void placeOrderTest() {
+        List<EncryptedAccount> encryptedAccounts = schwabAccountsAndTradingApiClient.fetchEncryptedAccounts();
+        assertThat(encryptedAccounts).isNotNull();
+        assertThat(encryptedAccounts.size()).isGreaterThan(0);
+
+        try {
+            schwabAccountsAndTradingApiClient.placeOrder(encryptedAccounts.get(0).getHashValue(), new Order());
+        } catch(WebClientResponseException e) {
+            // Bad Request because we've sent an empty order
+            assertThat(e).isNotNull();
+            assertThat(e.getStatusCode()).isEqualTo(HttpStatusCode.valueOf(400));
+        } catch(Exception e) {
+            fail(e.getLocalizedMessage());
+        }
     }
 
     @Test

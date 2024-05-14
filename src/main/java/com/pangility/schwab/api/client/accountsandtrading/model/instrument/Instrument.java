@@ -9,6 +9,10 @@ import lombok.ToString;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Instrument
+ * See the <a href="https://developer.schwab.com">Schwab Developer Portal</a> for more information
+ */
 @JsonTypeInfo(
     use = Id.NAME,
     property = "assetType",
@@ -29,23 +33,28 @@ import java.util.Map;
 @ToString
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 public abstract class Instrument {
+  /**
+   * Instrument Asset Type
+   */
   protected AssetType assetType;
+  /**
+   * Instrument Cusip
+   */
   protected String cusip;
+  /**
+   * Instrument Symbol
+   */
   protected String symbol;
+  /**
+   * Instrument Description
+   */
   protected String description;
+  /**
+   * Instrument ID
+   */
   protected Long instrumentId;
   @JsonIgnore
   @JsonAnySetter
   private Map<String, Object> otherFields = new HashMap<>();
 
-  public enum AssetType {
-    CASH_EQUIVALENT,
-    CURRENCY,
-    EQUITY,
-    FIXED_INCOME,
-    INDEX,
-    MUTUAL_FUND,
-    OPTION,
-    COLLECTIVE_INVESTMENT,
-  }
 }

@@ -12,6 +12,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnResource;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.stereotype.Service;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -41,7 +42,7 @@ public class SchwabAccountsAndTradingApiClient extends SchwabBaseApiClient {
 
         UriComponentsBuilder uriBuilder = this.getUriBuilder()
                 .pathSegment("accounts", "accountNumbers");
-        return this.callGetApiAsList(uriBuilder);
+        return this.callGetApiAsList(uriBuilder, new ParameterizedTypeReference<>() {});
     }
 
     /**
@@ -58,14 +59,14 @@ public class SchwabAccountsAndTradingApiClient extends SchwabBaseApiClient {
      * @return {@link List}{@literal <}{@link Account}{@literal >}
      */
     public List<Account> fetchAccounts(String fields) {
-        log.info("Fetch Accounts");
+        log.info("Fetch All Accounts {}", fields != null && fields.equalsIgnoreCase("positions") ? "with positions" : "");
 
         UriComponentsBuilder uriBuilder = this.getUriBuilder()
                 .pathSegment("accounts");
         if(fields != null) {
             uriBuilder.queryParam("fields", fields);
         }
-        return this.callGetApiAsList(uriBuilder);
+        return this.callGetApiAsList(uriBuilder, new ParameterizedTypeReference<>() {});
     }
 
     /**
@@ -85,7 +86,7 @@ public class SchwabAccountsAndTradingApiClient extends SchwabBaseApiClient {
      */
     public Account fetchAccount(@NotNull String encryptedAccount,
                                       String fields) {
-        log.info("Fetch Accounts");
+        log.info("Fetch Account [{}] {}", encryptedAccount, fields != null && fields.equalsIgnoreCase("positions") ? "with positions" : "");
 
         if(encryptedAccount.isEmpty()) {
             throw new IllegalArgumentException("Encrypted Account must not be empty");
@@ -116,7 +117,7 @@ public class SchwabAccountsAndTradingApiClient extends SchwabBaseApiClient {
      */
     public List<Order> fetchOrders(String encryptedAccount,
                                    @NotNull OrderRequest orderRequest) {
-        log.info("Fetch Orders {} for {}", orderRequest, encryptedAccount == null ? "all accounts" : encryptedAccount);
+        log.info("Fetch Orders for Account [{}] -> {}", encryptedAccount == null ? "all accounts" : encryptedAccount, orderRequest);
 
         if(orderRequest.getFromEnteredTime() == null || orderRequest.getToEnteredTime() == null) {
             throw new IllegalArgumentException("Both From and To Entered date/times are required");
@@ -135,25 +136,7 @@ public class SchwabAccountsAndTradingApiClient extends SchwabBaseApiClient {
         if(orderRequest.getStatus() != null) {
             uriBuilder.queryParam("status", orderRequest.getStatus());
         }
-        return this.callGetApiAsList(uriBuilder);
-    }
-
-    /**
-     * place an order for a specified account
-     * @param encryptedAccount encrypted account id
-     * @param order information to place the order
-     */
-    public void placeOrder(@NotNull String encryptedAccount,
-                           @NotNull Order order) {
-        log.info("Placing Order for account[{}] -> {}", encryptedAccount, order);
-
-        if(encryptedAccount.isEmpty()) {
-            throw new IllegalArgumentException("Encrypted account number is required");
-        }
-
-        UriComponentsBuilder uriBuilder = this.getUriBuilder()
-            .pathSegment("accounts", encryptedAccount);
-        this.callPostAPI(uriBuilder, Object.class, order);
+        return this.callGetApiAsList(uriBuilder, new ParameterizedTypeReference<>() {});
     }
 
     /**
@@ -163,8 +146,8 @@ public class SchwabAccountsAndTradingApiClient extends SchwabBaseApiClient {
      * @return {@link Order}
      */
     public Order fetchOrder(@NotNull String encryptedAccount,
-                                   @NotNull Long orderId) {
-        log.info("Fetch an Order for account number {} and order id {}", encryptedAccount, orderId);
+                            @NotNull Long orderId) {
+        log.info("Fetch Order [{}] for Account [{}]", orderId, encryptedAccount);
 
         if(encryptedAccount.isEmpty() || orderId <= 0) {
             throw new IllegalArgumentException("Account Number and Order ID are required");
@@ -176,6 +159,68 @@ public class SchwabAccountsAndTradingApiClient extends SchwabBaseApiClient {
     }
 
     /**
+     * place a new order for a specified account
+     * @param encryptedAccount encrypted account id
+     * @param order information to place the order
+     */
+    public void placeOrder(@NotNull String encryptedAccount,
+                           @NotNull Order order) {
+        log.info("Place Order on Account [{}] -> {}", encryptedAccount, order);
+
+        if(encryptedAccount.isEmpty()) {
+            throw new IllegalArgumentException("Encrypted account number is required");
+        }
+
+        UriComponentsBuilder uriBuilder = this.getUriBuilder()
+            .pathSegment("accounts", encryptedAccount, "orders");
+        this.callPostAPI(uriBuilder, order);
+    }
+
+    /**
+     * replace a specified order for a specified account
+     * @param encryptedAccount encrypted account id
+     * @param orderId order to be replaced
+     * @param order replacement order information
+     */
+    public void replaceOrder(@NotNull String encryptedAccount,
+                             @NotNull Long orderId,
+                             @NotNull Order order) {
+        log.info("Replace Order [{}] on Account [{}] -> {}", orderId, encryptedAccount, order);
+
+        if(encryptedAccount.isEmpty()) {
+            throw new IllegalArgumentException("Encrypted account number is required");
+        }
+        if(orderId <= 0) {
+            throw new IllegalArgumentException("Order ID is required");
+        }
+
+        UriComponentsBuilder uriBuilder = this.getUriBuilder()
+                .pathSegment("accounts", encryptedAccount, "orders", orderId.toString());
+        this.callPutAPI(uriBuilder, order);
+    }
+
+    /**
+     * cancel a specified order for a specified account
+     * @param encryptedAccount encrypted account id
+     * @param orderId order to be cancelled
+     */
+    public void cancelOrder(@NotNull String encryptedAccount,
+                            @NotNull Long orderId) {
+        log.info("Cancel Order [{}] on Account [{}]", encryptedAccount, orderId);
+
+        if(encryptedAccount.isEmpty()) {
+            throw new IllegalArgumentException("Encrypted account number is required");
+        }
+        if(orderId <= 0) {
+            throw new IllegalArgumentException("Order Id is required");
+        }
+
+        UriComponentsBuilder uriBuilder = this.getUriBuilder()
+                .pathSegment("accounts", encryptedAccount, "orders", orderId.toString());
+        this.callDeleteAPI(uriBuilder);
+    }
+
+    /**
      * fetch the list of transactions for a specified account
      * @param encryptedAccount encrypted account id
      * @param transactionRequest parameters of the orders.  FromEnteredDate and ToEnteredDate are required.
@@ -183,7 +228,7 @@ public class SchwabAccountsAndTradingApiClient extends SchwabBaseApiClient {
      */
     public List<Transaction> fetchTransactions(@NotNull String encryptedAccount,
                                          @NotNull TransactionRequest transactionRequest) {
-        log.info("Fetch Transactions {} for {}", transactionRequest, encryptedAccount);
+        log.info("Fetch Transactions for Account [{}] -> {}", encryptedAccount, transactionRequest);
 
         if(encryptedAccount.isEmpty()) {
             throw new IllegalArgumentException("Encrypted Account is required");
@@ -202,7 +247,7 @@ public class SchwabAccountsAndTradingApiClient extends SchwabBaseApiClient {
         if(transactionRequest.getTypes() != null) {
             uriBuilder.queryParam("types", transactionRequest.getTypes());
         }
-        return this.callGetApiAsList(uriBuilder);
+        return this.callGetApiAsList(uriBuilder, new ParameterizedTypeReference<>() {});
     }
 
     /**
@@ -213,7 +258,7 @@ public class SchwabAccountsAndTradingApiClient extends SchwabBaseApiClient {
      */
     public Transaction fetchTransaction(@NotNull String encryptedAccount,
                                         @NotNull Long activityId) {
-        log.info("Fetch a Transaction for account number {} and activity id {}", encryptedAccount, activityId);
+        log.info("Fetch Transaction [{}] for Account [{}]", activityId, encryptedAccount);
 
         if(encryptedAccount.isEmpty()) {
             throw new IllegalArgumentException("Encrypted Account is required");

@@ -10,6 +10,10 @@ import lombok.ToString;
 import java.math.BigDecimal;
 import java.time.ZonedDateTime;
 
+/**
+ * FixedIncomeTransactionInstrument
+ * See the <a href="https://developer.schwab.com">Schwab Developer Portal</a> for more information
+ */
 @Getter
 @Setter
 @ToString
@@ -22,7 +26,85 @@ public class FixedIncomeTransactionInstrument extends TransactionInstrument {
     private BigDecimal variableRate;
     private Type type;
 
+    /**
+     * Fixed Income Instrument Type
+     */
     public enum Type {
-        BOND_UNIT, CERTIFICATE_OF_DEPOSIT, CONVERTIBLE_BOND, COLLATERALIZED_MORTGAGE_OBLIGATION, CORPORATE_BOND, GOVERNMENT_MORTGAGE, GNMA_BONDS, MUNICIPAL_ASSESSMENT_DISTRICT, MUNICIPAL_BOND, OTHER_GOVERNMENT, SHORT_TERM_PAPER, US_TREASURY_BOND, US_TREASURY_BILL, US_TREASURY_NOTE, US_TREASURY_ZERO_COUPON, AGENCY_BOND, WHEN_AS_AND_IF_ISSUED_BOND, ASSET_BACKED_SECURITY, UNKNOWN
+        /**
+         * Bond Unit
+         */
+        BOND_UNIT,
+        /**
+         * Certificate of Deposit
+         */
+        CERTIFICATE_OF_DEPOSIT,
+        /**
+         * Convertible Bond
+         */
+        CONVERTIBLE_BOND,
+        /**
+         * Collateralized Mortgage Obligation
+         */
+        COLLATERALIZED_MORTGAGE_OBLIGATION,
+        /**
+         * Corporate Bond
+         */
+        CORPORATE_BOND,
+        /**
+         * Government Mortgage
+         */
+        GOVERNMENT_MORTGAGE,
+        /**
+         * GNMA Bonds
+         */
+        GNMA_BONDS,
+        /**
+         * Municipal Assessment District
+         */
+        MUNICIPAL_ASSESSMENT_DISTRICT,
+        /**
+         * Municipal Bond
+         */
+        MUNICIPAL_BOND,
+        /**
+         * Other Government
+         */
+        OTHER_GOVERNMENT,
+        /**
+         * Short Term Paper
+         */
+        SHORT_TERM_PAPER,
+        /**
+         * US Treasury Bond
+         */
+        US_TREASURY_BOND,
+        /**
+         * US Treasury Bill
+         */
+        US_TREASURY_BILL,
+        /**
+         * US Treasury Note
+         */
+        US_TREASURY_NOTE,
+        /**
+         * US Treasury Zero Coupon
+         */
+        US_TREASURY_ZERO_COUPON,
+        /**
+         * Agency Bond
+         */
+        AGENCY_BOND,
+        /**
+         * When As and If Issued Bond
+         */
+        WHEN_AS_AND_IF_ISSUED_BOND,
+        /**
+         * Asset Backed Security
+         */
+        ASSET_BACKED_SECURITY,
+        /**
+         * Unknown
+         */
+        UNKNOWN
     }
 }

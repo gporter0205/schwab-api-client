@@ -18,6 +18,7 @@ import java.util.Map;
 
 /**
  * Transactions for a specific account.
+ * See the <a href="https://developer.schwab.com">Schwab Developer Portal</a> for more information
  */
 @Getter
 @Setter
@@ -47,29 +48,117 @@ public class Transaction {
   @JsonAnySetter
   private Map<String, Object> otherFields = new HashMap<>();
 
+  /**
+   * Transaction Status
+   */
   public enum Status {
-    VALID, INVALID, PENDING, UNKNOWN
+    /**
+     * Valid
+     */
+    VALID,
+    /**
+     * Invalid
+     */
+    INVALID,
+    /**
+     * Pending
+     */
+    PENDING,
+    /**
+     * Unknown
+     */
+    UNKNOWN
   }
 
+  /**
+   * Transaction Type
+   */
   public enum Type {
+    /**
+     * Trade
+     */
     TRADE,
+    /**
+     * Receive and Deliver
+     */
     RECEIVE_AND_DELIVER,
+    /**
+     * Dividend or Interest
+     */
     DIVIDEND_OR_INTEREST,
+    /**
+     * ACH Receipt
+     */
     ACH_RECEIPT,
+    /**
+     * ACH Disbursement
+     */
     ACH_DISBURSEMENT,
+    /**
+     * Cash Receipt
+     */
     CASH_RECEIPT,
+    /**
+     * Cash Disbursement
+     */
     CASH_DISBURSEMENT,
+    /**
+     * Electronic Fund
+     */
     ELECTRONIC_FUND,
+    /**
+     * Wire Out
+     */
     WIRE_OUT,
+    /**
+     * Wire In
+     */
     WIRE_IN,
+    /**
+     * Journal
+     */
     JOURNAL,
+    /**
+     * Memorandum
+     */
     MEMORANDUM,
+    /**
+     * Margin Call
+     */
     MARGIN_CALL,
+    /**
+     * Money Market
+     */
     MONEY_MARKET,
+    /**
+     * SMA Adjustment
+     */
     SMA_ADJUSTMENT
   }
 
+  /**
+   * Transaction Activity Type
+   */
   public enum ActivityType {
-    ACTIVITY_CORRECTION, EXECUTION, ORDER_ACTION, TRANSFER, UNKNOWN
+    /**
+     * Activity Correction
+     */
+    ACTIVITY_CORRECTION,
+    /**
+     * Execution
+     */
+    EXECUTION,
+    /**
+     * Order Action
+     */
+    ORDER_ACTION,
+    /**
+     * Transfer
+     */
+    TRANSFER,
+    /**
+     * Unknown
+     */
+    UNKNOWN
   }
 }

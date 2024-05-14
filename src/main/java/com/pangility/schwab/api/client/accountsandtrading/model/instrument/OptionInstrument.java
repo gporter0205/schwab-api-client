@@ -11,26 +11,16 @@ import java.util.List;
 
 /**
  * Option Instrument
+ * See the <a href="https://developer.schwab.com">Schwab Developer Portal</a> for more information
  */
 @Getter
 @Setter
 @ToString
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 public class OptionInstrument extends Instrument {
-  private Type type;
+  private OptionInstrumentType type;
   private PutCall putCall;
   private String underlyingSymbol;
   private Long optionMultiplier;
   private List<OptionDeliverable> optionDeliverables = new ArrayList<>();
-
-  public enum PutCall {
-    PUT,
-    CALL
-  }
-
-  public enum Type {
-    VANILLA,
-    BINARY,
-    BARRIER
-  }
 }

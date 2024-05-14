@@ -2,6 +2,8 @@ package com.pangility.schwab.api.client.accountsandtrading.model.transaction;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.pangility.schwab.api.client.accountsandtrading.model.instrument.OptionInstrumentType;
+import com.pangility.schwab.api.client.accountsandtrading.model.instrument.PutCall;
 import com.pangility.schwab.api.client.common.deserializers.ZonedDateTimeDeserializer;
 import lombok.Getter;
 import lombok.Setter;
@@ -11,6 +13,10 @@ import java.math.BigDecimal;
 import java.time.ZonedDateTime;
 import java.util.List;
 
+/**
+ * OptionTransactionInstrument
+ * See the <a href="https://developer.schwab.com">Schwab Developer Portal</a> for more information
+ */
 @Getter
 @Setter
 @ToString
@@ -22,15 +28,7 @@ public class OptionTransactionInstrument extends TransactionInstrument {
     private Integer optionPremiumMultiplier;
     private PutCall putCall;
     private BigDecimal strikePrice;
-    private Type type;
+    private OptionInstrumentType type;
     private String underlyingSymbol;
     private String underlyingCusip;
-
-    public enum PutCall {
-        PUT, CALL, UNKNOWN
-    }
-
-    public enum Type {
-        VANILLA, BINARY, BARRIER, UNKNOWN
-    }
 }

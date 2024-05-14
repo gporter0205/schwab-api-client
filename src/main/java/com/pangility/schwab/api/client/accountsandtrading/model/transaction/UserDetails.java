@@ -5,6 +5,10 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 
+/**
+ * UserDetails
+ * See the <a href="https://developer.schwab.com">Schwab Developer Portal</a> for more information
+ */
 @Getter
 @Setter
 @ToString
@@ -18,7 +22,29 @@ public class UserDetails {
     private String lastName;
     private String brokerRepCode;
 
+    /**
+     * User Type
+     */
     public enum Type {
-        ADVISOR_USER, BROKER_USER, CLIENT_USER, SYSTEM_USER, UNKNOWN
+        /**
+         * Advisor
+         */
+        ADVISOR_USER,
+        /**
+         * Broker
+         */
+        BROKER_USER,
+        /**
+         * Client
+         */
+        CLIENT_USER,
+        /**
+         * System
+         */
+        SYSTEM_USER,
+        /**
+         * Unknown
+         */
+        UNKNOWN
     }
 }

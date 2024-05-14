@@ -16,6 +16,7 @@ import java.util.Map;
 
 /**
  * Order Activity
+ * See the <a href="https://developer.schwab.com">Schwab Developer Portal</a> for more information
  */
 @Getter
 @Setter
@@ -31,8 +32,17 @@ public class OrderActivity {
   @JsonAnySetter
   private Map<String, Object> otherFields = new HashMap<>();
 
+  /**
+   * Execution Type
+   */
   public enum ExecutionType {
+    /**
+     * Fill
+     */
     FILL,
+    /**
+     * Canceled
+     */
     CANCELED
   }
 }

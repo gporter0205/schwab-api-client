@@ -11,6 +11,10 @@ import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * TransferItem
+ * See the <a href="https://developer.schwab.com">Schwab Developer Portal</a> for more information
+ */
 @Getter
 @Setter
 @ToString
@@ -26,11 +30,95 @@ public class TransferItem {
   @JsonAnySetter
   private Map<String, Object> otherFields = new HashMap<>();
 
+  /**
+   * Position Effect
+   */
   public enum PositionEffect {
-    OPENING, CLOSING, AUTOMATIC, UNKNOWN
+    /**
+     * Opening
+     */
+    OPENING,
+    /**
+     * Closing
+     */
+    CLOSING,
+    /**
+     * Automatic
+     */
+    AUTOMATIC,
+    /**
+     * Unknown
+     */
+    UNKNOWN
   }
 
+  /**
+   * Fee Type
+   */
   public enum FeeType {
-    COMMISSION, SEC_FEE, STR_FEE, R_FEE, CDSC_FEE, OPT_REG_FEE, ADDITIONAL_FEE, MISCELLANEOUS_FEE, FUTURES_EXCHANGE_FEE, LOW_PROCEEDS_COMMISSION, BASE_CHARGE, GENERAL_CHARGE, GST_FEE, TAF_FEE, INDEX_OPTION_FEE, UNKNOWN
+    /**
+     * Commission
+     */
+    COMMISSION,
+    /**
+     * SEC Fee
+     */
+    SEC_FEE,
+    /**
+     * Str Fee
+     */
+    STR_FEE,
+    /**
+     * R Fee
+     */
+    R_FEE,
+    /**
+     * CDSC Fee
+     */
+    CDSC_FEE,
+    /**
+     * Opt Reg Fee
+     */
+    OPT_REG_FEE,
+    /**
+     * Additional Fee
+     */
+    ADDITIONAL_FEE,
+    /**
+     * Miscellaneous Fee
+     */
+    MISCELLANEOUS_FEE,
+    /**
+     * Futures Exchange Fee
+     */
+    FUTURES_EXCHANGE_FEE,
+    /**
+     * Low Proceeds Commission
+     */
+    LOW_PROCEEDS_COMMISSION,
+    /**
+     * Base Charge
+     */
+    BASE_CHARGE,
+    /**
+     * General Charge
+     */
+    GENERAL_CHARGE,
+    /**
+     * GST Fee
+     */
+    GST_FEE,
+    /**
+     * TAF Fee
+     */
+    TAF_FEE,
+    /**
+     * Index Option Fee
+     */
+    INDEX_OPTION_FEE,
+    /**
+     * Unknown
+     */
+    UNKNOWN
   }
 }

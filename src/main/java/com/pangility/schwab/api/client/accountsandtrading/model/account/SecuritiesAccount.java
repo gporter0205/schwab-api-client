@@ -13,7 +13,7 @@ import java.util.Map;
 
 
 /**
- * TDA SecuritiesAccount. This is an abstract class and you need to check the {@link
+ * SecuritiesAccount. This is an abstract class and you need to check the {@link
  * Type} to cast to either a {@link CashAccount} or {@link MarginAccount}. For
  * example:
  * <pre class="code">
@@ -26,6 +26,7 @@ import java.util.Map;
  *   }
  *   ...
  * </pre>
+ * See the <a href="https://developer.schwab.com">Schwab Developer Portal</a> for more information
  */
 @Getter
 @Setter
@@ -48,13 +49,21 @@ public class SecuritiesAccount {
   private Boolean isClosingOnlyRestricted;
   private Boolean pfcbFlag;
   private List<Position> positions = new ArrayList<>();
-  //private List<OrderStrategy> orderStrategies = new ArrayList<>();
   @JsonIgnore
   @JsonAnySetter
   private Map<String, Object> otherFields = new HashMap<>();
 
+  /**
+   * Securities Account Type
+   */
   public enum Type {
+    /**
+     * Cash
+     */
     CASH,
+    /**
+     * Margin
+     */
     MARGIN
   }
 }
