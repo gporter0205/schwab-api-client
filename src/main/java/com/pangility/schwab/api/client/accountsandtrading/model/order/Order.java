@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonAnySetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.pangility.schwab.api.client.common.deserializers.LocalDateDeserializer;
 import com.pangility.schwab.api.client.common.deserializers.ZonedDateTimeDeserializer;
 import lombok.Getter;
 import lombok.Setter;
@@ -11,6 +12,7 @@ import lombok.ToString;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -27,12 +29,12 @@ import java.util.Map;
 @Setter
 @ToString
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
-public class Order implements Serializable {
+public class Order {
   private Session session;
   private Duration duration;
   private OrderType orderType;
-  @JsonDeserialize(using = ZonedDateTimeDeserializer.class)
-  private ZonedDateTime cancelTime;
+  @JsonDeserialize(using = LocalDateDeserializer.class)
+  private LocalDate cancelTime;
   private ComplexOrderStrategyType complexOrderStrategyType;
   private BigDecimal quantity;
   private BigDecimal filledQuantity;

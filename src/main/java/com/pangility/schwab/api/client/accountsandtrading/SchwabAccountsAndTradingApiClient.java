@@ -122,8 +122,7 @@ public class SchwabAccountsAndTradingApiClient extends SchwabBaseApiClient {
             throw new IllegalArgumentException("Both From and To Entered date/times are required");
         }
 
-        UriComponentsBuilder uriBuilder = UriComponentsBuilder.newInstance()
-                .pathSegment(schwabTraderPath, schwabApiVersion);
+        UriComponentsBuilder uriBuilder = this.getUriBuilder();
         if(encryptedAccount != null) {
             uriBuilder.pathSegment("accounts", encryptedAccount);
         }
@@ -137,6 +136,24 @@ public class SchwabAccountsAndTradingApiClient extends SchwabBaseApiClient {
             uriBuilder.queryParam("status", orderRequest.getStatus());
         }
         return this.callGetApiAsList(uriBuilder);
+    }
+
+    /**
+     * place an order for a specified account
+     * @param encryptedAccount encrypted account id
+     * @param order information to place the order
+     */
+    public void placeOrder(@NotNull String encryptedAccount,
+                           @NotNull Order order) {
+        log.info("Placing Order for account[{}] -> {}", encryptedAccount, order);
+
+        if(encryptedAccount.isEmpty()) {
+            throw new IllegalArgumentException("Encrypted account number is required");
+        }
+
+        UriComponentsBuilder uriBuilder = this.getUriBuilder()
+            .pathSegment("accounts", encryptedAccount);
+        this.callPostAPI(uriBuilder, Object.class, order);
     }
 
     /**

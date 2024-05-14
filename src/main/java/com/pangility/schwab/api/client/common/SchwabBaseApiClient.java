@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -130,54 +131,52 @@ public class SchwabBaseApiClient {
     }
 
     protected <T> T callPostAPI(@NotNull UriComponentsBuilder uriComponentsBuilder,
-                                @NotNull Class<T> clazz) {
-
-        T ret = null;
-
-        ResponseEntity<T> retMono = this.callAPI(HttpMethod.POST, uriComponentsBuilder)
-                .toEntity(clazz)
-                .block();
-        if (retMono != null && retMono.hasBody()) {
-            ret = retMono.getBody();
-        }
-        return ret;
+                                Class<T> clazz,
+                                Object body) {
+        return this.callAPI(HttpMethod.POST, uriComponentsBuilder, clazz, body);
     }
 
     protected <T> T callPutAPI(@NotNull UriComponentsBuilder uriComponentsBuilder,
-                               @NotNull Class<T> clazz) {
-
-        T ret = null;
-
-        ResponseEntity<T> retMono = this.callAPI(HttpMethod.PUT, uriComponentsBuilder)
-                .toEntity(clazz)
-                .block();
-        if (retMono != null && retMono.hasBody()) {
-            ret = retMono.getBody();
-        }
-        return ret;
+                               Class<T> clazz,
+                               Object body) {
+        return this.callAPI(HttpMethod.PUT, uriComponentsBuilder, clazz, body);
     }
 
     protected <T> T callDeleteAPI(@NotNull UriComponentsBuilder uriComponentsBuilder,
-                                  @NotNull Class<T> clazz) {
+                                  Class<T> clazz,
+                                  Object body) {
+        return this.callAPI(HttpMethod.DELETE, uriComponentsBuilder, clazz, body);
+    }
 
+    protected <T> T callAPI(@NotNull HttpMethod httpMethod,
+                            @NotNull UriComponentsBuilder uriComponentsBuilder,
+                            Class<T> clazz,
+                            Object body) {
         T ret = null;
-
-        ResponseEntity<T> retMono = this.callAPI(HttpMethod.DELETE, uriComponentsBuilder)
-                .toEntity(clazz)
-                .block();
-        if (retMono != null && retMono.hasBody()) {
-            ret = retMono.getBody();
+        WebClient.ResponseSpec responseSpec = this.callAPI(HttpMethod.POST, uriComponentsBuilder, body);
+        if(clazz != null) {
+            ResponseEntity<T> retEntity = responseSpec.toEntity(clazz).block();
+            if(retEntity != null && retEntity.hasBody()) {
+                ret = retEntity.getBody();
+            }
+        } else {
+            responseSpec.toBodilessEntity().block();
         }
         return ret;
     }
 
     private WebClient.ResponseSpec callAPI(@NotNull HttpMethod httpMethod,
                                            @NotNull UriComponentsBuilder uriComponentsBuilder) {
+        return this.callAPI(httpMethod, uriComponentsBuilder, null);
+    }
+
+    private WebClient.ResponseSpec callAPI(@NotNull HttpMethod httpMethod,
+                                           @NotNull UriComponentsBuilder uriComponentsBuilder,
+                                           Object body) {
         WebClient.ResponseSpec ret = null;
 
         //Validate refresh token
         schwabOauth2Controller.validateRefreshToken(defaultUserId);
-
 
         String accessToken = schwabOauth2Controller.getAccessToken(defaultUserId);
         if(accessToken != null) {
@@ -190,6 +189,7 @@ public class SchwabBaseApiClient {
                     .method(httpMethod)
                     .uri(uri)
                     .headers(h -> h.setBearerAuth(accessToken))
+                    .bodyValue(body)
                     .retrieve();
         }
         return ret;
