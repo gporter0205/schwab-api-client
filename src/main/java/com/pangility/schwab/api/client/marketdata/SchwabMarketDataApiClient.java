@@ -17,7 +17,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnResource;
-import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.stereotype.Service;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -72,12 +71,13 @@ public class SchwabMarketDataApiClient extends SchwabBaseApiClient {
             fields = "all";
         }
 
-        if (symbol.length() > 0) {
-            UriComponentsBuilder uriBuilder = UriComponentsBuilder.newInstance()
-                    .pathSegment(schwabMarketDataPath, schwabApiVersion, symbol.toUpperCase(), "quotes")
+        if (!symbol.isEmpty()) {
+            UriComponentsBuilder uriBuilder;
+            uriBuilder = this.getUriBuilder()
+                    .pathSegment(symbol.toUpperCase(), "quotes")
                     .queryParam("fields", fields);
-            Map<String, QuoteResponse> response = this.callGetAPIAsMap(uriBuilder, new ParameterizedTypeReference<>() {});
-            if (response != null && response.size() > 0 && response.containsKey(symbol)) {
+            Map<String, QuoteResponse> response = this.callGetAPIAsMap(uriBuilder);
+            if (response != null && !response.isEmpty() && response.containsKey(symbol)) {
                 quoteResponse = response.get(symbol);
             } else {
                 throw new SymbolNotFoundException("'" + symbol + "' not found");
@@ -128,17 +128,17 @@ public class SchwabMarketDataApiClient extends SchwabBaseApiClient {
             fields = "all";
         }
         Map<String, QuoteResponse> response = null;
-        if (symbols.size() > 0) {
+        if (!symbols.isEmpty()) {
             String symbolsParam = String.join(",", symbols).toUpperCase();
-            UriComponentsBuilder uriBuilder = UriComponentsBuilder.newInstance()
-                    .pathSegment(schwabMarketDataPath, schwabApiVersion, "quotes")
+            UriComponentsBuilder uriBuilder = this.getUriBuilder()
+                    .pathSegment("quotes")
                     .queryParam("symbols", symbolsParam)
                     .queryParam("fields", fields);
             if(indicative != null) {
                 uriBuilder.queryParam("indicative", indicative);
             }
-            response = this.callGetAPIAsMap(uriBuilder, new ParameterizedTypeReference<>() {});
-            if(response == null || response.size() == 0) {
+            response = this.callGetAPIAsMap(uriBuilder);
+            if(response == null || response.isEmpty()) {
                 throw new SymbolNotFoundException("'" + symbols + "' not found");
             }
         }
@@ -227,14 +227,14 @@ public class SchwabMarketDataApiClient extends SchwabBaseApiClient {
         log.info("Fetch Expiration Chain for: {}", symbol);
         ExpirationChainResponse response = null;
 
-        if (symbol.length() > 0) {
-            UriComponentsBuilder uriBuilder = UriComponentsBuilder.newInstance()
-                    .pathSegment(schwabMarketDataPath, schwabApiVersion, "expirationchain")
+        if (!symbol.isEmpty()) {
+            UriComponentsBuilder uriBuilder = this.getUriBuilder()
+                    .pathSegment("expirationchain")
                     .queryParam("symbol", symbol.toUpperCase());
             response = this.callGetAPI(uriBuilder, ExpirationChainResponse.class);
             if (response == null ||
                     response.getExpirationList() == null ||
-                    response.getExpirationList().size() == 0 ||
+                    response.getExpirationList().isEmpty() ||
                     (response.getExpirationList().get(0).getOptionRoots() != null &&
                             !response.getExpirationList().get(0).getOptionRoots().equalsIgnoreCase(symbol))) {
                 throw new SymbolNotFoundException("'" + symbol + "' not found");
@@ -319,8 +319,8 @@ public class SchwabMarketDataApiClient extends SchwabBaseApiClient {
         MoversResponse response = null;
 
         if (moversRequest.getIndexSymbol() != null) {
-            UriComponentsBuilder uriBuilder = UriComponentsBuilder.newInstance()
-                    .pathSegment(schwabMarketDataPath, schwabApiVersion, "movers", moversRequest.getIndexSymbol().toString());
+            UriComponentsBuilder uriBuilder = this.getUriBuilder()
+                .pathSegment("movers", moversRequest.getIndexSymbol().toString());
             response = this.callGetAPI(uriBuilder, MoversResponse.class);
             if (response == null) {
                 throw new SymbolNotFoundException("Movers for '" + moversRequest.getIndexSymbol().toString() + "' not found");
@@ -378,16 +378,16 @@ public class SchwabMarketDataApiClient extends SchwabBaseApiClient {
         log.info("Fetch Markets for: {}", markets);
         Map<String, Map<String, Hours>> marketsMap;
 
-        if (markets.size() > 0) {
+        if (!markets.isEmpty()) {
             String marketsString = String.join(",", markets.stream().map(Market::value).toArray(String[]::new));
-            UriComponentsBuilder uriBuilder = UriComponentsBuilder.newInstance()
-                    .pathSegment(schwabMarketDataPath, schwabApiVersion, "markets")
+            UriComponentsBuilder uriBuilder = this.getUriBuilder()
+                    .pathSegment("markets")
                     .queryParam("markets", marketsString);
             if (date != null) {
                 uriBuilder.queryParam("date", date.format(DateTimeFormatter.ISO_DATE));
             }
-            marketsMap = this.callGetAPIAsMap(uriBuilder, new ParameterizedTypeReference<>() {});
-            if (marketsMap == null || marketsMap.size() == 0) {
+            marketsMap = this.callGetAPIAsMap(uriBuilder);
+            if (marketsMap == null || marketsMap.isEmpty()) {
                 throw new MarketNotFoundException("Market Hours for '" + markets + "' not found");
             }
         } else {
@@ -408,12 +408,12 @@ public class SchwabMarketDataApiClient extends SchwabBaseApiClient {
         InstrumentsResponse response;
 
         if (instrumentsRequest.getSymbol() != null && instrumentsRequest.getProjection() != null) {
-            UriComponentsBuilder uriBuilder = UriComponentsBuilder.newInstance()
-                    .pathSegment(schwabMarketDataPath, schwabApiVersion, "instruments")
+            UriComponentsBuilder uriBuilder = this.getUriBuilder()
+                    .pathSegment("instruments")
                     .queryParam("symbol", instrumentsRequest.getSymbol())
                     .queryParam("projection", instrumentsRequest.getProjection().value());
             response = this.callGetAPI(uriBuilder, InstrumentsResponse.class);
-            if (response == null || response.getInstruments() == null || response.getInstruments().size() == 0) {
+            if (response == null || response.getInstruments() == null || response.getInstruments().isEmpty()) {
                 throw new SymbolNotFoundException("Instruments for '" + instrumentsRequest.getSymbol() + "' not found");
             }
         } else {
@@ -434,10 +434,10 @@ public class SchwabMarketDataApiClient extends SchwabBaseApiClient {
         InstrumentsResponse response;
 
         if (!cusip.isEmpty()) {
-            UriComponentsBuilder uriBuilder = UriComponentsBuilder.newInstance()
-                    .pathSegment(schwabMarketDataPath, schwabApiVersion, "instruments", cusip);
+            UriComponentsBuilder uriBuilder = this.getUriBuilder()
+                .pathSegment("instruments", cusip);
             response = this.callGetAPI(uriBuilder, InstrumentsResponse.class);
-            if (response == null || response.getInstruments() == null || response.getInstruments().size() == 0) {
+            if (response == null || response.getInstruments() == null || response.getInstruments().isEmpty()) {
                 throw new SymbolNotFoundException("Instrument for cusip '" + cusip + "' not found");
             }
         } else {
@@ -446,6 +446,11 @@ public class SchwabMarketDataApiClient extends SchwabBaseApiClient {
         return response;
     }
 
+    private UriComponentsBuilder getUriBuilder() {
+        return UriComponentsBuilder.newInstance()
+                .pathSegment(schwabMarketDataPath, schwabApiVersion);
+    }
+    
     /**
      * Available markets for requesting hours
      */

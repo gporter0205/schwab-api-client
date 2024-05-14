@@ -8,6 +8,7 @@ import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -80,11 +81,15 @@ public class SchwabBaseApiClient {
         return this.defaultUserId != null && schwabOauth2Controller.isInitialized();
     }
 
+    protected <T> List<T> callGetApiAsList(@NotNull UriComponentsBuilder uriComponentsBuilder) {
+        return callGetApiAsList(uriComponentsBuilder, new ParameterizedTypeReference<>() {});
+    }
+
     protected <T> List<T> callGetApiAsList(@NotNull UriComponentsBuilder uriComponentsBuilder,
-                               @NotNull ParameterizedTypeReference<List<T>> bodyTypeReference) {
+                                           @NotNull ParameterizedTypeReference<List<T>> bodyTypeReference) {
         List<T> ret = null;
 
-        ResponseEntity<List<T>> retMono = this.callAPI(uriComponentsBuilder, schwabWebClient.getSchwabWebClient().get())
+        ResponseEntity<List<T>> retMono = this.callAPI(HttpMethod.GET, uriComponentsBuilder)
                 .toEntity(bodyTypeReference)
                 .block();
         if (retMono != null && retMono.hasBody()) {
@@ -93,11 +98,15 @@ public class SchwabBaseApiClient {
         return ret;
     }
 
+    protected <T> Map<String, T> callGetAPIAsMap(@NotNull UriComponentsBuilder uriComponentsBuilder) {
+        return callGetAPIAsMap(uriComponentsBuilder, new ParameterizedTypeReference<>() {});
+    }
+
     protected <T> Map<String, T> callGetAPIAsMap(@NotNull UriComponentsBuilder uriComponentsBuilder,
-                                    @NotNull ParameterizedTypeReference<Map<String, T>> bodyTypeReference) {
+                                                 @NotNull ParameterizedTypeReference<Map<String, T>> bodyTypeReference) {
         Map<String, T> ret = null;
 
-        ResponseEntity<Map<String, T>> retMono = this.callAPI(uriComponentsBuilder, schwabWebClient.getSchwabWebClient().get())
+        ResponseEntity<Map<String, T>> retMono = this.callAPI(HttpMethod.GET, uriComponentsBuilder)
                 .toEntity(bodyTypeReference)
                 .block();
         if (retMono != null && retMono.hasBody()) {
@@ -111,7 +120,7 @@ public class SchwabBaseApiClient {
 
         T ret = null;
 
-        ResponseEntity<T> retMono = this.callAPI(uriComponentsBuilder, schwabWebClient.getSchwabWebClient().get())
+        ResponseEntity<T> retMono = this.callAPI(HttpMethod.GET, uriComponentsBuilder)
                 .toEntity(clazz)
                 .block();
         if (retMono != null && retMono.hasBody()) {
@@ -121,11 +130,11 @@ public class SchwabBaseApiClient {
     }
 
     protected <T> T callPostAPI(@NotNull UriComponentsBuilder uriComponentsBuilder,
-                               @NotNull Class<T> clazz) {
+                                @NotNull Class<T> clazz) {
 
         T ret = null;
 
-        ResponseEntity<T> retMono = this.callAPI(uriComponentsBuilder, schwabWebClient.getSchwabWebClient().post())
+        ResponseEntity<T> retMono = this.callAPI(HttpMethod.POST, uriComponentsBuilder)
                 .toEntity(clazz)
                 .block();
         if (retMono != null && retMono.hasBody()) {
@@ -139,7 +148,7 @@ public class SchwabBaseApiClient {
 
         T ret = null;
 
-        ResponseEntity<T> retMono = this.callAPI(uriComponentsBuilder, schwabWebClient.getSchwabWebClient().put())
+        ResponseEntity<T> retMono = this.callAPI(HttpMethod.PUT, uriComponentsBuilder)
                 .toEntity(clazz)
                 .block();
         if (retMono != null && retMono.hasBody()) {
@@ -149,11 +158,11 @@ public class SchwabBaseApiClient {
     }
 
     protected <T> T callDeleteAPI(@NotNull UriComponentsBuilder uriComponentsBuilder,
-                               @NotNull Class<T> clazz) {
+                                  @NotNull Class<T> clazz) {
 
         T ret = null;
 
-        ResponseEntity<T> retMono = this.callAPI(uriComponentsBuilder, schwabWebClient.getSchwabWebClient().delete())
+        ResponseEntity<T> retMono = this.callAPI(HttpMethod.DELETE, uriComponentsBuilder)
                 .toEntity(clazz)
                 .block();
         if (retMono != null && retMono.hasBody()) {
@@ -162,12 +171,13 @@ public class SchwabBaseApiClient {
         return ret;
     }
 
-    private WebClient.ResponseSpec callAPI(@NotNull UriComponentsBuilder uriComponentsBuilder,
-                                           @NotNull WebClient.RequestHeadersUriSpec<?> webClientMethod) {
+    private WebClient.ResponseSpec callAPI(@NotNull HttpMethod httpMethod,
+                                           @NotNull UriComponentsBuilder uriComponentsBuilder) {
         WebClient.ResponseSpec ret = null;
 
         //Validate refresh token
         schwabOauth2Controller.validateRefreshToken(defaultUserId);
+
 
         String accessToken = schwabOauth2Controller.getAccessToken(defaultUserId);
         if(accessToken != null) {
@@ -176,7 +186,8 @@ public class SchwabBaseApiClient {
                     .host(schwabTargetUrl)
                     .build()
                     .toUri();
-            ret = webClientMethod
+            ret = schwabWebClient.getSchwabWebClient()
+                    .method(httpMethod)
                     .uri(uri)
                     .headers(h -> h.setBearerAuth(accessToken))
                     .retrieve();

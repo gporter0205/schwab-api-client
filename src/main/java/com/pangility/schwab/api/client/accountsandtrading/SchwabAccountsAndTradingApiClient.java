@@ -12,7 +12,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnResource;
-import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.stereotype.Service;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -21,7 +20,7 @@ import java.util.List;
 
 /**
  * Main client for interacting with the Schwab Accounts and Trading API.
- * Use {@literal @}Autowire to create the component in any class annotated with
+ * Use {@code @Autowire} to create the component in any class annotated with
  * {@literal @}EnableSchwabAccountsAndTradingApi or {@literal @}EnableSchwabApi
  */
 @Service
@@ -40,9 +39,9 @@ public class SchwabAccountsAndTradingApiClient extends SchwabBaseApiClient {
     public List<EncryptedAccount> fetchEncryptedAccounts() {
         log.info("Fetch Encrypted Accounts");
 
-        UriComponentsBuilder uriBuilder = UriComponentsBuilder.newInstance()
-                .pathSegment(schwabTraderPath, schwabApiVersion, "accounts", "accountNumbers");
-        return this.callGetApiAsList(uriBuilder, new ParameterizedTypeReference<>() {});
+        UriComponentsBuilder uriBuilder = this.getUriBuilder()
+                .pathSegment("accounts", "accountNumbers");
+        return this.callGetApiAsList(uriBuilder);
     }
 
     /**
@@ -61,12 +60,12 @@ public class SchwabAccountsAndTradingApiClient extends SchwabBaseApiClient {
     public List<Account> fetchAccounts(String fields) {
         log.info("Fetch Accounts");
 
-        UriComponentsBuilder uriBuilder = UriComponentsBuilder.newInstance()
-                .pathSegment(schwabTraderPath, schwabApiVersion, "accounts");
+        UriComponentsBuilder uriBuilder = this.getUriBuilder()
+                .pathSegment("accounts");
         if(fields != null) {
             uriBuilder.queryParam("fields", fields);
         }
-        return this.callGetApiAsList(uriBuilder, new ParameterizedTypeReference<>() {});
+        return this.callGetApiAsList(uriBuilder);
     }
 
     /**
@@ -92,8 +91,8 @@ public class SchwabAccountsAndTradingApiClient extends SchwabBaseApiClient {
             throw new IllegalArgumentException("Encrypted Account must not be empty");
         }
 
-        UriComponentsBuilder uriBuilder = UriComponentsBuilder.newInstance()
-                .pathSegment(schwabTraderPath, schwabApiVersion, "accounts", encryptedAccount);
+        UriComponentsBuilder uriBuilder = this.getUriBuilder()
+                .pathSegment("accounts", encryptedAccount);
         if(fields != null) {
             uriBuilder.queryParam("fields", fields);
         }
@@ -137,7 +136,7 @@ public class SchwabAccountsAndTradingApiClient extends SchwabBaseApiClient {
         if(orderRequest.getStatus() != null) {
             uriBuilder.queryParam("status", orderRequest.getStatus());
         }
-        return this.callGetApiAsList(uriBuilder, new ParameterizedTypeReference<>() {});
+        return this.callGetApiAsList(uriBuilder);
     }
 
     /**
@@ -154,8 +153,8 @@ public class SchwabAccountsAndTradingApiClient extends SchwabBaseApiClient {
             throw new IllegalArgumentException("Account Number and Order ID are required");
         }
 
-        UriComponentsBuilder uriBuilder = UriComponentsBuilder.newInstance()
-                .pathSegment(schwabTraderPath, schwabApiVersion, "accounts", encryptedAccount, "orders", orderId.toString());
+        UriComponentsBuilder uriBuilder = this.getUriBuilder()
+                .pathSegment("accounts", encryptedAccount, "orders", orderId.toString());
         return this.callGetAPI(uriBuilder, Order.class);
     }
 
@@ -176,8 +175,8 @@ public class SchwabAccountsAndTradingApiClient extends SchwabBaseApiClient {
             throw new IllegalArgumentException("Both Start and End date/times are required");
         }
 
-        UriComponentsBuilder uriBuilder = UriComponentsBuilder.newInstance()
-                .pathSegment(schwabTraderPath, schwabApiVersion, "accounts", encryptedAccount, "transactions")
+        UriComponentsBuilder uriBuilder = this.getUriBuilder()
+                .pathSegment("accounts", encryptedAccount, "transactions")
                 .queryParam("startDate", transactionRequest.getStartDate().format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssZZZZZ")))
                 .queryParam("endDate", transactionRequest.getEndDate().format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssZZZZZ")));
         if(transactionRequest.getSymbol() != null) {
@@ -186,7 +185,7 @@ public class SchwabAccountsAndTradingApiClient extends SchwabBaseApiClient {
         if(transactionRequest.getTypes() != null) {
             uriBuilder.queryParam("types", transactionRequest.getTypes());
         }
-        return this.callGetApiAsList(uriBuilder, new ParameterizedTypeReference<>() {});
+        return this.callGetApiAsList(uriBuilder);
     }
 
     /**
@@ -206,8 +205,8 @@ public class SchwabAccountsAndTradingApiClient extends SchwabBaseApiClient {
             throw new IllegalArgumentException("Activity ID is required");
         }
 
-        UriComponentsBuilder uriBuilder = UriComponentsBuilder.newInstance()
-                .pathSegment(schwabTraderPath, schwabApiVersion, "accounts", encryptedAccount, "transactions", activityId.toString());
+        UriComponentsBuilder uriBuilder = this.getUriBuilder()
+                .pathSegment("accounts", encryptedAccount, "transactions", activityId.toString());
         return this.callGetAPI(uriBuilder, Transaction.class);
     }
 
@@ -218,8 +217,13 @@ public class SchwabAccountsAndTradingApiClient extends SchwabBaseApiClient {
     public UserPreferenceResponse fetchUserPreference() {
         log.info("Fetch User Preference");
 
-        UriComponentsBuilder uriBuilder = UriComponentsBuilder.newInstance()
-                .pathSegment(schwabTraderPath, schwabApiVersion, "userPreference");
+        UriComponentsBuilder uriBuilder = this.getUriBuilder()
+                .pathSegment("userPreference");
         return this.callGetAPI(uriBuilder, UserPreferenceResponse.class);
+    }
+
+    private UriComponentsBuilder getUriBuilder() {
+        return UriComponentsBuilder.newInstance()
+                .pathSegment(schwabTraderPath, schwabApiVersion);
     }
 }
