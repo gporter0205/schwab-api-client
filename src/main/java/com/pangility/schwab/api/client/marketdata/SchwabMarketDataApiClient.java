@@ -13,6 +13,8 @@ import com.pangility.schwab.api.client.marketdata.model.pricehistory.Candle;
 import com.pangility.schwab.api.client.marketdata.model.pricehistory.PriceHistoryRequest;
 import com.pangility.schwab.api.client.marketdata.model.pricehistory.PriceHistoryResponse;
 import com.pangility.schwab.api.client.marketdata.model.quotes.QuoteResponse;
+import com.pangility.schwab.api.client.oauth2.SchwabAccount;
+import com.pangility.schwab.api.client.oauth2.SchwabTokenHandler;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Value;
@@ -43,6 +45,63 @@ public class SchwabMarketDataApiClient extends SchwabBaseApiClient {
 
     @Value("${schwab-api.marketDataPath}")
     private String schwabMarketDataPath;
+
+    private String defaultUserId = null;
+
+    /**
+     * Initialize the client controller
+     * @param schwabAccount {@link SchwabAccount}
+     * @param tokenHandler {@link SchwabTokenHandler}
+     */
+    @Override
+    public void init(@NotNull SchwabAccount schwabAccount,
+                     SchwabTokenHandler tokenHandler) {
+        this.init(schwabAccount.getUserId(), Collections.singletonList(schwabAccount), tokenHandler);
+
+    }
+
+    /**
+     * Initialize the client controller
+     * @param schwabAccount {@link SchwabAccount}
+     */
+    @SuppressWarnings("unused")
+    @Override
+    public void init(@NotNull SchwabAccount schwabAccount) {
+        this.init(schwabAccount.getUserId(), Collections.singletonList(schwabAccount), null);
+    }
+
+    /**
+     * Initialize the client controller
+     * @param defaultUserId String
+     * @param schwabAccounts List{@literal <}{@link SchwabAccount}{@literal >}
+     */
+    @SuppressWarnings("unused")
+    public void init(@NotNull String defaultUserId,
+                     @NotNull List<SchwabAccount> schwabAccounts) {
+        this.init(defaultUserId, schwabAccounts, null);
+    }
+
+    /**
+     * Initialize the client controller
+     * @param defaultUserId String
+     * @param schwabAccounts List{@literal <}{@link SchwabAccount}{@literal >}
+     * @param tokenHandler {@link SchwabTokenHandler}
+     */
+    public void init(@NotNull String defaultUserId,
+                     @NotNull List<SchwabAccount> schwabAccounts,
+                     SchwabTokenHandler tokenHandler) {
+        this.init(schwabAccounts, tokenHandler);
+        this.defaultUserId = defaultUserId;
+    }
+
+    /**
+     * determine if the controller has been initialized
+     * @return Boolean
+     */
+    @SuppressWarnings("unused")
+    public Boolean isInitialized() {
+        return this.defaultUserId != null && super.isInitialized();
+    }
 
     /**
      * fetch a quote from the Schwab API
@@ -77,7 +136,7 @@ public class SchwabMarketDataApiClient extends SchwabBaseApiClient {
             uriBuilder = this.getUriBuilder()
                     .pathSegment(symbol.toUpperCase(), "quotes")
                     .queryParam("fields", fields);
-            Map<String, QuoteResponse> response = this.callGetAPIAsMap(uriBuilder, new ParameterizedTypeReference<>() {});
+            Map<String, QuoteResponse> response = this.callGetAPIAsMap(defaultUserId, uriBuilder, new ParameterizedTypeReference<>() {});
             if (response != null && !response.isEmpty() && response.containsKey(symbol)) {
                 quoteResponse = response.get(symbol);
             } else {
@@ -138,7 +197,7 @@ public class SchwabMarketDataApiClient extends SchwabBaseApiClient {
             if(indicative != null) {
                 uriBuilder.queryParam("indicative", indicative);
             }
-            response = this.callGetAPIAsMap(uriBuilder, new ParameterizedTypeReference<>() {});
+            response = this.callGetAPIAsMap(defaultUserId, uriBuilder, new ParameterizedTypeReference<>() {});
             if(response == null || response.isEmpty()) {
                 throw new SymbolNotFoundException("'" + symbols + "' not found");
             }
@@ -209,7 +268,7 @@ public class SchwabMarketDataApiClient extends SchwabBaseApiClient {
         if(chainRequest.getMonth() != null) {
             uriBuilder.queryParam("month", chainRequest.getMonth().toString().substring(0, 3).toUpperCase());
         }
-        optionChainResponse = this.callGetAPI(uriBuilder, OptionChainResponse.class);
+        optionChainResponse = this.callGetAPI(defaultUserId, uriBuilder, OptionChainResponse.class);
         if (optionChainResponse == null || optionChainResponse.getSymbol() == null || optionChainResponse.getSymbol().isEmpty()) {
             throw new SymbolNotFoundException("'" + chainRequest.getSymbol() + "' not found");
         }
@@ -232,7 +291,7 @@ public class SchwabMarketDataApiClient extends SchwabBaseApiClient {
             UriComponentsBuilder uriBuilder = this.getUriBuilder()
                     .pathSegment("expirationchain")
                     .queryParam("symbol", symbol.toUpperCase());
-            response = this.callGetAPI(uriBuilder, ExpirationChainResponse.class);
+            response = this.callGetAPI(defaultUserId, uriBuilder, ExpirationChainResponse.class);
             if (response == null ||
                     response.getExpirationList() == null ||
                     response.getExpirationList().isEmpty() ||
@@ -289,7 +348,7 @@ public class SchwabMarketDataApiClient extends SchwabBaseApiClient {
             uriBuilder.queryParam("needPreviousClose",
                     String.valueOf(priceHistReq.getNeedPreviousClose()));
         }
-        PriceHistoryResponse response = this.callGetAPI(uriBuilder, PriceHistoryResponse.class);
+        PriceHistoryResponse response = this.callGetAPI(defaultUserId, uriBuilder, PriceHistoryResponse.class);
         if (response != null) {
             if(response.getPreviousCloseDate() != null && response.getPreviousCloseDateISO8601() == null) {
                 LocalDate ld = Instant.ofEpochMilli(response.getPreviousCloseDate()).atZone(ZoneId.systemDefault()).toLocalDate();
@@ -323,7 +382,7 @@ public class SchwabMarketDataApiClient extends SchwabBaseApiClient {
         if (moversRequest.getIndexSymbol() != null) {
             UriComponentsBuilder uriBuilder = this.getUriBuilder()
                 .pathSegment("movers", moversRequest.getIndexSymbol().toString());
-            response = this.callGetAPI(uriBuilder, MoversResponse.class);
+            response = this.callGetAPI(defaultUserId, uriBuilder, MoversResponse.class);
             if (response == null) {
                 throw new IndexNotFoundException("Movers for '" + moversRequest.getIndexSymbol().toString() + "' not found");
             }
@@ -388,7 +447,7 @@ public class SchwabMarketDataApiClient extends SchwabBaseApiClient {
             if (date != null) {
                 uriBuilder.queryParam("date", date.format(DateTimeFormatter.ISO_DATE));
             }
-            marketsMap = this.callGetAPIAsMap(uriBuilder, new ParameterizedTypeReference<>() {});
+            marketsMap = this.callGetAPIAsMap(defaultUserId, uriBuilder, new ParameterizedTypeReference<>() {});
             if (marketsMap == null || marketsMap.isEmpty()) {
                 throw new MarketNotFoundException("Market Hours for '" + markets + "' not found");
             }
@@ -414,7 +473,7 @@ public class SchwabMarketDataApiClient extends SchwabBaseApiClient {
                     .pathSegment("instruments")
                     .queryParam("symbol", instrumentsRequest.getSymbol())
                     .queryParam("projection", instrumentsRequest.getProjection().value());
-            response = this.callGetAPI(uriBuilder, InstrumentsResponse.class);
+            response = this.callGetAPI(defaultUserId, uriBuilder, InstrumentsResponse.class);
             if (response == null || response.getInstruments() == null || response.getInstruments().isEmpty()) {
                 throw new SymbolNotFoundException("Instruments for '" + instrumentsRequest.getSymbol() + "' not found");
             }
@@ -438,7 +497,7 @@ public class SchwabMarketDataApiClient extends SchwabBaseApiClient {
         if (!cusip.isEmpty()) {
             UriComponentsBuilder uriBuilder = this.getUriBuilder()
                 .pathSegment("instruments", cusip);
-            response = this.callGetAPI(uriBuilder, InstrumentsResponse.class);
+            response = this.callGetAPI(defaultUserId, uriBuilder, InstrumentsResponse.class);
             if (response == null || response.getInstruments() == null || response.getInstruments().isEmpty()) {
                 throw new SymbolNotFoundException("Instrument for cusip '" + cusip + "' not found");
             }

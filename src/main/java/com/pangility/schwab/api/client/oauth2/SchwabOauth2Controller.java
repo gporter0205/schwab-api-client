@@ -100,7 +100,7 @@ public class SchwabOauth2Controller {
      * @return Boolean
      */
     public Boolean isInitialized() {
-        return this.accountMapByUserId.size() > 0;
+        return !this.accountMapByUserId.isEmpty();
     }
 
     /**
@@ -110,7 +110,9 @@ public class SchwabOauth2Controller {
      */
     public void validateRefreshToken(@NotNull String schwabUserId) throws InvalidRefreshTokenException {
         SchwabAccount schwabAccount = accountMapByUserId.get(schwabUserId);
-        if(schwabAccount.getRefreshToken() == null) {
+        if(schwabAccount == null) {
+            throw new InvalidRefreshTokenException("Unable to retrieve Refresh Token", schwabAccount);
+        } else if(schwabAccount.getRefreshToken() == null) {
             throw new InvalidRefreshTokenException("Missing Refresh Token", schwabAccount);
         } else if(LocalDateTime.now().plusMinutes(60).isAfter(schwabAccount.getRefreshExpiration())) {
             throw new InvalidRefreshTokenException("Expired Refresh Token", schwabAccount);

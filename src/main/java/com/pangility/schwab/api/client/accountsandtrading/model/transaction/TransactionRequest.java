@@ -2,7 +2,6 @@ package com.pangility.schwab.api.client.accountsandtrading.model.transaction;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 import lombok.ToString;
 
 import java.time.ZonedDateTime;
@@ -13,7 +12,6 @@ import java.time.ZonedDateTime;
  * See the <a href="https://developer.schwab.com">Schwab Developer Portal</a> for more information
  */
 @Getter
-@Setter
 @ToString
 @NoArgsConstructor
 public class TransactionRequest {
@@ -36,7 +34,7 @@ public class TransactionRequest {
      * Create a builder for the request
      * @return {@link TransactionRequest.Builder}
      */
-    public static TransactionRequest.Builder orderRequest() {
+    public static TransactionRequest.Builder transactionRequest() {
       return new TransactionRequest.Builder();
     }
 

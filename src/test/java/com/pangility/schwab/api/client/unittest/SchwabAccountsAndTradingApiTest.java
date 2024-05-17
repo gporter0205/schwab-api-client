@@ -59,19 +59,19 @@ public class SchwabAccountsAndTradingApiTest {
 
     @Test
     public void encryptedAccountsTest() {
-        List<EncryptedAccount> response = schwabAccountsAndTradingApiClient.fetchEncryptedAccounts();
+        List<EncryptedAccount> response = schwabAccountsAndTradingApiClient.fetchEncryptedAccounts(schwabUserId);
         assertThat(response).isNotNull();
         assertThat(response.size()).isGreaterThan(0);
     }
 
     @Test
     public void placeOrderTest() {
-        List<EncryptedAccount> encryptedAccounts = schwabAccountsAndTradingApiClient.fetchEncryptedAccounts();
+        List<EncryptedAccount> encryptedAccounts = schwabAccountsAndTradingApiClient.fetchEncryptedAccounts(schwabUserId);
         assertThat(encryptedAccounts).isNotNull();
         assertThat(encryptedAccounts.size()).isGreaterThan(0);
 
         try {
-            schwabAccountsAndTradingApiClient.placeOrder(encryptedAccounts.get(0).getHashValue(), new Order());
+            schwabAccountsAndTradingApiClient.placeOrder(schwabUserId, encryptedAccounts.get(0).getHashValue(), new Order());
         } catch(WebClientResponseException e) {
             // Bad Request because we've sent an empty order
             assertThat(e).isNotNull();
@@ -83,7 +83,7 @@ public class SchwabAccountsAndTradingApiTest {
 
     @Test
     public void accountsTest() {
-        List<Account> response = schwabAccountsAndTradingApiClient.fetchAccounts();
+        List<Account> response = schwabAccountsAndTradingApiClient.fetchAccounts(schwabUserId);
         assertThat(response).isNotNull();
         assertThat(response.size()).isGreaterThan(0);
 
@@ -95,15 +95,15 @@ public class SchwabAccountsAndTradingApiTest {
     @Test
     public void accountTest() {
 
-        List<EncryptedAccount> encryptedAccounts = schwabAccountsAndTradingApiClient.fetchEncryptedAccounts();
+        List<EncryptedAccount> encryptedAccounts = schwabAccountsAndTradingApiClient.fetchEncryptedAccounts(schwabUserId);
         assertThat(encryptedAccounts).isNotNull();
         assertThat(encryptedAccounts.size()).isGreaterThan(0);
 
-        Account response = schwabAccountsAndTradingApiClient.fetchAccount(encryptedAccounts.get(0).getHashValue());
+        Account response = schwabAccountsAndTradingApiClient.fetchAccount(schwabUserId, encryptedAccounts.get(0).getHashValue());
         assertThat(response).isNotNull();
         assertThat(response.getSecuritiesAccount().getAccountNumber()).isEqualToIgnoringCase(encryptedAccounts.get(0).getAccountNumber());
 
-        response = schwabAccountsAndTradingApiClient.fetchAccount(encryptedAccounts.get(0).getHashValue(), "positions");
+        response = schwabAccountsAndTradingApiClient.fetchAccount(schwabUserId, encryptedAccounts.get(0).getHashValue(), "positions");
         assertThat(response).isNotNull();
         assertThat(response.getSecuritiesAccount().getAccountNumber()).isEqualToIgnoringCase(encryptedAccounts.get(0).getAccountNumber());
     }
@@ -111,35 +111,37 @@ public class SchwabAccountsAndTradingApiTest {
     @Test
     public void ordersTest() {
 
-        OrderRequest orderRequest = new OrderRequest();
-        orderRequest.setFromEnteredTime(ZonedDateTime.now().minusDays(80));
-        orderRequest.setToEnteredTime(ZonedDateTime.now());
-        List<Order> response = schwabAccountsAndTradingApiClient.fetchOrders(orderRequest);
+        OrderRequest orderRequest = OrderRequest.Builder.orderRequest()
+                .withFromEnteredDate(ZonedDateTime.now().minusDays(80))
+                .withToEnteredDate(ZonedDateTime.now())
+                .build();
+        List<Order> response = schwabAccountsAndTradingApiClient.fetchOrders(schwabUserId, orderRequest);
         assertThat(response).isNotNull();
     }
 
     @Test
     public void ordersForAccountTest() {
 
-        List<EncryptedAccount> encryptedAccounts = schwabAccountsAndTradingApiClient.fetchEncryptedAccounts();
+        List<EncryptedAccount> encryptedAccounts = schwabAccountsAndTradingApiClient.fetchEncryptedAccounts(schwabUserId);
         assertThat(encryptedAccounts).isNotNull();
         assertThat(encryptedAccounts.size()).isGreaterThan(0);
 
-        OrderRequest orderRequest = new OrderRequest();
-        orderRequest.setFromEnteredTime(ZonedDateTime.now().minusDays(80));
-        orderRequest.setToEnteredTime(ZonedDateTime.now());
-        List<Order> response = schwabAccountsAndTradingApiClient.fetchOrders(encryptedAccounts.get(0).getHashValue(), orderRequest);
+        OrderRequest orderRequest = OrderRequest.Builder.orderRequest()
+                .withFromEnteredDate(ZonedDateTime.now().minusDays(80))
+                .withToEnteredDate(ZonedDateTime.now())
+                .build();
+        List<Order> response = schwabAccountsAndTradingApiClient.fetchOrders(schwabUserId, encryptedAccounts.get(0).getHashValue(), orderRequest);
         assertThat(response).isNotNull();
     }
 
     @Test
     public void orderByOrderIdTest() {
 
-        List<EncryptedAccount> encryptedAccounts = schwabAccountsAndTradingApiClient.fetchEncryptedAccounts();
+        List<EncryptedAccount> encryptedAccounts = schwabAccountsAndTradingApiClient.fetchEncryptedAccounts(schwabUserId);
         assertThat(encryptedAccounts).isNotNull();
         assertThat(encryptedAccounts.size()).isGreaterThan(0);
 
-        Order response = schwabAccountsAndTradingApiClient.fetchOrder(encryptedAccounts.get(0).getHashValue(), 1000292980781L);
+        Order response = schwabAccountsAndTradingApiClient.fetchOrder(schwabUserId, encryptedAccounts.get(0).getHashValue(), 1000292980781L);
         assertThat(response).isNotNull();
         assertThat(response.getOrderId()).isEqualTo(1000292980781L);
     }
@@ -147,32 +149,33 @@ public class SchwabAccountsAndTradingApiTest {
     @Test
     public void transactionsForAccountTest() {
 
-        List<EncryptedAccount> encryptedAccounts = schwabAccountsAndTradingApiClient.fetchEncryptedAccounts();
+        List<EncryptedAccount> encryptedAccounts = schwabAccountsAndTradingApiClient.fetchEncryptedAccounts(schwabUserId);
         assertThat(encryptedAccounts).isNotNull();
         assertThat(encryptedAccounts.size()).isGreaterThan(0);
 
-        TransactionRequest transactionRequest = new TransactionRequest();
-        transactionRequest.setStartDate(ZonedDateTime.now().minusDays(80));
-        transactionRequest.setEndDate(ZonedDateTime.now());
-        List<Transaction> response = schwabAccountsAndTradingApiClient.fetchTransactions(encryptedAccounts.get(0).getHashValue(), transactionRequest);
+        TransactionRequest transactionRequest = TransactionRequest.Builder.transactionRequest()
+                        .withStartDate(ZonedDateTime.now().minusDays(80))
+                        .withEndDate(ZonedDateTime.now())
+                        .build();
+        List<Transaction> response = schwabAccountsAndTradingApiClient.fetchTransactions(schwabUserId, encryptedAccounts.get(0).getHashValue(), transactionRequest);
         assertThat(response).isNotNull();
     }
 
     @Test
     public void transactionForAccountActivityIdTest() {
 
-        List<EncryptedAccount> encryptedAccounts = schwabAccountsAndTradingApiClient.fetchEncryptedAccounts();
+        List<EncryptedAccount> encryptedAccounts = schwabAccountsAndTradingApiClient.fetchEncryptedAccounts(schwabUserId);
         assertThat(encryptedAccounts).isNotNull();
         assertThat(encryptedAccounts.size()).isGreaterThan(0);
 
-        Transaction response = schwabAccountsAndTradingApiClient.fetchTransaction(encryptedAccounts.get(0).getHashValue(), 80570034343L);
+        Transaction response = schwabAccountsAndTradingApiClient.fetchTransaction(schwabUserId, encryptedAccounts.get(0).getHashValue(), 80570034343L);
         assertThat(response).isNotNull();
     }
 
     @Test
     public void userPreferenceTest() {
 
-        UserPreferenceResponse response = schwabAccountsAndTradingApiClient.fetchUserPreference();
+        UserPreferenceResponse response = schwabAccountsAndTradingApiClient.fetchUserPreference(schwabUserId);
         assertThat(response).isNotNull();
     }
 
