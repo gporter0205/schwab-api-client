@@ -13,6 +13,10 @@ public enum EquityInstrumentType {
      */
     PREFERRED_STOCK,
     /**
+     * Exchange Traded Fund
+     */
+    EXCHANGE_TRADED_FUND,
+    /**
      * Depository Receipt
      */
     DEPOSITORY_RECEIPT,

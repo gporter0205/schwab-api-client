@@ -87,7 +87,7 @@ public class SchwabAccountsAndTradingApiTest {
         assertThat(response).isNotNull();
         assertThat(response.size()).isGreaterThan(0);
 
-        response = schwabAccountsAndTradingApiClient.fetchAccounts("positions");
+        response = schwabAccountsAndTradingApiClient.fetchAccounts(schwabUserId, "positions");
         assertThat(response).isNotNull();
         assertThat(response.size()).isGreaterThan(0);
     }
