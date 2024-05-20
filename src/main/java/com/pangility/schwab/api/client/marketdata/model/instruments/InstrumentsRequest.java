@@ -2,7 +2,6 @@ package com.pangility.schwab.api.client.marketdata.model.instruments;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 import lombok.ToString;
 
 /**
@@ -30,7 +29,6 @@ import lombok.ToString;
  * @see Instrument.AssetType
  */
 @Getter
-@Setter
 @ToString
 @NoArgsConstructor
 public class InstrumentsRequest {

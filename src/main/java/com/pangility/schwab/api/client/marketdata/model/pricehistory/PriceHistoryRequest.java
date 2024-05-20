@@ -2,7 +2,6 @@ package com.pangility.schwab.api.client.marketdata.model.pricehistory;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 import lombok.ToString;
 
 import java.time.LocalDate;
@@ -12,7 +11,6 @@ import java.time.LocalDate;
  * See the <a href="https://developer.schwab.com">Schwab Developer Portal</a> for more information
  */
 @Getter
-@Setter
 @ToString
 @NoArgsConstructor
 public class PriceHistoryRequest {

@@ -1,5 +1,5 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="schwab-api-client [clean deploy-snapshot]" type="MavenRunConfiguration" factoryName="Maven">
+  <configuration default="false" name="schwab-api-client [clean,install]" type="MavenRunConfiguration" factoryName="Maven" nameIsGenerated="true">
     <MavenSettings>
       <option name="myGeneralSettings" />
       <option name="myRunnerSettings" />
@@ -11,13 +11,10 @@
           <option name="goals">
             <list>
               <option value="clean" />
-              <option value="deploy" />
-              <option value="-P" />
-              <option value="deploy-snapshot" />
-              <option value="-DskipTests" />
+              <option value="install" />
             </list>
           </option>
-          <option name="pomFileName" value="pom.xml" />
+          <option name="pomFileName" />
           <option name="profilesMap">
             <map />
           </option>

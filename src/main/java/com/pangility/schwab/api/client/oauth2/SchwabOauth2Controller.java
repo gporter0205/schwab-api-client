@@ -100,7 +100,7 @@ public class SchwabOauth2Controller {
      * @return Boolean
      */
     public Boolean isInitialized() {
-        return this.accountMapByUserId.size() > 0;
+        return !this.accountMapByUserId.isEmpty();
     }
 
     /**
@@ -110,9 +110,11 @@ public class SchwabOauth2Controller {
      */
     public void validateRefreshToken(@NotNull String schwabUserId) throws InvalidRefreshTokenException {
         SchwabAccount schwabAccount = accountMapByUserId.get(schwabUserId);
-        if(schwabAccount.getRefreshToken() == null) {
+        if(schwabAccount == null) {
+            throw new InvalidRefreshTokenException("Unable to retrieve Refresh Token", schwabAccount);
+        } else if(schwabAccount.getRefreshToken() == null) {
             throw new InvalidRefreshTokenException("Missing Refresh Token", schwabAccount);
-        } else if(LocalDateTime.now().plusMinutes(1).isAfter(schwabAccount.getRefreshExpiration())) {
+        } else if(LocalDateTime.now().plusMinutes(60).isAfter(schwabAccount.getRefreshExpiration())) {
             throw new InvalidRefreshTokenException("Expired Refresh Token", schwabAccount);
         }
     }
@@ -138,7 +140,7 @@ public class SchwabOauth2Controller {
         if(schwabAccount != null) {
             accessToken = schwabAccount.getAccessToken();
             LocalDateTime accessExpiration = schwabAccount.getAccessExpiration();
-            if(accessToken == null || LocalDateTime.now().plusMinutes(1).isAfter(accessExpiration)) {
+            if(accessToken == null || LocalDateTime.now().plusMinutes(5).isAfter(accessExpiration)) {
                 accessToken = this.refreshAccessToken(schwabAccount);
             }
         }
@@ -215,7 +217,7 @@ public class SchwabOauth2Controller {
      * @param state {@literal @}RequestParam String
      * @return {@link RedirectView}
      */
-    @GetMapping(value = {"/login/oauth2/code/schwab", "/oauth2/schwab/code"})
+    @GetMapping(value = {"/oauth2/schwab/code"})
     public RedirectView processCode(@RequestParam String code,
                             @RequestParam String state) {
         String tokenAuthorizationHeader = "Basic " + new String(Base64.getMimeEncoder().encode((schwabClientId + ":" + schwabClientSecret).getBytes(StandardCharsets.UTF_8)), StandardCharsets.UTF_8);
@@ -315,28 +317,36 @@ public class SchwabOauth2Controller {
                                   @RequestParam String schwabUserId,
                                   @RequestParam String callback) {
 
-        try {
-            UUID uuid = UUID.randomUUID();
-            UuidMapInfo uuidMapInfo = new UuidMapInfo();
-            uuidMapInfo.setUserId(schwabUserId);
-            uuidMapInfo.setCallback(callback);
-            uuids.put(uuid, uuidMapInfo);
-            URI uri = UriComponentsBuilder.newInstance()
-                    .scheme("https")
-                    .host(schwabTargetUrl)
-                    .pathSegment(schwabApiVersion, schwabAuthorizationUri)
-                    .build()
-                    .toUri();
-            attributes.addAttribute("response_type", "code");
-            attributes.addAttribute("redirect_uri", schwabRedirectUri);
-            attributes.addAttribute("client_id", schwabClientId);
-            attributes.addAttribute("scope", schwabAuthorizationScope);
-            attributes.addAttribute("state", uuid.toString());
-            return new RedirectView(uri.toString());
-        } catch(Exception e) {
-            log.error(this.exceptionToString(e));
+        if(this.isInitialized()) {
+            try {
+                UUID uuid = UUID.randomUUID();
+                UuidMapInfo uuidMapInfo = new UuidMapInfo();
+                uuidMapInfo.setUserId(schwabUserId);
+                uuidMapInfo.setCallback(callback);
+                uuids.put(uuid, uuidMapInfo);
+                URI uri = UriComponentsBuilder.newInstance()
+                        .scheme("https")
+                        .host(schwabTargetUrl)
+                        .pathSegment(schwabApiVersion, schwabAuthorizationUri)
+                        .build()
+                        .toUri();
+                attributes.addAttribute("response_type", "code");
+                attributes.addAttribute("redirect_uri", schwabRedirectUri);
+                attributes.addAttribute("client_id", schwabClientId);
+                attributes.addAttribute("scope", schwabAuthorizationScope);
+                attributes.addAttribute("state", uuid.toString());
+                return new RedirectView(uri.toString());
+            } catch (Exception e) {
+                log.error(this.exceptionToString(e));
+                throw new ResponseStatusException(
+                        HttpStatus.INTERNAL_SERVER_ERROR, this.exceptionToString(e), e);
+            }
+        } else {
+            String errorMsg = "Initialization Error: Unable to get Refresh Token before service initialization";
+            log.error(errorMsg);
             throw new ResponseStatusException(
-                    HttpStatus.INTERNAL_SERVER_ERROR, this.exceptionToString(e), e);
+                    HttpStatus.NOT_IMPLEMENTED, errorMsg);
+
         }
     }
 

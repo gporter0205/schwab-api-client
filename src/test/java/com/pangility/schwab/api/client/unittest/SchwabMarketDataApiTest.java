@@ -1,9 +1,6 @@
 package com.pangility.schwab.api.client.unittest;
 
-import com.pangility.schwab.api.client.marketdata.EnableSchwabMarketDataApi;
-import com.pangility.schwab.api.client.marketdata.MarketNotFoundException;
-import com.pangility.schwab.api.client.marketdata.SchwabMarketDataApiClient;
-import com.pangility.schwab.api.client.marketdata.SymbolNotFoundException;
+import com.pangility.schwab.api.client.marketdata.*;
 import com.pangility.schwab.api.client.marketdata.model.chains.OptionChainRequest;
 import com.pangility.schwab.api.client.marketdata.model.chains.OptionChainResponse;
 import com.pangility.schwab.api.client.marketdata.model.expirationchain.ExpirationChainResponse;
@@ -31,7 +28,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.List;
+import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -64,6 +61,7 @@ public class SchwabMarketDataApiTest {
     @Test
     public void quoteTest() throws SymbolNotFoundException {
         QuoteResponse optionResponse = schwabMarketDataApiClient.fetchQuote("TQQQ  240920C00051000");
+        assertThat(optionResponse).isNotNull();
 
         QuoteResponse quoteResponse = schwabMarketDataApiClient.fetchQuote("TQQQ");
         assertThat(quoteResponse).isNotNull();
@@ -73,14 +71,15 @@ public class SchwabMarketDataApiTest {
 
     @Test
     public void quotesTest() throws SymbolNotFoundException {
-        List<QuoteResponse> quoteResponses = schwabMarketDataApiClient.fetchQuotes(Arrays.asList("TQQQ","UPRO"));
+        Map<String, QuoteResponse> quoteResponses = schwabMarketDataApiClient.fetchQuotes(Arrays.asList("TQQQ","UPRO"));
         assertThat(quoteResponses).isNotNull();
         assertThat(quoteResponses.size()).isEqualTo(2);
-        assertThat(quoteResponses.get(0).getSymbol()).isNotNull();
-        assertThat(quoteResponses.get(0).getSymbol()).isEqualToIgnoringCase("TQQQ");
-        assertThat(quoteResponses.get(1).getSymbol()).isNotNull();
-        assertThat(quoteResponses.get(1).getSymbol()).isEqualToIgnoringCase("UPRO");
+        assertThat(quoteResponses.get("TQQQ").getSymbol()).isNotNull();
+        assertThat(quoteResponses.get("TQQQ").getSymbol()).isEqualToIgnoringCase("TQQQ");
+        assertThat(quoteResponses.get("UPRO").getSymbol()).isNotNull();
+        assertThat(quoteResponses.get("UPRO").getSymbol()).isEqualToIgnoringCase("UPRO");
     }
+
     @Test
     public void chainsTest() throws SymbolNotFoundException {
         OptionChainRequest optionChainRequest = OptionChainRequest.Builder.optionChainRequest().withSymbol("TQQQ").build();
@@ -104,7 +103,7 @@ public class SchwabMarketDataApiTest {
     }
 
     @Test
-    public void moversTest() throws SymbolNotFoundException {
+    public void moversTest() throws IndexNotFoundException {
         MoversRequest moversRequest = MoversRequest.Builder.moversRequest().withIndexSymbol(MoversRequest.IndexSymbol.$DJI).build();
         MoversResponse moversResponse = schwabMarketDataApiClient.fetchMovers(moversRequest);
         assertThat(moversResponse).isNotNull();
@@ -112,14 +111,14 @@ public class SchwabMarketDataApiTest {
 
     @Test
     public void marketsTest() throws MarketNotFoundException {
-        List<Hours> hours = schwabMarketDataApiClient.fetchMarkets(Collections.singletonList(SchwabMarketDataApiClient.Market.equity));
+        Map<String, Map<String, Hours>> hours = schwabMarketDataApiClient.fetchMarkets(Collections.singletonList(SchwabMarketDataApiClient.Market.EQUITY));
         assertThat(hours).isNotNull();
 
-        hours = schwabMarketDataApiClient.fetchMarkets(Arrays.asList(SchwabMarketDataApiClient.Market.equity, SchwabMarketDataApiClient.Market.option));
+        hours = schwabMarketDataApiClient.fetchMarkets(Arrays.asList(SchwabMarketDataApiClient.Market.EQUITY, SchwabMarketDataApiClient.Market.OPTION));
         assertThat(hours).isNotNull();
 
         /*LocalDate testDate = LocalDate.of(2024, 4, 25);
-        hours = schwabMarketDataApiClient.fetchMarkets(Collections.singletonList(SchwabMarketDataApiClient.Market.equity), testDate);
+        hours = schwabMarketDataApiClient.fetchMarkets(Collections.singletonList(SchwabMarketDataApiClient.Market.EQUITY), testDate);
         assertThat(hours).isNotNull();
         assertThat(hours.size()).isEqualTo(1);
         assertThat(hours.get(0).getDate()).isEqualTo(testDate);

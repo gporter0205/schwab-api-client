@@ -2,7 +2,6 @@ package com.pangility.schwab.api.client.marketdata.model.movers;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 import lombok.ToString;
 
 /**
@@ -10,7 +9,6 @@ import lombok.ToString;
  * See the <a href="https://developer.schwab.com">Schwab Developer Portal</a> for more information
  */
 @Getter
-@Setter
 @ToString
 @NoArgsConstructor
 public class MoversRequest {
