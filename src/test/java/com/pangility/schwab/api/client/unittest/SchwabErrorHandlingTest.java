@@ -4,6 +4,7 @@ import com.pangility.schwab.api.client.marketdata.EnableSchwabMarketDataApi;
 import com.pangility.schwab.api.client.marketdata.SchwabMarketDataApiClient;
 import com.pangility.schwab.api.client.marketdata.model.instruments.InstrumentsRequest;
 import com.pangility.schwab.api.client.marketdata.model.instruments.InstrumentsResponse;
+import com.pangility.schwab.api.client.oauth2.InvalidRefreshTokenException;
 import com.pangility.schwab.api.client.oauth2.SchwabAccount;
 import com.pangility.schwab.api.client.oauth2.SchwabTokenHandler;
 import org.jetbrains.annotations.NotNull;
@@ -14,7 +15,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringBootConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Bean;
+import org.springframework.http.HttpStatus;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.web.server.ResponseStatusException;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
@@ -43,6 +46,47 @@ public class SchwabErrorHandlingTest {
 
     @BeforeEach
     public void setUpEachTest() {
+    }
+
+    @Test
+    public void expiredRefreshTokenTest() {
+        schwabAccount.setUserId(schwabUserId);
+        schwabAccount.setRefreshToken(refreshToken);
+        schwabAccount.setRefreshExpiration(LocalDateTime.now().plusMinutes(10));
+        schwabAccount.setAccessToken("12345678".repeat(8));
+        schwabAccount.setAccessExpiration(LocalDateTime.now().plusMinutes(10));
+        schwabMarketDataApiClient.init(schwabAccount, testTokenHandler);
+
+        InstrumentsRequest instrumentsRequest = InstrumentsRequest.Builder.instrumentsRequest()
+                .withSymbol("TSLA")
+                .withProjection(InstrumentsRequest.Projection.SYMBOL_SEARCH)
+                .build();
+        Mono<InstrumentsResponse> instrumentsResponse = schwabMarketDataApiClient.fetchInstrumentsToMono(instrumentsRequest);
+        StepVerifier
+                .create(instrumentsResponse)
+                .expectError(InvalidRefreshTokenException.class)
+                .verify();
+    }
+
+    @Test
+    public void invalidRefreshTokenTest() {
+        schwabAccount.setUserId(schwabUserId);
+        schwabAccount.setRefreshToken("12345678".repeat(12));
+        schwabAccount.setRefreshExpiration(LocalDateTime.now().plusDays(1));
+        schwabAccount.setAccessToken("12345678".repeat(8));
+        schwabAccount.setAccessExpiration(LocalDateTime.now().plusMinutes(10));
+        schwabMarketDataApiClient.init(schwabAccount, testTokenHandler);
+
+        InstrumentsRequest instrumentsRequest = InstrumentsRequest.Builder.instrumentsRequest()
+                .withSymbol("TSLA")
+                .withProjection(InstrumentsRequest.Projection.SYMBOL_SEARCH)
+                .build();
+        Mono<InstrumentsResponse> instrumentsResponse = schwabMarketDataApiClient.fetchInstrumentsToMono(instrumentsRequest);
+        StepVerifier
+                .create(instrumentsResponse)
+                .expectErrorMatches(throwable -> throwable instanceof ResponseStatusException &&
+                        ((ResponseStatusException) throwable).getStatusCode().isSameCodeAs(HttpStatus.BAD_REQUEST))
+                .verify();
     }
 
     @Test
