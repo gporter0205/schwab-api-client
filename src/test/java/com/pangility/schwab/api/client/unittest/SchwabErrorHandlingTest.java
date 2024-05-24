@@ -60,14 +60,13 @@ public class SchwabErrorHandlingTest {
                 .withSymbol("TSLA")
                 .withProjection(InstrumentsRequest.Projection.SYMBOL_SEARCH)
                 .build();
-        Mono<InstrumentsResponse> instrumentsResponse = schwabMarketDataApiClient.fetchInstrumentsAsMono(instrumentsRequest);
+        Mono<InstrumentsResponse> instrumentsResponse = schwabMarketDataApiClient.fetchInstrumentsToMono(instrumentsRequest);
         StepVerifier
                 .create(instrumentsResponse)
                 .expectNextMatches(response -> response.getInstruments() != null &&
                         response.getInstruments().size() == 1 &&
                         response.getInstruments().get(0).getSymbol().equalsIgnoreCase("TSLA"))
-                .expectComplete()
-                .verify();
+                .verifyComplete();
         assertThat(schwabAccount.getAccessToken()).isNotEqualTo("12345678".repeat(8));
         assertThat(schwabAccount.getAccessExpiration()).isAfter(LocalDateTime.now().plusMinutes(29).plusSeconds(58));
     }

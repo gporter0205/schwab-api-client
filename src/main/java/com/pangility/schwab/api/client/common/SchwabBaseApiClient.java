@@ -14,6 +14,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.util.UriComponentsBuilder;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.net.URI;
@@ -94,6 +95,7 @@ public class SchwabBaseApiClient {
      * @return {@link List}{@literal <}T{@literal >}
      * @param <T> the return type of the method
      */
+    @Deprecated
     protected <T> List<T> callGetApiAsList(@NotNull String schwabUserId,
                                            @NotNull UriComponentsBuilder uriComponentsBuilder,
                                            @NotNull ParameterizedTypeReference<List<T>> bodyTypeReference) {
@@ -116,6 +118,7 @@ public class SchwabBaseApiClient {
      * @return {@link Map}{@literal <}String, T{@literal >}
      * @param <T> the return type of the method
      */
+    @Deprecated
     protected <T> Map<String, T> callGetApiAsMap(@NotNull String schwabUserId,
                                                  @NotNull UriComponentsBuilder uriComponentsBuilder,
                                                  @NotNull ParameterizedTypeReference<Map<String, T>> bodyTypeReference) {
@@ -134,15 +137,30 @@ public class SchwabBaseApiClient {
      * Call a Schwab Api using the get http method
      * @param schwabUserId the Charles Schwab user id of the account to be used for API authentication
      * @param uriComponentsBuilder the path and query params of the API
+     * @param clazz a Class{@literal <}T{@literal >} object defining the return type of the method
+     * @return T
+     * @param <T> the return type of the method
+     */
+    protected <T> Mono<T> callGetApiToMono(@NotNull String schwabUserId,
+                                           @NotNull UriComponentsBuilder uriComponentsBuilder,
+                                           @NotNull Class<T> clazz) {
+
+        return this.callApiToMono(schwabUserId, HttpMethod.GET, uriComponentsBuilder, null, clazz);
+    }
+
+    /**
+     * Call a Schwab Api using the get http method
+     * @param schwabUserId the Charles Schwab user id of the account to be used for API authentication
+     * @param uriComponentsBuilder the path and query params of the API
      * @param bodyTypeReference a {@link ParameterizedTypeReference}{@literal <}T{@literal >} object defining the return type of the method
      * @return T
      * @param <T> the return type of the method
      */
-    protected <T> Mono<T> callGetApiAsMono(@NotNull String schwabUserId,
+    protected <T> Mono<T> callGetApiToMono(@NotNull String schwabUserId,
                                            @NotNull UriComponentsBuilder uriComponentsBuilder,
                                            @NotNull ParameterizedTypeReference<T> bodyTypeReference) {
 
-        return this.callApiAsMono(schwabUserId, HttpMethod.GET, uriComponentsBuilder, null, bodyTypeReference);
+        return this.callApiToMono(schwabUserId, HttpMethod.GET, uriComponentsBuilder, null, bodyTypeReference);
     }
 
     /**
@@ -153,11 +171,26 @@ public class SchwabBaseApiClient {
      * @return T
      * @param <T> the return type of the method
      */
-    protected <T> Mono<T> callGetApiAsMono(@NotNull String schwabUserId,
+    protected <T> Flux<T> callGetApiToFlux(@NotNull String schwabUserId,
                                            @NotNull UriComponentsBuilder uriComponentsBuilder,
                                            @NotNull Class<T> clazz) {
 
-        return this.callApiAsMono(schwabUserId, HttpMethod.GET, uriComponentsBuilder, null, clazz);
+        return this.callApiToFlux(schwabUserId, HttpMethod.GET, uriComponentsBuilder, null, clazz);
+    }
+
+    /**
+     * Call a Schwab Api using the get http method
+     * @param schwabUserId the Charles Schwab user id of the account to be used for API authentication
+     * @param uriComponentsBuilder the path and query params of the API
+     * @param bodyTypeReference a {@link ParameterizedTypeReference}{@literal <}T{@literal >} object defining the return type of the method
+     * @return T
+     * @param <T> the return type of the method
+     */
+    protected <T> Flux<T> callGetApiToFlux(@NotNull String schwabUserId,
+                                           @NotNull UriComponentsBuilder uriComponentsBuilder,
+                                           @NotNull ParameterizedTypeReference<T> bodyTypeReference) {
+
+        return this.callApiToFlux(schwabUserId, HttpMethod.GET, uriComponentsBuilder, null, bodyTypeReference);
     }
 
     /**
@@ -168,6 +201,7 @@ public class SchwabBaseApiClient {
      * @return T
      * @param <T> the return type of the method
      */
+    @Deprecated
     protected <T> T callGetApi(@NotNull String schwabUserId,
                                @NotNull UriComponentsBuilder uriComponentsBuilder,
                                @NotNull Class<T> clazz) {
@@ -179,48 +213,127 @@ public class SchwabBaseApiClient {
      * Call a Schwab Api using the post http method
      * @param schwabUserId the Charles Schwab user id of the account to be used for API authentication
      * @param uriComponentsBuilder the path and query params of the API
+     */
+    protected void callPostApi(@NotNull String schwabUserId,
+                               @NotNull UriComponentsBuilder uriComponentsBuilder) {
+        this.callApiToMono(schwabUserId, HttpMethod.POST, uriComponentsBuilder, null, Object.class);
+    }
+
+    /**
+     * Call a Schwab Api using the post http method
+     * @param schwabUserId the Charles Schwab user id of the account to be used for API authentication
+     * @param uriComponentsBuilder the path and query params of the API
      * @param body the body of the request
      */
     protected void callPostApi(@NotNull String schwabUserId,
                                @NotNull UriComponentsBuilder uriComponentsBuilder,
                                Object body) {
-        this.callApi(schwabUserId, HttpMethod.POST, uriComponentsBuilder, Object.class, body);
+        this.callApiToMono(schwabUserId, HttpMethod.POST, uriComponentsBuilder, body, Object.class);
     }
 
     /**
      * Call a Schwab Api using the post http method
      * @param schwabUserId the Charles Schwab user id of the account to be used for API authentication
      * @param uriComponentsBuilder the path and query params of the API
-     */
-    protected void callPostApi(@NotNull String schwabUserId,
-                               @NotNull UriComponentsBuilder uriComponentsBuilder) {
-        this.callApi(schwabUserId, HttpMethod.POST, uriComponentsBuilder, Object.class, null);
-    }
-
-    /**
-     * Call a Schwab Api using the post http method
-     * @param schwabUserId the Charles Schwab user id of the account to be used for API authentication
-     * @param uriComponentsBuilder the path and query params of the API
-     * @param clazz a Class{@literal <}T{@literal >} object defining the return type of the method
      * @param body the body of the request
+     * @param clazz a Class{@literal <}T{@literal >} object defining the return type of the method
      * @return T
      * @param <T> the return type of the method
      */
+    @Deprecated
     protected <T> T callPostApi(@NotNull String schwabUserId,
                                 @NotNull UriComponentsBuilder uriComponentsBuilder,
-                                @NotNull Class<T> clazz,
-                                Object body) {
+                                Object body,
+                                @NotNull Class<T> clazz) {
         return this.callApi(schwabUserId, HttpMethod.POST, uriComponentsBuilder, clazz, body);
     }
 
     /**
+     * reactively call a Schwab Api using the post http method
+     * @param schwabUserId the Charles Schwab user id of the account to be used for API authentication
+     * @param uriComponentsBuilder the path and query params of the API
+     * @param clazz a Class{@literal <}T{@literal >} object defining the return type of the method
+     * @return T
+     * @param <T> the return type of the method
+     */
+    protected <T> Mono<T> callPostApiToMono(@NotNull String schwabUserId,
+                                            @NotNull UriComponentsBuilder uriComponentsBuilder,
+                                            @NotNull Class<T> clazz) {
+        return this.callApiToMono(schwabUserId, HttpMethod.POST, uriComponentsBuilder, null, clazz);
+    }
+
+    /**
+     * reactively call a Schwab Api using the post http method
+     * @param schwabUserId the Charles Schwab user id of the account to be used for API authentication
+     * @param uriComponentsBuilder the path and query params of the API
+     * @param body the body of the request
+     * @param clazz a Class{@literal <}T{@literal >} object defining the return type of the method
+     * @return T
+     * @param <T> the return type of the method
+     */
+    protected <T> Mono<T> callPostApiToMono(@NotNull String schwabUserId,
+                                            @NotNull UriComponentsBuilder uriComponentsBuilder,
+                                            Object body,
+                                            @NotNull Class<T> clazz) {
+        return this.callApiToMono(schwabUserId, HttpMethod.POST, uriComponentsBuilder, body, clazz);
+    }
+
+    /**
+     * reactively call a Schwab Api using the post http method
+     * @param schwabUserId the Charles Schwab user id of the account to be used for API authentication
+     * @param uriComponentsBuilder the path and query params of the API
+     * @param body the body of the request
+     * @param bodyTypeReference a {@link ParameterizedTypeReference}{@literal <}T{@literal >} object defining the return type of the method
+     * @return T
+     * @param <T> the return type of the method
+     */
+    protected <T> Mono<T> callPostApiToMono(@NotNull String schwabUserId,
+                                            @NotNull UriComponentsBuilder uriComponentsBuilder,
+                                            Object body,
+                                            @NotNull ParameterizedTypeReference<T> bodyTypeReference) {
+        return this.callApiToMono(schwabUserId, HttpMethod.POST, uriComponentsBuilder, body, bodyTypeReference);
+    }
+
+    /**
+     * reactively call a Schwab Api using the post http method
+     * @param schwabUserId the Charles Schwab user id of the account to be used for API authentication
+     * @param uriComponentsBuilder the path and query params of the API
+     * @param body the body of the request
+     * @param clazz a Class{@literal <}T{@literal >} object defining the return type of the method
+     * @return T
+     * @param <T> the return type of the method
+     */
+    protected <T> Flux<T> callPostApiToFlux(@NotNull String schwabUserId,
+                                            @NotNull UriComponentsBuilder uriComponentsBuilder,
+                                            Object body,
+                                            @NotNull Class<T> clazz) {
+        return this.callApiToFlux(schwabUserId, HttpMethod.POST, uriComponentsBuilder, body, clazz);
+    }
+
+    /**
+     * reactively call a Schwab Api using the post http method
+     * @param schwabUserId the Charles Schwab user id of the account to be used for API authentication
+     * @param uriComponentsBuilder the path and query params of the API
+     * @param body the body of the request
+     * @param bodyTypeReference a {@link ParameterizedTypeReference}{@literal <}T{@literal >} object defining the return type of the method
+     * @return T
+     * @param <T> the return type of the method
+     */
+    protected <T> Flux<T> callPostApiToFlux(@NotNull String schwabUserId,
+                                            @NotNull UriComponentsBuilder uriComponentsBuilder,
+                                            Object body,
+                                            @NotNull ParameterizedTypeReference<T> bodyTypeReference) {
+        return this.callApiToFlux(schwabUserId, HttpMethod.POST, uriComponentsBuilder, body, bodyTypeReference);
+    }
+
+    /**
      * Call a Schwab Api using the put http method
      * @param schwabUserId the Charles Schwab user id of the account to be used for API authentication
      * @param uriComponentsBuilder the path and query params of the API
      */
     protected void callPutApi(@NotNull String schwabUserId,
-                              @NotNull UriComponentsBuilder uriComponentsBuilder) {
-        this.callApi(schwabUserId, HttpMethod.PUT, uriComponentsBuilder, Object.class, null);
+                               @NotNull UriComponentsBuilder uriComponentsBuilder) {
+        this.callApiToMono(schwabUserId, HttpMethod.PUT, uriComponentsBuilder, null, Object.class);
     }
 
     /**
@@ -230,9 +343,9 @@ public class SchwabBaseApiClient {
      * @param body the body of the request
      */
     protected void callPutApi(@NotNull String schwabUserId,
-                              @NotNull UriComponentsBuilder uriComponentsBuilder,
-                              Object body) {
-        this.callApi(schwabUserId, HttpMethod.PUT, uriComponentsBuilder, Object.class, body);
+                               @NotNull UriComponentsBuilder uriComponentsBuilder,
+                               Object body) {
+        this.callApiToMono(schwabUserId, HttpMethod.PUT, uriComponentsBuilder, body, Object.class);
     }
 
     /**
@@ -244,11 +357,76 @@ public class SchwabBaseApiClient {
      * @return T
      * @param <T> the return type of the method
      */
+    @Deprecated
     protected <T> T callPutApi(@NotNull String schwabUserId,
                                @NotNull UriComponentsBuilder uriComponentsBuilder,
                                @NotNull Class<T> clazz,
                                Object body) {
         return this.callApi(schwabUserId, HttpMethod.PUT, uriComponentsBuilder, clazz, body);
+    }
+
+    /**
+     * reactively call a Schwab Api using the put http method
+     * @param schwabUserId the Charles Schwab user id of the account to be used for API authentication
+     * @param uriComponentsBuilder the path and query params of the API
+     * @param body the body of the request
+     * @param clazz a Class{@literal <}T{@literal >} object defining the return type of the method
+     * @return T
+     * @param <T> the return type of the method
+     */
+    protected <T> Mono<T> callPutApiToMono(@NotNull String schwabUserId,
+                                            @NotNull UriComponentsBuilder uriComponentsBuilder,
+                                            Object body,
+                                            @NotNull Class<T> clazz) {
+        return this.callApiToMono(schwabUserId, HttpMethod.PUT, uriComponentsBuilder, body, clazz);
+    }
+
+    /**
+     * reactively call a Schwab Api using the put http method
+     * @param schwabUserId the Charles Schwab user id of the account to be used for API authentication
+     * @param uriComponentsBuilder the path and query params of the API
+     * @param body the body of the request
+     * @param bodyTypeReference a {@link ParameterizedTypeReference}{@literal <}T{@literal >} object defining the return type of the method
+     * @return T
+     * @param <T> the return type of the method
+     */
+    protected <T> Mono<T> callPutApiToMono(@NotNull String schwabUserId,
+                                            @NotNull UriComponentsBuilder uriComponentsBuilder,
+                                            Object body,
+                                            @NotNull ParameterizedTypeReference<T> bodyTypeReference) {
+        return this.callApiToMono(schwabUserId, HttpMethod.PUT, uriComponentsBuilder, body, bodyTypeReference);
+    }
+
+    /**
+     * reactively call a Schwab Api using the put http method
+     * @param schwabUserId the Charles Schwab user id of the account to be used for API authentication
+     * @param uriComponentsBuilder the path and query params of the API
+     * @param body the body of the request
+     * @param clazz a Class{@literal <}T{@literal >} object defining the return type of the method
+     * @return T
+     * @param <T> the return type of the method
+     */
+    protected <T> Flux<T> callPutApiToFlux(@NotNull String schwabUserId,
+                                            @NotNull UriComponentsBuilder uriComponentsBuilder,
+                                            Object body,
+                                            @NotNull Class<T> clazz) {
+        return this.callApiToFlux(schwabUserId, HttpMethod.PUT, uriComponentsBuilder, body, clazz);
+    }
+
+    /**
+     * reactively call a Schwab Api using the put http method
+     * @param schwabUserId the Charles Schwab user id of the account to be used for API authentication
+     * @param uriComponentsBuilder the path and query params of the API
+     * @param body the body of the request
+     * @param bodyTypeReference a {@link ParameterizedTypeReference}{@literal <}T{@literal >} object defining the return type of the method
+     * @return T
+     * @param <T> the return type of the method
+     */
+    protected <T> Flux<T> callPutApiToFlux(@NotNull String schwabUserId,
+                                            @NotNull UriComponentsBuilder uriComponentsBuilder,
+                                            Object body,
+                                            @NotNull ParameterizedTypeReference<T> bodyTypeReference) {
+        return this.callApiToFlux(schwabUserId, HttpMethod.PUT, uriComponentsBuilder, body, bodyTypeReference);
     }
 
     /**
@@ -258,7 +436,7 @@ public class SchwabBaseApiClient {
      */
     protected void callDeleteApi(@NotNull String schwabUserId,
                                  @NotNull UriComponentsBuilder uriComponentsBuilder) {
-        this.callApi(schwabUserId, HttpMethod.DELETE, uriComponentsBuilder, Object.class, null);
+        this.callApiToMono(schwabUserId, HttpMethod.DELETE, uriComponentsBuilder, null, Object.class);
     }
 
     /**
@@ -270,7 +448,7 @@ public class SchwabBaseApiClient {
     protected void callDeleteApi(@NotNull String schwabUserId,
                                  @NotNull UriComponentsBuilder uriComponentsBuilder,
                                  Object body) {
-        this.callApi(schwabUserId, HttpMethod.DELETE, uriComponentsBuilder, Object.class, body);
+        this.callApiToMono(schwabUserId, HttpMethod.DELETE, uriComponentsBuilder, body, Object.class);
     }
 
     /**
@@ -282,6 +460,7 @@ public class SchwabBaseApiClient {
      * @return T
      * @param <T> the return type of the method
      */
+    @Deprecated
     protected <T> T callDeleteApi(@NotNull String schwabUserId,
                                   @NotNull UriComponentsBuilder uriComponentsBuilder,
                                   @NotNull Class<T> clazz,
@@ -299,6 +478,7 @@ public class SchwabBaseApiClient {
      * @return T
      * @param <T> the return type of the method
      */
+    @Deprecated
     protected <T> T callApi(@NotNull String schwabUserId,
                             @NotNull HttpMethod httpMethod,
                             @NotNull UriComponentsBuilder uriComponentsBuilder,
@@ -314,12 +494,78 @@ public class SchwabBaseApiClient {
         return ret;
     }
 
+    /**
+     * reactively call a Schwab Api using the delete http method
+     * @param schwabUserId the Charles Schwab user id of the account to be used for API authentication
+     * @param uriComponentsBuilder the path and query params of the API
+     * @param body the body of the request
+     * @param clazz a Class{@literal <}T{@literal >} object defining the return type of the method
+     * @return T
+     * @param <T> the return type of the method
+     */
+    protected <T> Mono<T> callDeleteApiToMono(@NotNull String schwabUserId,
+                                           @NotNull UriComponentsBuilder uriComponentsBuilder,
+                                           Object body,
+                                           @NotNull Class<T> clazz) {
+        return this.callApiToMono(schwabUserId, HttpMethod.DELETE, uriComponentsBuilder, body, clazz);
+    }
+
+    /**
+     * reactively call a Schwab Api using the delete http method
+     * @param schwabUserId the Charles Schwab user id of the account to be used for API authentication
+     * @param uriComponentsBuilder the path and query params of the API
+     * @param body the body of the request
+     * @param bodyTypeReference a {@link ParameterizedTypeReference}{@literal <}T{@literal >} object defining the return type of the method
+     * @return T
+     * @param <T> the return type of the method
+     */
+    protected <T> Mono<T> callDeleteApiToMono(@NotNull String schwabUserId,
+                                           @NotNull UriComponentsBuilder uriComponentsBuilder,
+                                           Object body,
+                                           @NotNull ParameterizedTypeReference<T> bodyTypeReference) {
+        return this.callApiToMono(schwabUserId, HttpMethod.DELETE, uriComponentsBuilder, body, bodyTypeReference);
+    }
+
+    /**
+     * reactively call a Schwab Api using the delete http method
+     * @param schwabUserId the Charles Schwab user id of the account to be used for API authentication
+     * @param uriComponentsBuilder the path and query params of the API
+     * @param body the body of the request
+     * @param clazz a Class{@literal <}T{@literal >} object defining the return type of the method
+     * @return T
+     * @param <T> the return type of the method
+     */
+    protected <T> Flux<T> callDeleteApiToFlux(@NotNull String schwabUserId,
+                                           @NotNull UriComponentsBuilder uriComponentsBuilder,
+                                           Object body,
+                                           @NotNull Class<T> clazz) {
+        return this.callApiToFlux(schwabUserId, HttpMethod.DELETE, uriComponentsBuilder, body, clazz);
+    }
+
+    /**
+     * reactively call a Schwab Api using the delete http method
+     * @param schwabUserId the Charles Schwab user id of the account to be used for API authentication
+     * @param uriComponentsBuilder the path and query params of the API
+     * @param body the body of the request
+     * @param bodyTypeReference a {@link ParameterizedTypeReference}{@literal <}T{@literal >} object defining the return type of the method
+     * @return T
+     * @param <T> the return type of the method
+     */
+    protected <T> Flux<T> callDeleteApiToFlux(@NotNull String schwabUserId,
+                                           @NotNull UriComponentsBuilder uriComponentsBuilder,
+                                           Object body,
+                                           @NotNull ParameterizedTypeReference<T> bodyTypeReference) {
+        return this.callApiToFlux(schwabUserId, HttpMethod.DELETE, uriComponentsBuilder, body, bodyTypeReference);
+    }
+
+    @Deprecated
     private WebClient.ResponseSpec callApi(@NotNull String schwabUserId,
                                            @NotNull HttpMethod httpMethod,
                                            @NotNull UriComponentsBuilder uriComponentsBuilder) {
         return this.callApi(schwabUserId, httpMethod, uriComponentsBuilder, null);
     }
 
+    @Deprecated
     private WebClient.ResponseSpec callApi(@NotNull String schwabUserId,
                                            @NotNull HttpMethod httpMethod,
                                            @NotNull UriComponentsBuilder uriComponentsBuilder,
@@ -347,15 +593,75 @@ public class SchwabBaseApiClient {
         }).block();
     }
 
-    private <T> Mono<T> callApiAsMono(@NotNull String schwabUserId,
+    private <T> Mono<T> callApiToMono(@NotNull String schwabUserId,
+                                      @NotNull HttpMethod httpMethod,
+                                      @NotNull UriComponentsBuilder uriComponentsBuilder,
+                                      Object body,
+                                      @NotNull Class<T> clazz) {
+        return this.callApiToMono(schwabUserId, httpMethod, uriComponentsBuilder, body, clazz, false);
+    }
+
+    private <T> Mono<T> callApiToMono(@NotNull String schwabUserId,
+                                      @NotNull HttpMethod httpMethod,
+                                      @NotNull UriComponentsBuilder uriComponentsBuilder,
+                                      Object body,
+                                      @NotNull Class<T> clazz,
+                                      @NotNull Boolean hasRetried) {
+        return schwabOauth2Controller.getAccessToken(schwabUserId)
+                .flatMap(tokenInfo -> {
+                    //Validate refresh token
+                    schwabOauth2Controller.validateRefreshToken(tokenInfo);
+
+                    URI uri = uriComponentsBuilder
+                            .scheme("https")
+                            .host(schwabTargetUrl)
+                            .build()
+                            .toUri();
+                    WebClient.RequestBodySpec bodySpec = schwabWebClient.getSchwabWebClient()
+                            .method(httpMethod)
+                            .uri(uri)
+                            .headers(h -> h.setBearerAuth(tokenInfo.getAccessToken()));
+                    if (body != null) {
+                        bodySpec.body(BodyInserters.fromValue(body));
+                    }
+
+                    return bodySpec.exchangeToMono(response -> {
+                        Mono<T> mono;
+                        if (response.statusCode().equals(HttpStatus.OK)) {
+                            mono = response.bodyToMono(clazz);
+                        } else if (response.statusCode().is4xxClientError() || response.statusCode().is5xxServerError()) {
+                            if (response.statusCode().isSameCodeAs(HttpStatus.UNAUTHORIZED)) {
+                                mono = Mono.error(new ApiUnauthorizedException());
+                            } else {
+                                mono = response.createException()
+                                        .flatMap(Mono::error);
+                            }
+                        } else {
+                            mono = response.createException()
+                                    .flatMap(Mono::error);
+                        }
+                        return mono;
+                    });
+                })
+                .onErrorResume(throwable -> {
+                    if(throwable instanceof ApiUnauthorizedException && !hasRetried) {
+                        schwabOauth2Controller.getSchwabAccount(schwabUserId).setAccessToken(null);
+                        return this.callApiToMono(schwabUserId, httpMethod, uriComponentsBuilder, body, clazz, true);
+                    } else {
+                        return Mono.error(throwable);
+                    }
+                });
+    }
+
+    private <T> Mono<T> callApiToMono(@NotNull String schwabUserId,
                                       @NotNull HttpMethod httpMethod,
                                       @NotNull UriComponentsBuilder uriComponentsBuilder,
                                       Object body,
                                       @NotNull ParameterizedTypeReference<T> bodyTypeReference) {
-        return this.callApiAsMono(schwabUserId, httpMethod, uriComponentsBuilder, body, bodyTypeReference, false);
+        return this.callApiToMono(schwabUserId, httpMethod, uriComponentsBuilder, body, bodyTypeReference, false);
     }
 
-    private <T> Mono<T> callApiAsMono(@NotNull String schwabUserId,
+    private <T> Mono<T> callApiToMono(@NotNull String schwabUserId,
                                         @NotNull HttpMethod httpMethod,
                                         @NotNull UriComponentsBuilder uriComponentsBuilder,
                                         Object body,
@@ -401,28 +707,29 @@ public class SchwabBaseApiClient {
                 .onErrorResume(throwable -> {
                     if(throwable instanceof ApiUnauthorizedException && !hasRetried) {
                         schwabOauth2Controller.getSchwabAccount(schwabUserId).setAccessToken(null);
-                        return this.callApiAsMono(schwabUserId, httpMethod, uriComponentsBuilder, body, bodyTypeReference, true);
+                        return this.callApiToMono(schwabUserId, httpMethod, uriComponentsBuilder, body, bodyTypeReference, true);
                     } else {
                         return Mono.error(throwable);
                     }
                 });
     }
 
-    private <T> Mono<T> callApiAsMono(@NotNull String schwabUserId,
+    private <T> Flux<T> callApiToFlux(@NotNull String schwabUserId,
                                       @NotNull HttpMethod httpMethod,
                                       @NotNull UriComponentsBuilder uriComponentsBuilder,
                                       Object body,
                                       @NotNull Class<T> clazz) {
-        return this.callApiAsMono(schwabUserId, httpMethod, uriComponentsBuilder, body, clazz, false);
+        return this.callApiToFlux(schwabUserId, httpMethod, uriComponentsBuilder, body, clazz, false);
     }
 
-    private <T> Mono<T> callApiAsMono(@NotNull String schwabUserId,
+    private <T> Flux<T> callApiToFlux(@NotNull String schwabUserId,
                                       @NotNull HttpMethod httpMethod,
                                       @NotNull UriComponentsBuilder uriComponentsBuilder,
                                       Object body,
                                       @NotNull Class<T> clazz,
                                       @NotNull Boolean hasRetried) {
         return schwabOauth2Controller.getAccessToken(schwabUserId)
+                .flux()
                 .flatMap(tokenInfo -> {
                     //Validate refresh token
                     schwabOauth2Controller.validateRefreshToken(tokenInfo);
@@ -440,30 +747,91 @@ public class SchwabBaseApiClient {
                         bodySpec.body(BodyInserters.fromValue(body));
                     }
 
-                    return bodySpec.exchangeToMono(response -> {
-                        Mono<T> mono;
+                    return bodySpec.exchangeToFlux(response -> {
+                        Flux<T> flux;
                         if (response.statusCode().equals(HttpStatus.OK)) {
-                            mono = response.bodyToMono(clazz);
+                            flux = response.bodyToFlux(clazz);
                         } else if (response.statusCode().is4xxClientError() || response.statusCode().is5xxServerError()) {
                             if (response.statusCode().isSameCodeAs(HttpStatus.UNAUTHORIZED)) {
-                                mono = Mono.error(new ApiUnauthorizedException());
+                                flux = Flux.error(new ApiUnauthorizedException());
                             } else {
-                                mono = response.createException()
-                                        .flatMap(Mono::error);
+                                flux = response.createException().flux()
+                                        .flatMap(Flux::error);
                             }
                         } else {
-                            mono = response.createException()
-                                    .flatMap(Mono::error);
+                            flux = response.createException().flux()
+                                    .flatMap(Flux::error);
                         }
-                        return mono;
+                        return flux;
                     });
                 })
                 .onErrorResume(throwable -> {
                     if(throwable instanceof ApiUnauthorizedException && !hasRetried) {
                         schwabOauth2Controller.getSchwabAccount(schwabUserId).setAccessToken(null);
-                        return this.callApiAsMono(schwabUserId, httpMethod, uriComponentsBuilder, body, clazz, true);
+                        return this.callApiToFlux(schwabUserId, httpMethod, uriComponentsBuilder, body, clazz, true);
                     } else {
-                        return Mono.error(throwable);
+                        return Flux.error(throwable);
+                    }
+                });
+    }
+
+    private <T> Flux<T> callApiToFlux(@NotNull String schwabUserId,
+                                      @NotNull HttpMethod httpMethod,
+                                      @NotNull UriComponentsBuilder uriComponentsBuilder,
+                                      Object body,
+                                      @NotNull ParameterizedTypeReference<T> bodyTypeReference) {
+        return this.callApiToFlux(schwabUserId, httpMethod, uriComponentsBuilder, body, bodyTypeReference, false);
+    }
+
+    private <T> Flux<T> callApiToFlux(@NotNull String schwabUserId,
+                                      @NotNull HttpMethod httpMethod,
+                                      @NotNull UriComponentsBuilder uriComponentsBuilder,
+                                      Object body,
+                                      @NotNull ParameterizedTypeReference<T> bodyTypeReference,
+                                      @NotNull Boolean hasRetried) {
+        return schwabOauth2Controller.getAccessToken(schwabUserId)
+                .flux()
+                .flatMap(tokenInfo -> {
+                    //Validate refresh token
+                    schwabOauth2Controller.validateRefreshToken(tokenInfo);
+
+                    URI uri = uriComponentsBuilder
+                            .scheme("https")
+                            .host(schwabTargetUrl)
+                            .build()
+                            .toUri();
+                    WebClient.RequestBodySpec bodySpec = schwabWebClient.getSchwabWebClient()
+                            .method(httpMethod)
+                            .uri(uri)
+                            .headers(h -> h.setBearerAuth(tokenInfo.getAccessToken()));
+                    if (body != null) {
+                        bodySpec.body(BodyInserters.fromValue(body));
+                    }
+
+                    return bodySpec.exchangeToFlux(response -> {
+                        Flux<T> flux;
+                        if (response.statusCode().equals(HttpStatus.OK)) {
+                            flux = response.bodyToFlux(bodyTypeReference);
+                        } else if (response.statusCode().is4xxClientError() || response.statusCode().is5xxServerError()) {
+                            if (response.statusCode().isSameCodeAs(HttpStatus.UNAUTHORIZED)) {
+                                flux = Flux.error(new ApiUnauthorizedException());
+                            } else {
+                                flux = response.createException().flux()
+                                        .flatMap(Flux::error);
+                            }
+                        } else {
+                            flux = response.createException().flux()
+                                    .flatMap(Flux::error);
+                        }
+                        return flux;
+                    });
+                })
+                .onErrorResume(throwable -> {
+                    if(throwable instanceof ApiUnauthorizedException && !hasRetried) {
+                        schwabOauth2Controller.getSchwabAccount(schwabUserId).setAccessToken(null);
+                        return this.callApiToFlux(schwabUserId, httpMethod, uriComponentsBuilder, body, bodyTypeReference, true);
+                    } else {
+                        return Flux.error(throwable);
                     }
                 });
     }

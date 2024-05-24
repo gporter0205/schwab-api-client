@@ -122,7 +122,7 @@ public class SchwabMarketDataApiClient extends SchwabBaseApiClient {
      */
     public QuoteResponse fetchQuote(@NotNull String symbol,
                                     String fields) {
-        return this.fetchQuoteAsMono(symbol, fields).block();
+        return this.fetchQuoteToMono(symbol, fields).block();
     }
 
     /**
@@ -130,8 +130,8 @@ public class SchwabMarketDataApiClient extends SchwabBaseApiClient {
      * @param symbol {@literal @}NotNull String
      * @return {@link Mono}{@literal <}{@link QuoteResponse}{@literal >}
      */
-    public Mono<QuoteResponse> fetchQuoteAsMono(@NotNull String symbol) {
-        return this.fetchQuoteAsMono(symbol, null);
+    public Mono<QuoteResponse> fetchQuoteToMono(@NotNull String symbol) {
+        return this.fetchQuoteToMono(symbol, null);
     }
 
     /**
@@ -140,7 +140,7 @@ public class SchwabMarketDataApiClient extends SchwabBaseApiClient {
      * @param fields String (quote, fundamental or all)
      * @return {@link Mono}{@literal <}{@link QuoteResponse}{@literal >}
      */
-    public Mono<QuoteResponse> fetchQuoteAsMono(@NotNull String symbol,
+    public Mono<QuoteResponse> fetchQuoteToMono(@NotNull String symbol,
                                                  String fields) {
         log.info("Fetch Quote [{}]", symbol);
         Mono<QuoteResponse> quoteResponseMono;
@@ -153,7 +153,7 @@ public class SchwabMarketDataApiClient extends SchwabBaseApiClient {
             UriComponentsBuilder uriBuilder = this.getUriBuilder()
                     .pathSegment(symbol.toUpperCase(), "quotes")
                     .queryParam("fields", fields);
-            quoteResponseMono = this.callGetApiAsMono(defaultUserId, uriBuilder, new ParameterizedTypeReference<Map<String, QuoteResponse>>() {})
+            quoteResponseMono = this.callGetApiToMono(defaultUserId, uriBuilder, new ParameterizedTypeReference<Map<String, QuoteResponse>>() {})
                     .onErrorResume(throwable -> {
                         if(throwable instanceof WebClientResponseException) {
                             if(((WebClientResponseException) throwable).getStatusCode().isSameCodeAs(HttpStatus.NOT_FOUND)) {
@@ -205,7 +205,7 @@ public class SchwabMarketDataApiClient extends SchwabBaseApiClient {
     public Map<String, QuoteResponse> fetchQuotes(@NotNull List<String> symbols,
                                                   String fields,
                                                   Boolean indicative) {
-        return this.fetchQuotesAsMono(symbols, fields, indicative).block();
+        return this.fetchQuotesToMono(symbols, fields, indicative).block();
     }
 
     /**
@@ -213,8 +213,8 @@ public class SchwabMarketDataApiClient extends SchwabBaseApiClient {
      * @param symbols {@literal @}NotNull List{@literal <}String{@literal >}
      * @return {@link Mono}{@literal <}{@link Map}{@literal <}String, {@link QuoteResponse}{@literal >}{@literal >}
      */
-    public Mono<Map<String, QuoteResponse>> fetchQuotesAsMono(@NotNull List<String> symbols) {
-        return this.fetchQuotesAsMono(symbols, null);
+    public Mono<Map<String, QuoteResponse>> fetchQuotesToMono(@NotNull List<String> symbols) {
+        return this.fetchQuotesToMono(symbols, null);
     }
 
     /**
@@ -223,9 +223,9 @@ public class SchwabMarketDataApiClient extends SchwabBaseApiClient {
      * @param fields String (quote, fundamental or all)
      * @return {@link Mono}{@literal <}{@link Map}{@literal <}String, {@link QuoteResponse}{@literal >}{@literal >}
      */
-    public Mono<Map<String, QuoteResponse>> fetchQuotesAsMono(@NotNull List<String> symbols,
+    public Mono<Map<String, QuoteResponse>> fetchQuotesToMono(@NotNull List<String> symbols,
                                                               String fields) {
-        return this.fetchQuotesAsMono(symbols, fields, null);
+        return this.fetchQuotesToMono(symbols, fields, null);
     }
 
     /**
@@ -235,7 +235,7 @@ public class SchwabMarketDataApiClient extends SchwabBaseApiClient {
      * @param indicative Boolean (include indicative symbol quotes for all ETF symbols in request)
      * @return {@link Mono}{@literal <}{@link Map}{@literal <}String, {@link QuoteResponse}{@literal >}{@literal >}
      */
-    public Mono<Map<String, QuoteResponse>> fetchQuotesAsMono(@NotNull List<String> symbols,
+    public Mono<Map<String, QuoteResponse>> fetchQuotesToMono(@NotNull List<String> symbols,
                                                               String fields,
                                                               Boolean indicative) {
         log.info("Fetch Quotes -> [{}]", symbols);
@@ -243,7 +243,7 @@ public class SchwabMarketDataApiClient extends SchwabBaseApiClient {
         if(fields == null || fields.isEmpty()) {
             fields = "all";
         }
-        if (!symbols.isEmpty()) {
+        if (symbols.isEmpty()) {
             throw new IllegalArgumentException("Quotes must include one or more symbols.");
         }
 
@@ -255,7 +255,7 @@ public class SchwabMarketDataApiClient extends SchwabBaseApiClient {
         if(indicative != null) {
             uriBuilder.queryParam("indicative", indicative);
         }
-        return this.callGetApiAsMono(defaultUserId, uriBuilder, new ParameterizedTypeReference<Map<String, QuoteResponse>>() {})
+        return this.callGetApiToMono(defaultUserId, uriBuilder, new ParameterizedTypeReference<Map<String, QuoteResponse>>() {})
                 .onErrorResume(throwable -> {
                     if(throwable instanceof WebClientResponseException) {
                         if(((WebClientResponseException) throwable).getStatusCode().isSameCodeAs(HttpStatus.NOT_FOUND)) {
@@ -279,7 +279,7 @@ public class SchwabMarketDataApiClient extends SchwabBaseApiClient {
      * @return {@link OptionChainResponse}
      */
     public OptionChainResponse fetchOptionChain(@NotNull OptionChainRequest chainRequest) {
-        return this.fetchOptionChainAsMono(chainRequest).block();
+        return this.fetchOptionChainToMono(chainRequest).block();
     }
 
     /**
@@ -287,7 +287,7 @@ public class SchwabMarketDataApiClient extends SchwabBaseApiClient {
      * @param chainRequest {@literal @}NotNull {@link OptionChainRequest}
      * @return {@link Mono}{@literal <}{@link OptionChainResponse}{@literal >}
      */
-    public Mono<OptionChainResponse> fetchOptionChainAsMono(@NotNull OptionChainRequest chainRequest) {
+    public Mono<OptionChainResponse> fetchOptionChainToMono(@NotNull OptionChainRequest chainRequest) {
         log.info("Fetch Option Chain -> {}", chainRequest);
 
         if (chainRequest.getSymbol() == null || chainRequest.getSymbol().isEmpty()) {
@@ -342,7 +342,7 @@ public class SchwabMarketDataApiClient extends SchwabBaseApiClient {
         if(chainRequest.getMonth() != null) {
             uriBuilder.queryParam("month", chainRequest.getMonth().toString().substring(0, 3).toUpperCase());
         }
-        return this.callGetApiAsMono(defaultUserId, uriBuilder, OptionChainResponse.class)
+        return this.callGetApiToMono(defaultUserId, uriBuilder, OptionChainResponse.class)
                 .onErrorResume(throwable -> {
                     if(throwable instanceof WebClientResponseException) {
                         if(((WebClientResponseException) throwable).getStatusCode().isSameCodeAs(HttpStatus.NOT_FOUND)) {
@@ -366,7 +366,7 @@ public class SchwabMarketDataApiClient extends SchwabBaseApiClient {
      * @return {@link ExpirationChainResponse}
      */
     public ExpirationChainResponse fetchExpirationChain(@NotNull String symbol) {
-        return this.fetchExpirationChainAsMono(symbol).block();
+        return this.fetchExpirationChainToMono(symbol).block();
     }
 
     /**
@@ -374,7 +374,7 @@ public class SchwabMarketDataApiClient extends SchwabBaseApiClient {
      * @param symbol {@literal @}NotNull String
      * @return {@link Mono}{@literal <}{@link ExpirationChainResponse}{@literal >}
      */
-    public Mono<ExpirationChainResponse> fetchExpirationChainAsMono(@NotNull String symbol) {
+    public Mono<ExpirationChainResponse> fetchExpirationChainToMono(@NotNull String symbol) {
         log.info("Fetch Expiration Chain -> [{}]", symbol);
 
         if (symbol.isEmpty()) {
@@ -384,7 +384,7 @@ public class SchwabMarketDataApiClient extends SchwabBaseApiClient {
         UriComponentsBuilder uriBuilder = this.getUriBuilder()
                 .pathSegment("expirationchain")
                 .queryParam("symbol", symbol.toUpperCase());
-        return this.callGetApiAsMono(defaultUserId, uriBuilder, ExpirationChainResponse.class)
+        return this.callGetApiToMono(defaultUserId, uriBuilder, ExpirationChainResponse.class)
                 .onErrorResume(throwable -> {
                     if(throwable instanceof WebClientResponseException) {
                         if(((WebClientResponseException) throwable).getStatusCode().isSameCodeAs(HttpStatus.NOT_FOUND)) {
@@ -408,7 +408,7 @@ public class SchwabMarketDataApiClient extends SchwabBaseApiClient {
      * @return {@link PriceHistoryResponse}
      */
     public PriceHistoryResponse fetchPriceHistory(@NotNull PriceHistoryRequest priceHistReq) {
-        return this.fetchPriceHistoryAsMono(priceHistReq).block();
+        return this.fetchPriceHistoryToMono(priceHistReq).block();
     }
 
     /**
@@ -416,7 +416,7 @@ public class SchwabMarketDataApiClient extends SchwabBaseApiClient {
      * @param priceHistReq {@literal @}NotNull {@link PriceHistoryRequest}
      * @return {@link Mono}{@literal <}{@link PriceHistoryResponse}{@literal >}
      */
-    public Mono<PriceHistoryResponse> fetchPriceHistoryAsMono(@NotNull PriceHistoryRequest priceHistReq) {
+    public Mono<PriceHistoryResponse> fetchPriceHistoryToMono(@NotNull PriceHistoryRequest priceHistReq) {
         log.info("Fetch Price History -> {}", priceHistReq);
 
         if (priceHistReq.getSymbol() == null || priceHistReq.getSymbol().isEmpty()) {
@@ -454,7 +454,7 @@ public class SchwabMarketDataApiClient extends SchwabBaseApiClient {
             uriBuilder.queryParam("needPreviousClose",
                     String.valueOf(priceHistReq.getNeedPreviousClose()));
         }
-        return this.callGetApiAsMono(defaultUserId, uriBuilder, PriceHistoryResponse.class)
+        return this.callGetApiToMono(defaultUserId, uriBuilder, PriceHistoryResponse.class)
                 .onErrorResume(throwable -> {
                     if(throwable instanceof WebClientResponseException) {
                         if(((WebClientResponseException) throwable).getStatusCode().isSameCodeAs(HttpStatus.NOT_FOUND)) {
@@ -492,7 +492,7 @@ public class SchwabMarketDataApiClient extends SchwabBaseApiClient {
      * @return {@link MoversResponse}
      */
     public MoversResponse fetchMovers(@NotNull MoversRequest moversRequest) {
-        return this.fetchMoversAsMono(moversRequest).block();
+        return this.fetchMoversToMono(moversRequest).block();
     }
 
     /**
@@ -500,7 +500,7 @@ public class SchwabMarketDataApiClient extends SchwabBaseApiClient {
      * @param moversRequest {@literal @}NotNull {@link MoversRequest}
      * @return {@link Mono}{@literal <}{@link MoversResponse}{@literal >}
      */
-    public Mono<MoversResponse> fetchMoversAsMono(@NotNull MoversRequest moversRequest) {
+    public Mono<MoversResponse> fetchMoversToMono(@NotNull MoversRequest moversRequest) {
         log.info("Fetch Movers -> {}", moversRequest);
 
         if (moversRequest.getIndexSymbol() == null) {
@@ -509,7 +509,7 @@ public class SchwabMarketDataApiClient extends SchwabBaseApiClient {
 
         UriComponentsBuilder uriBuilder = this.getUriBuilder()
             .pathSegment("movers", moversRequest.getIndexSymbol().toString());
-        return this.callGetApiAsMono(defaultUserId, uriBuilder, MoversResponse.class)
+        return this.callGetApiToMono(defaultUserId, uriBuilder, MoversResponse.class)
                 .onErrorResume(throwable -> {
                     if(throwable instanceof WebClientResponseException) {
                         if(((WebClientResponseException) throwable).getStatusCode().isSameCodeAs(HttpStatus.NOT_FOUND)) {
@@ -565,7 +565,7 @@ public class SchwabMarketDataApiClient extends SchwabBaseApiClient {
      */
     public Map<String, Map<String, Hours>> fetchMarkets(@NotNull List<Market> markets,
                                                         LocalDate date) {
-        return this.fetchMarketsAsMono(markets, date).block();
+        return this.fetchMarketsToMono(markets, date).block();
     }
 
     /**
@@ -574,8 +574,8 @@ public class SchwabMarketDataApiClient extends SchwabBaseApiClient {
      * @return {@link Mono}{@literal <}{@link Map}{@literal <}String, {@link Map}{@literal <}String, {@link Hours}{@literal >}{@literal >}{@literal >}
      */
     @SuppressWarnings("unused")
-    public Mono<Map<String, Map<String, Hours>>> fetchMarketAsMono(@NotNull Market market) {
-        return fetchMarketAsMono(market, null);
+    public Mono<Map<String, Map<String, Hours>>> fetchMarketToMono(@NotNull Market market) {
+        return fetchMarketToMono(market, null);
     }
 
     /**
@@ -584,9 +584,9 @@ public class SchwabMarketDataApiClient extends SchwabBaseApiClient {
      * @param date LocalDate
      * @return {@link Mono}{@literal <}{@link Map}{@literal <}String, {@link Map}{@literal <}String, {@link Hours}{@literal >}{@literal >}{@literal >}
      */
-    public Mono<Map<String, Map<String, Hours>>> fetchMarketAsMono(@NotNull Market market,
+    public Mono<Map<String, Map<String, Hours>>> fetchMarketToMono(@NotNull Market market,
                                                        LocalDate date) {
-        return this.fetchMarketsAsMono(Collections.singletonList(market), date);
+        return this.fetchMarketsToMono(Collections.singletonList(market), date);
     }
 
     /**
@@ -594,8 +594,8 @@ public class SchwabMarketDataApiClient extends SchwabBaseApiClient {
      * @param markets {@literal @}NotNull {@link List}{@literal <}{@link Market}{@literal >}
      * @return {@link Mono}{@literal <}{@link Map}{@literal <}String, {@link Map}{@literal <}String, {@link Hours}{@literal >}{@literal >}{@literal >}
      */
-    public Mono<Map<String, Map<String, Hours>>> fetchMarketsAsMono(@NotNull List<Market> markets) {
-        return fetchMarketsAsMono(markets, null);
+    public Mono<Map<String, Map<String, Hours>>> fetchMarketsToMono(@NotNull List<Market> markets) {
+        return fetchMarketsToMono(markets, null);
     }
 
     /**
@@ -604,7 +604,7 @@ public class SchwabMarketDataApiClient extends SchwabBaseApiClient {
      * @param date LocalDate
      * @return {@link Mono}{@literal <}{@link Map}{@literal <}String, {@link Map}{@literal <}String, {@link Hours}{@literal >}{@literal >}{@literal >}
      */
-    public Mono<Map<String, Map<String, Hours>>> fetchMarketsAsMono(@NotNull List<Market> markets,
+    public Mono<Map<String, Map<String, Hours>>> fetchMarketsToMono(@NotNull List<Market> markets,
                                     LocalDate date) {
         log.info("Fetch Market Hours -> {}", markets);
 
@@ -619,7 +619,7 @@ public class SchwabMarketDataApiClient extends SchwabBaseApiClient {
         if (date != null) {
             uriBuilder.queryParam("date", date.format(DateTimeFormatter.ISO_DATE));
         }
-        return this.callGetApiAsMono(defaultUserId, uriBuilder, new ParameterizedTypeReference<Map<String, Map<String, Hours>>>() {})
+        return this.callGetApiToMono(defaultUserId, uriBuilder, new ParameterizedTypeReference<Map<String, Map<String, Hours>>>() {})
                 .onErrorResume(throwable -> {
                     if(throwable instanceof WebClientResponseException) {
                         if(((WebClientResponseException) throwable).getStatusCode().isSameCodeAs(HttpStatus.NOT_FOUND)) {
@@ -643,7 +643,7 @@ public class SchwabMarketDataApiClient extends SchwabBaseApiClient {
      * @return {@link InstrumentsResponse}
      */
     public InstrumentsResponse fetchInstruments(@NotNull InstrumentsRequest instrumentsRequest) {
-        return fetchInstrumentsAsMono(instrumentsRequest)
+        return fetchInstrumentsToMono(instrumentsRequest)
                 .block();
     }
 
@@ -652,7 +652,7 @@ public class SchwabMarketDataApiClient extends SchwabBaseApiClient {
      * @param instrumentsRequest {@literal @}NotNull {@link InstrumentsRequest}
      * @return {@link Mono}{@literal <}{@link InstrumentsResponse}{@literal >}
      */
-    public Mono<InstrumentsResponse> fetchInstrumentsAsMono(@NotNull InstrumentsRequest instrumentsRequest) {
+    public Mono<InstrumentsResponse> fetchInstrumentsToMono(@NotNull InstrumentsRequest instrumentsRequest) {
         log.info("Fetch Instruments -> {}", instrumentsRequest);
         Mono<InstrumentsResponse> response;
 
@@ -661,7 +661,7 @@ public class SchwabMarketDataApiClient extends SchwabBaseApiClient {
                     .pathSegment("instruments")
                     .queryParam("symbol", instrumentsRequest.getSymbol())
                     .queryParam("projection", instrumentsRequest.getProjection().value());
-            response = this.callGetApiAsMono(defaultUserId, uriBuilder, InstrumentsResponse.class)
+            response = this.callGetApiToMono(defaultUserId, uriBuilder, InstrumentsResponse.class)
                     .flatMap(instrumentResponse -> {
                         if(instrumentResponse.getInstruments() == null) {
                             return Mono.error(new SymbolNotFoundException("Instruments for '" + instrumentsRequest.getSymbol() + "' not found"));
@@ -681,7 +681,7 @@ public class SchwabMarketDataApiClient extends SchwabBaseApiClient {
      * @return {@link InstrumentsResponse}
      */
     public InstrumentsResponse fetchInstrumentsByCusip(@NotNull String cusip) {
-        return this.fetchInstrumentsByCusipAsMono(cusip)
+        return this.fetchInstrumentsByCusipToMono(cusip)
                 .block();
     }
 
@@ -690,14 +690,14 @@ public class SchwabMarketDataApiClient extends SchwabBaseApiClient {
      * @param cusip {@literal @}NotNull String
      * @return {@link Mono}{@literal <}{@link InstrumentsResponse}{@literal >}
      */
-    public Mono<InstrumentsResponse> fetchInstrumentsByCusipAsMono(@NotNull String cusip) {
+    public Mono<InstrumentsResponse> fetchInstrumentsByCusipToMono(@NotNull String cusip) {
         log.info("Fetch Instruments by cusip [{}]", cusip);
         Mono<InstrumentsResponse> response;
 
         if (!cusip.isEmpty()) {
             UriComponentsBuilder uriBuilder = this.getUriBuilder()
                 .pathSegment("instruments", cusip);
-            response = this.callGetApiAsMono(defaultUserId, uriBuilder, InstrumentsResponse.class)
+            response = this.callGetApiToMono(defaultUserId, uriBuilder, InstrumentsResponse.class)
                     .onErrorResume(throwable -> {
                         if(throwable instanceof WebClientResponseException) {
                             if(((WebClientResponseException) throwable).getStatusCode().isSameCodeAs(HttpStatus.NOT_FOUND)) {

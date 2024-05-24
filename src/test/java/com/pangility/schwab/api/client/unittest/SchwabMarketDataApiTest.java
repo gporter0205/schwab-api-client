@@ -65,14 +65,13 @@ public class SchwabMarketDataApiTest {
 
     @Test
     public void equityQuoteTest() {
-        Mono<QuoteResponse> quoteResponse = schwabMarketDataApiClient.fetchQuoteAsMono("TQQQ");
+        Mono<QuoteResponse> quoteResponse = schwabMarketDataApiClient.fetchQuoteToMono("TQQQ");
         StepVerifier
                 .create(quoteResponse)
                 .expectNextMatches(response -> response.getSymbol() != null &&
                         response.getSymbol().equalsIgnoreCase("TQQQ") &&
                         response.getAssetMainType().equals(AssetMainType.EQUITY))
-                .expectComplete()
-                .verify();
+                .verifyComplete();
     }
 
     @Test
@@ -84,19 +83,18 @@ public class SchwabMarketDataApiTest {
         }
         String symbol = "TQQQ  " + nextFriday.format(DateTimeFormatter.ofPattern("yyMMdd")) + "C00051000";
 
-        Mono<QuoteResponse> optionResponse = schwabMarketDataApiClient.fetchQuoteAsMono(symbol);
+        Mono<QuoteResponse> optionResponse = schwabMarketDataApiClient.fetchQuoteToMono(symbol);
         StepVerifier
                 .create(optionResponse)
                 .expectNextMatches(response -> response.getSymbol() != null &&
                         response.getSymbol().equalsIgnoreCase(symbol) &&
                         response.getAssetMainType().equals(AssetMainType.OPTION))
-                .expectComplete()
-                .verify();
+                .verifyComplete();
     }
 
     @Test
     public void quoteNotFoundTest() {
-        Mono<QuoteResponse> quoteResponse = schwabMarketDataApiClient.fetchQuoteAsMono("XXXXXX");
+        Mono<QuoteResponse> quoteResponse = schwabMarketDataApiClient.fetchQuoteToMono("XXXXXX");
         StepVerifier
                 .create(quoteResponse)
                 .expectError(SymbolNotFoundException.class)
@@ -105,7 +103,7 @@ public class SchwabMarketDataApiTest {
 
     @Test
     public void quotesTest() {
-        Mono<Map<String, QuoteResponse>> quoteResponses = schwabMarketDataApiClient.fetchQuotesAsMono(Arrays.asList("TQQQ","UPRO"));
+        Mono<Map<String, QuoteResponse>> quoteResponses = schwabMarketDataApiClient.fetchQuotesToMono(Arrays.asList("TQQQ","UPRO"));
         StepVerifier
                 .create(quoteResponses)
                 .expectNextMatches(responses -> responses.size() == 2 &&
@@ -113,13 +111,12 @@ public class SchwabMarketDataApiTest {
                         responses.get("TQQQ").getSymbol().equalsIgnoreCase("TQQQ") &&
                         responses.get("UPRO").getSymbol() != null &&
                         responses.get("UPRO").getSymbol().equalsIgnoreCase("UPRO"))
-                .expectComplete()
-                .verify();
+                .verifyComplete();
     }
 
     /*@Test
     public void quotesNotFoundTest() {
-        Mono<Map<String, QuoteResponse>> quoteResponses = schwabMarketDataApiClient.fetchQuotesAsMono(Arrays.asList("TQQQ","UPRO","XXXXXX"));
+        Mono<Map<String, QuoteResponse>> quoteResponses = schwabMarketDataApiClient.fetchQuotesToMono(Arrays.asList("TQQQ","UPRO","XXXXXX"));
         StepVerifier
                 .create(quoteResponses)
                 .expectError(SymbolNotFoundException.class)
@@ -129,22 +126,21 @@ public class SchwabMarketDataApiTest {
     @Test
     public void chainsTest() {
         OptionChainRequest optionChainRequest = OptionChainRequest.Builder.optionChainRequest().withSymbol("TQQQ").build();
-        Mono<OptionChainResponse> optionChainResponse = schwabMarketDataApiClient.fetchOptionChainAsMono(optionChainRequest);
+        Mono<OptionChainResponse> optionChainResponse = schwabMarketDataApiClient.fetchOptionChainToMono(optionChainRequest);
         StepVerifier
                 .create(optionChainResponse)
                 .expectNextMatches(response -> response.getSymbol() != null &&
                         response.getSymbol().equalsIgnoreCase("TQQQ") &&
                         response.getCallExpDateMap() != null &&
                         !response.getCallExpDateMap().isEmpty())
-                .expectComplete()
-                .verify();
+                .verifyComplete();
     }
 
     // Service returns a 400 - Bad Request instead of a 404 - Not Found
     /*@Test
     public void chainsNotFoundTest() {
         OptionChainRequest optionChainRequest = OptionChainRequest.Builder.optionChainRequest().withSymbol("XXXXXX").build();
-        Mono<OptionChainResponse> optionChainResponse = schwabMarketDataApiClient.fetchOptionChainAsMono(optionChainRequest);
+        Mono<OptionChainResponse> optionChainResponse = schwabMarketDataApiClient.fetchOptionChainToMono(optionChainRequest);
         StepVerifier
                 .create(optionChainResponse)
                 .expectError(SymbolNotFoundException.class)
@@ -153,20 +149,19 @@ public class SchwabMarketDataApiTest {
 
     @Test
     public void expirationChainTest() {
-        Mono<ExpirationChainResponse> expirationChainResponse = schwabMarketDataApiClient.fetchExpirationChainAsMono("AAPL");
+        Mono<ExpirationChainResponse> expirationChainResponse = schwabMarketDataApiClient.fetchExpirationChainToMono("AAPL");
         StepVerifier
                 .create(expirationChainResponse)
                 .expectNextMatches(response -> response.getExpirationList() != null &&
                         !response.getExpirationList().isEmpty() &&
                         response.getExpirationList().get(0).getOptionRoots() != null &&
                         response.getExpirationList().get(0).getOptionRoots().equalsIgnoreCase("AAPL"))
-                .expectComplete()
-                .verify();
+                .verifyComplete();
     }
 
     @Test
     public void expirationChainNotFoundTest() {
-        Mono<ExpirationChainResponse> expirationChainResponse = schwabMarketDataApiClient.fetchExpirationChainAsMono("XXXXXX");
+        Mono<ExpirationChainResponse> expirationChainResponse = schwabMarketDataApiClient.fetchExpirationChainToMono("XXXXXX");
         StepVerifier
                 .create(expirationChainResponse)
                 .expectError(SymbolNotFoundException.class)
@@ -176,7 +171,7 @@ public class SchwabMarketDataApiTest {
     @Test
     public void priceHistoryTest() {
         PriceHistoryRequest priceHistoryRequest = PriceHistoryRequest.Builder.priceHistReq().withSymbol("AAPL").withNeedPreviousClose(true).build();
-        Mono<PriceHistoryResponse> priceHistoryResponse = schwabMarketDataApiClient.fetchPriceHistoryAsMono(priceHistoryRequest);
+        Mono<PriceHistoryResponse> priceHistoryResponse = schwabMarketDataApiClient.fetchPriceHistoryToMono(priceHistoryRequest);
         StepVerifier
                 .create(priceHistoryResponse)
                 .expectNextMatches(response -> response.getSymbol() != null &&
@@ -184,14 +179,13 @@ public class SchwabMarketDataApiTest {
                         response.getSymbol().equalsIgnoreCase("AAPL") &&
                         response.getCandles() != null &&
                         !response.getCandles().isEmpty())
-                .expectComplete()
-                .verify();
+                .verifyComplete();
     }
 
     @Test
     public void priceHistoryNotFoundTest() {
         PriceHistoryRequest priceHistoryRequest = PriceHistoryRequest.Builder.priceHistReq().withSymbol("XXXXXX").withNeedPreviousClose(true).build();
-        Mono<PriceHistoryResponse> priceHistoryResponse = schwabMarketDataApiClient.fetchPriceHistoryAsMono(priceHistoryRequest);
+        Mono<PriceHistoryResponse> priceHistoryResponse = schwabMarketDataApiClient.fetchPriceHistoryToMono(priceHistoryRequest);
         StepVerifier
                 .create(priceHistoryResponse)
                 .expectError(SymbolNotFoundException.class)
@@ -201,24 +195,22 @@ public class SchwabMarketDataApiTest {
     @Test
     public void moversTest() {
         MoversRequest moversRequest = MoversRequest.Builder.moversRequest().withIndexSymbol(MoversRequest.IndexSymbol.$DJI).build();
-        Mono<MoversResponse> moversResponse = schwabMarketDataApiClient.fetchMoversAsMono(moversRequest);
+        Mono<MoversResponse> moversResponse = schwabMarketDataApiClient.fetchMoversToMono(moversRequest);
         StepVerifier
                 .create(moversResponse)
                 .expectNextMatches(response -> response.getScreeners() != null &&
                         !response.getScreeners().isEmpty())
-                .expectComplete()
-                .verify();
+                .verifyComplete();
     }
 
     @Test
     public void singleMarketTest() {
-        Mono<Map<String, Map<String, Hours>>> hoursResponse = schwabMarketDataApiClient.fetchMarketsAsMono(Collections.singletonList(SchwabMarketDataApiClient.Market.EQUITY));
+        Mono<Map<String, Map<String, Hours>>> hoursResponse = schwabMarketDataApiClient.fetchMarketsToMono(Collections.singletonList(SchwabMarketDataApiClient.Market.EQUITY));
         StepVerifier
                 .create(hoursResponse)
                 .expectNextMatches(response -> !response.isEmpty() &&
                         response.containsKey(SchwabMarketDataApiClient.Market.EQUITY.value()))
-                .expectComplete()
-                .verify();
+                .verifyComplete();
 
         /*LocalDate testDate = LocalDate.of(2024, 4, 25);
         hours = schwabMarketDataApiClient.fetchMarkets(Collections.singletonList(SchwabMarketDataApiClient.Market.EQUITY), testDate);
@@ -230,14 +222,13 @@ public class SchwabMarketDataApiTest {
 
     @Test
     public void multiMarketTest() {
-        Mono<Map<String, Map<String, Hours>>> hoursResponse = schwabMarketDataApiClient.fetchMarketsAsMono(Arrays.asList(SchwabMarketDataApiClient.Market.EQUITY, SchwabMarketDataApiClient.Market.OPTION));
+        Mono<Map<String, Map<String, Hours>>> hoursResponse = schwabMarketDataApiClient.fetchMarketsToMono(Arrays.asList(SchwabMarketDataApiClient.Market.EQUITY, SchwabMarketDataApiClient.Market.OPTION));
         StepVerifier
                 .create(hoursResponse)
                 .expectNextMatches(response -> !response.isEmpty() &&
                         response.containsKey(SchwabMarketDataApiClient.Market.EQUITY.value()) &&
                         response.containsKey(SchwabMarketDataApiClient.Market.OPTION.value()))
-                .expectComplete()
-                .verify();
+                .verifyComplete();
     }
 
     @Test
@@ -246,15 +237,14 @@ public class SchwabMarketDataApiTest {
                 .withSymbol("AAPL")
                 .withProjection(InstrumentsRequest.Projection.SYMBOL_SEARCH)
                 .build();
-        Mono<InstrumentsResponse> instrumentsResponse = schwabMarketDataApiClient.fetchInstrumentsAsMono(instrumentsRequest);
+        Mono<InstrumentsResponse> instrumentsResponse = schwabMarketDataApiClient.fetchInstrumentsToMono(instrumentsRequest);
         StepVerifier
                 .create(instrumentsResponse)
                 .expectNextMatches(response -> response.getInstruments() != null &&
                                                 response.getInstruments().size() == 1 &&
                                                 response.getInstruments().get(0).getSymbol().equalsIgnoreCase("AAPL") &&
                                                 response.getInstruments().get(0).getFundamental() == null)
-                .expectComplete()
-                .verify();
+                .verifyComplete();
     }
 
     @Test
@@ -263,7 +253,7 @@ public class SchwabMarketDataApiTest {
                 .withSymbol("XXXXXX")
                 .withProjection(InstrumentsRequest.Projection.SYMBOL_SEARCH)
                 .build();
-        Mono<InstrumentsResponse> instrumentsResponse = schwabMarketDataApiClient.fetchInstrumentsAsMono(instrumentsRequest);
+        Mono<InstrumentsResponse> instrumentsResponse = schwabMarketDataApiClient.fetchInstrumentsToMono(instrumentsRequest);
         StepVerifier
                 .create(instrumentsResponse)
                 .expectError(SymbolNotFoundException.class)
@@ -276,33 +266,31 @@ public class SchwabMarketDataApiTest {
                 .withSymbol("AAPL")
                 .withProjection(InstrumentsRequest.Projection.FUNDAMENTAL)
                 .build();
-        Mono<InstrumentsResponse> instrumentsResponse = schwabMarketDataApiClient.fetchInstrumentsAsMono(fundamentalRequest);
+        Mono<InstrumentsResponse> instrumentsResponse = schwabMarketDataApiClient.fetchInstrumentsToMono(fundamentalRequest);
         StepVerifier
                 .create(instrumentsResponse)
                 .expectNextMatches(response -> response.getInstruments() != null &&
                         response.getInstruments().size() == 1 &&
                         response.getInstruments().get(0).getSymbol().equalsIgnoreCase("AAPL") &&
                         response.getInstruments().get(0).getFundamental() != null)
-                .expectComplete()
-                .verify();
+                .verifyComplete();
     }
 
     @Test
     public void instrumentsByCusipTest() {
-        Mono<InstrumentsResponse> instrumentsResponse = schwabMarketDataApiClient.fetchInstrumentsByCusipAsMono("037833100");
+        Mono<InstrumentsResponse> instrumentsResponse = schwabMarketDataApiClient.fetchInstrumentsByCusipToMono("037833100");
         StepVerifier
                 .create(instrumentsResponse)
                 .expectNextMatches(response -> response.getInstruments() != null &&
                         response.getInstruments().size() == 1 &&
                         response.getInstruments().get(0).getSymbol().equalsIgnoreCase("AAPL") &&
                         response.getInstruments().get(0).getFundamental() == null)
-                .expectComplete()
-                .verify();
+                .verifyComplete();
     }
 
     @Test
     public void instrumentsByCusipNotFoundTest() {
-        Mono<InstrumentsResponse> instrumentsResponse = schwabMarketDataApiClient.fetchInstrumentsByCusipAsMono("999999999");
+        Mono<InstrumentsResponse> instrumentsResponse = schwabMarketDataApiClient.fetchInstrumentsByCusipToMono("999999999");
         StepVerifier
                 .create(instrumentsResponse)
                 .expectError(SymbolNotFoundException.class)
