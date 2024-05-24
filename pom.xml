@@ -68,6 +68,12 @@
       <artifactId>annotations</artifactId>
       <version>24.0.1</version>
     </dependency>
+    <dependency>
+      <groupId>io.projectreactor</groupId>
+      <artifactId>reactor-test</artifactId>
+      <scope>test</scope>
+      <version>3.6.0</version>
+    </dependency>
   </dependencies>
   <build>
     <plugins>

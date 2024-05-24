@@ -105,7 +105,7 @@ public class SchwabAccountsAndTradingApiClient extends SchwabBaseApiClient {
         if(fields != null) {
             uriBuilder.queryParam("fields", fields);
         }
-        return this.callGetAPI(schwabUserId, uriBuilder, Account.class);
+        return this.callGetApi(schwabUserId, uriBuilder, Account.class);
     }
 
     /**
@@ -169,7 +169,7 @@ public class SchwabAccountsAndTradingApiClient extends SchwabBaseApiClient {
 
         UriComponentsBuilder uriBuilder = this.getUriBuilder()
                 .pathSegment("accounts", encryptedAccount, "orders", orderId.toString());
-        return this.callGetAPI(schwabUserId, uriBuilder, Order.class);
+        return this.callGetApi(schwabUserId, uriBuilder, Order.class);
     }
 
     /**
@@ -189,7 +189,7 @@ public class SchwabAccountsAndTradingApiClient extends SchwabBaseApiClient {
 
         UriComponentsBuilder uriBuilder = this.getUriBuilder()
             .pathSegment("accounts", encryptedAccount, "orders");
-        this.callPostAPI(schwabUserId, uriBuilder, order);
+        this.callPostApi(schwabUserId, uriBuilder, order);
     }
 
     /**
@@ -214,7 +214,7 @@ public class SchwabAccountsAndTradingApiClient extends SchwabBaseApiClient {
 
         UriComponentsBuilder uriBuilder = this.getUriBuilder()
                 .pathSegment("accounts", encryptedAccount, "orders", orderId.toString());
-        this.callPutAPI(schwabUserId, uriBuilder, order);
+        this.callPutApi(schwabUserId, uriBuilder, order);
     }
 
     /**
@@ -237,7 +237,7 @@ public class SchwabAccountsAndTradingApiClient extends SchwabBaseApiClient {
 
         UriComponentsBuilder uriBuilder = this.getUriBuilder()
                 .pathSegment("accounts", encryptedAccount, "orders", orderId.toString());
-        this.callDeleteAPI(schwabUserId, uriBuilder);
+        this.callDeleteApi(schwabUserId, uriBuilder);
     }
 
     /**
@@ -293,7 +293,7 @@ public class SchwabAccountsAndTradingApiClient extends SchwabBaseApiClient {
 
         UriComponentsBuilder uriBuilder = this.getUriBuilder()
                 .pathSegment("accounts", encryptedAccount, "transactions", activityId.toString());
-        return this.callGetAPI(schwabUserId, uriBuilder, Transaction.class);
+        return this.callGetApi(schwabUserId, uriBuilder, Transaction.class);
     }
 
     /**
@@ -306,7 +306,7 @@ public class SchwabAccountsAndTradingApiClient extends SchwabBaseApiClient {
 
         UriComponentsBuilder uriBuilder = this.getUriBuilder()
                 .pathSegment("userPreference");
-        return this.callGetAPI(schwabUserId, uriBuilder, UserPreferenceResponse.class);
+        return this.callGetApi(schwabUserId, uriBuilder, UserPreferenceResponse.class);
     }
 
     private UriComponentsBuilder getUriBuilder() {
