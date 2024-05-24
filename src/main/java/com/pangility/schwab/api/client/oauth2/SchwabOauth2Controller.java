@@ -12,7 +12,6 @@ import org.springframework.context.annotation.Conditional;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -33,7 +32,10 @@ import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.Base64;
+import java.util.HashMap;
+import java.util.List;
+import java.util.UUID;
 
 /**
  * Controller used by the client controllers
@@ -209,14 +211,14 @@ public class SchwabOauth2Controller {
                         return Mono.error(throwable);
                     })
                     .retryWhen(Retry.backoff(2, Duration.ZERO).filter(throwable -> throwable instanceof ApiUnauthorizedException))
-                    .map(tokenInfo -> {
+                    .flatMap(tokenInfo -> {
                         schwabAccount.setAccessToken(tokenInfo.getAccess_token());
                         schwabAccount.setAccessExpiration(LocalDateTime.now().plusSeconds(tokenInfo.getExpires_in()));
                         accountMapByUserId.put(schwabAccount.getUserId(), schwabAccount);
                         if(tokenHandler != null) {
                             tokenHandler.onAccessTokenChange(schwabAccount);
                         }
-                        return schwabAccount;
+                        return Mono.just(schwabAccount);
                     });
 
         } catch(WebClientResponseException wcre) {
@@ -248,10 +250,14 @@ public class SchwabOauth2Controller {
     public RedirectView processCode(@RequestParam String code,
                             @RequestParam String state) {
         String tokenAuthorizationHeader = "Basic " + new String(Base64.getMimeEncoder().encode((schwabClientId + ":" + schwabClientSecret).getBytes(StandardCharsets.UTF_8)), StandardCharsets.UTF_8);
-        RedirectView redirectView = null;
+        RedirectView redirectView = new RedirectView();
         try {
             UUID paramUuid = UUID.fromString(state);
             if (uuids.containsKey(paramUuid)) {
+                UuidMapInfo uuidMapInfo = uuids.get(paramUuid);
+                String schwabUserId = uuidMapInfo.getUserId();
+                String callback = uuidMapInfo.getCallback();
+
                 URI uri = UriComponentsBuilder.newInstance()
                         .scheme("https")
                         .host(schwabTargetUrl)
@@ -266,50 +272,47 @@ public class SchwabOauth2Controller {
                 bodyValues.add("client_id", schwabClientId);
                 bodyValues.add("redirect_uri", schwabRedirectUri);
 
-                ResponseEntity<AuthorizationTokenInfo> response = WebClient.create().post()
+                WebClient.create().post()
                         .uri(uri)
                         .header(HttpHeaders.AUTHORIZATION, tokenAuthorizationHeader)
                         .contentType(MediaType.APPLICATION_FORM_URLENCODED)
                         .accept(MediaType.APPLICATION_JSON)
                         .body(BodyInserters.fromFormData(bodyValues))
-                        .retrieve()
-                        .toEntity(AuthorizationTokenInfo.class)
-                        .share().block();
-
-                if (response != null) {
-                    if (response.getStatusCode() == HttpStatus.OK) {
-                        UuidMapInfo uuidMapInfo = uuids.get(paramUuid);
-                        String schwabUserId = uuidMapInfo.getUserId();
-                        String callback = uuidMapInfo.getCallback();
-                        SchwabAccount schwabAccount;
-                        if(!accountMapByUserId.containsKey(schwabUserId)) {
-                            schwabAccount = new SchwabAccount();
-                            schwabAccount.setUserId(schwabUserId);
-                        } else {
-                            schwabAccount = accountMapByUserId.get(schwabUserId);
-                        }
-                        if(schwabAccount != null) {
-                            AuthorizationTokenInfo responseTokenInfo = response.getBody();
-                            if(responseTokenInfo != null) {
-                                schwabAccount.setRefreshToken(responseTokenInfo.getRefresh_token());
+                        .exchangeToMono(clientResponse -> {
+                            Mono<AuthorizationTokenInfo> retMono = Mono.empty();
+                            if(clientResponse.statusCode().is2xxSuccessful()) {
+                                retMono = clientResponse.bodyToMono(AuthorizationTokenInfo.class);
+                            } else if(clientResponse.statusCode().is4xxClientError() || clientResponse.statusCode().is5xxServerError()){
+                                retMono = Mono.error(new ResponseStatusException(clientResponse.statusCode()));
+                            }
+                            return retMono;
+                        })
+                        .retryWhen(Retry.backoff(3, Duration.ofSeconds(2)))
+                        .flatMap(tokenInfo -> {
+                            Mono<SchwabAccount> retMono;
+                            SchwabAccount schwabAccount;
+                            if(!accountMapByUserId.containsKey(schwabUserId)) {
+                                schwabAccount = new SchwabAccount();
+                                schwabAccount.setUserId(schwabUserId);
+                            } else {
+                                schwabAccount = accountMapByUserId.get(schwabUserId);
+                            }
+                            if(schwabAccount != null) {
+                                schwabAccount.setRefreshToken(tokenInfo.getRefresh_token());
                                 schwabAccount.setRefreshExpiration(LocalDateTime.now().plusDays(7));
-                                schwabAccount.setAccessToken(responseTokenInfo.getAccess_token());
-                                schwabAccount.setAccessExpiration(LocalDateTime.now().plusSeconds(responseTokenInfo.getExpires_in()));
+                                schwabAccount.setAccessToken(tokenInfo.getAccess_token());
+                                schwabAccount.setAccessExpiration(LocalDateTime.now().plusSeconds(tokenInfo.getExpires_in()));
                                 accountMapByUserId.put(schwabUserId, schwabAccount);
                                 if(tokenHandler != null) {
                                     tokenHandler.onRefreshTokenChange(schwabAccount);
                                 }
+                                redirectView.setHosts(callback);
+                                retMono = Mono.just(schwabAccount);
+                            } else {
+                                retMono = Mono.error(new InvalidRefreshTokenException("Unable to retrieve refresh token", null));
                             }
-                        }
-                        redirectView = new RedirectView(callback);
-                    } else {
-                        throw new ResponseStatusException(
-                                response.getStatusCode(), Objects.requireNonNull(response.getBody()).toString());
-                    }
-                } else {
-                    throw new ResponseStatusException(
-                            HttpStatus.INTERNAL_SERVER_ERROR, "Unable to get response from token endpoint");
-                }
+                            return retMono;
+                        }).subscribe();
             }
         } catch(WebClientResponseException wcre) {
             String errorBody = "Unable to retrieve token: " + wcre.getResponseBodyAsString()
