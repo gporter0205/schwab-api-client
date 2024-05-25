@@ -17,6 +17,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.lang.reflect.Type;
 import java.net.URI;
 import java.util.Collections;
 import java.util.List;
@@ -598,10 +599,11 @@ public class SchwabBaseApiClient {
                                       @NotNull UriComponentsBuilder uriComponentsBuilder,
                                       Object body,
                                       @NotNull Class<T> clazz) {
-        return this.callApiToMono(schwabUserId, httpMethod, uriComponentsBuilder, body, clazz, false);
+
+        return this.callApiToMono(schwabUserId, httpMethod, uriComponentsBuilder, body, this.classToTypeReference(clazz), false);
     }
 
-    private <T> Mono<T> callApiToMono(@NotNull String schwabUserId,
+    /*private <T> Mono<T> callApiToMono(@NotNull String schwabUserId,
                                       @NotNull HttpMethod httpMethod,
                                       @NotNull UriComponentsBuilder uriComponentsBuilder,
                                       Object body,
@@ -651,7 +653,7 @@ public class SchwabBaseApiClient {
                         return Mono.error(throwable);
                     }
                 });
-    }
+    }*/
 
     private <T> Mono<T> callApiToMono(@NotNull String schwabUserId,
                                       @NotNull HttpMethod httpMethod,
@@ -669,41 +671,23 @@ public class SchwabBaseApiClient {
                                         @NotNull Boolean hasRetried) {
 
         return schwabOauth2Controller.getAccessToken(schwabUserId)
-                .flatMap(tokenInfo -> {
-                    //Validate refresh token
-                    schwabOauth2Controller.validateRefreshToken(tokenInfo);
-
-                    URI uri = uriComponentsBuilder
-                            .scheme("https")
-                            .host(schwabTargetUrl)
-                            .build()
-                            .toUri();
-                    WebClient.RequestBodySpec bodySpec = schwabWebClient.getSchwabWebClient()
-                            .method(httpMethod)
-                            .uri(uri)
-                            .headers(h -> h.setBearerAuth(tokenInfo.getAccessToken()));
-                    if (body != null) {
-                        bodySpec.body(BodyInserters.fromValue(body));
-                    }
-
-                    return bodySpec.exchangeToMono(response -> {
-                        Mono<T> mono;
-                        if (response.statusCode().equals(HttpStatus.OK)) {
-                            mono = response.bodyToMono(bodyTypeReference);
-                        } else if (response.statusCode().is4xxClientError() || response.statusCode().is5xxServerError()) {
-                            if (response.statusCode().isSameCodeAs(HttpStatus.UNAUTHORIZED)) {
-                                mono = Mono.error(new ApiUnauthorizedException());
-                            } else {
-                                mono = response.createException()
-                                        .flatMap(Mono::error);
-                            }
+                .flatMap(tokenInfo -> this.callApiPreProcess(schwabUserId, httpMethod, uriComponentsBuilder, body, tokenInfo).exchangeToMono(response -> {
+                    Mono<T> mono;
+                    if (response.statusCode().equals(HttpStatus.OK)) {
+                        mono = response.bodyToMono(bodyTypeReference);
+                    } else if (response.statusCode().is4xxClientError() || response.statusCode().is5xxServerError()) {
+                        if (response.statusCode().isSameCodeAs(HttpStatus.UNAUTHORIZED)) {
+                            mono = Mono.error(new ApiUnauthorizedException());
                         } else {
                             mono = response.createException()
                                     .flatMap(Mono::error);
                         }
-                        return mono;
-                    });
-                })
+                    } else {
+                        mono = response.createException()
+                                .flatMap(Mono::error);
+                    }
+                    return mono;
+                }))
                 .onErrorResume(throwable -> {
                     if(throwable instanceof ApiUnauthorizedException && !hasRetried) {
                         schwabOauth2Controller.getSchwabAccount(schwabUserId).setAccessToken(null);
@@ -719,60 +703,7 @@ public class SchwabBaseApiClient {
                                       @NotNull UriComponentsBuilder uriComponentsBuilder,
                                       Object body,
                                       @NotNull Class<T> clazz) {
-        return this.callApiToFlux(schwabUserId, httpMethod, uriComponentsBuilder, body, clazz, false);
-    }
-
-    private <T> Flux<T> callApiToFlux(@NotNull String schwabUserId,
-                                      @NotNull HttpMethod httpMethod,
-                                      @NotNull UriComponentsBuilder uriComponentsBuilder,
-                                      Object body,
-                                      @NotNull Class<T> clazz,
-                                      @NotNull Boolean hasRetried) {
-        return schwabOauth2Controller.getAccessToken(schwabUserId)
-                .flux()
-                .flatMap(tokenInfo -> {
-                    //Validate refresh token
-                    schwabOauth2Controller.validateRefreshToken(tokenInfo);
-
-                    URI uri = uriComponentsBuilder
-                            .scheme("https")
-                            .host(schwabTargetUrl)
-                            .build()
-                            .toUri();
-                    WebClient.RequestBodySpec bodySpec = schwabWebClient.getSchwabWebClient()
-                            .method(httpMethod)
-                            .uri(uri)
-                            .headers(h -> h.setBearerAuth(tokenInfo.getAccessToken()));
-                    if (body != null) {
-                        bodySpec.body(BodyInserters.fromValue(body));
-                    }
-
-                    return bodySpec.exchangeToFlux(response -> {
-                        Flux<T> flux;
-                        if (response.statusCode().equals(HttpStatus.OK)) {
-                            flux = response.bodyToFlux(clazz);
-                        } else if (response.statusCode().is4xxClientError() || response.statusCode().is5xxServerError()) {
-                            if (response.statusCode().isSameCodeAs(HttpStatus.UNAUTHORIZED)) {
-                                flux = Flux.error(new ApiUnauthorizedException());
-                            } else {
-                                flux = response.createException().flux()
-                                        .flatMap(Flux::error);
-                            }
-                        } else {
-                            flux = response.createException().flux()
-                                    .flatMap(Flux::error);
-                        }
-                        return flux;
-                    });
-                })
-                .onErrorResume(throwable -> {
-                    if(throwable instanceof ApiUnauthorizedException && !hasRetried) {
-                        schwabOauth2Controller.getSchwabAccount(schwabUserId).setAccessToken(null);
-                        return this.callApiToFlux(schwabUserId, httpMethod, uriComponentsBuilder, body, clazz, true);
-                    } else {
-                        return Flux.error(throwable);
-                    }
-                });
+        return this.callApiToFlux(schwabUserId, httpMethod, uriComponentsBuilder, body, this.classToTypeReference(clazz));
     }
 
     private <T> Flux<T> callApiToFlux(@NotNull String schwabUserId,
@@ -791,41 +722,23 @@ public class SchwabBaseApiClient {
                                       @NotNull Boolean hasRetried) {
         return schwabOauth2Controller.getAccessToken(schwabUserId)
                 .flux()
-                .flatMap(tokenInfo -> {
-                    //Validate refresh token
-                    schwabOauth2Controller.validateRefreshToken(tokenInfo);
-
-                    URI uri = uriComponentsBuilder
-                            .scheme("https")
-                            .host(schwabTargetUrl)
-                            .build()
-                            .toUri();
-                    WebClient.RequestBodySpec bodySpec = schwabWebClient.getSchwabWebClient()
-                            .method(httpMethod)
-                            .uri(uri)
-                            .headers(h -> h.setBearerAuth(tokenInfo.getAccessToken()));
-                    if (body != null) {
-                        bodySpec.body(BodyInserters.fromValue(body));
-                    }
-
-                    return bodySpec.exchangeToFlux(response -> {
-                        Flux<T> flux;
-                        if (response.statusCode().equals(HttpStatus.OK)) {
-                            flux = response.bodyToFlux(bodyTypeReference);
-                        } else if (response.statusCode().is4xxClientError() || response.statusCode().is5xxServerError()) {
-                            if (response.statusCode().isSameCodeAs(HttpStatus.UNAUTHORIZED)) {
-                                flux = Flux.error(new ApiUnauthorizedException());
-                            } else {
-                                flux = response.createException().flux()
-                                        .flatMap(Flux::error);
-                            }
+                .flatMap(tokenInfo -> this.callApiPreProcess(schwabUserId, httpMethod, uriComponentsBuilder, body, tokenInfo).exchangeToFlux(response -> {
+                    Flux<T> flux;
+                    if (response.statusCode().equals(HttpStatus.OK)) {
+                        flux = response.bodyToFlux(bodyTypeReference);
+                    } else if (response.statusCode().is4xxClientError() || response.statusCode().is5xxServerError()) {
+                        if (response.statusCode().isSameCodeAs(HttpStatus.UNAUTHORIZED)) {
+                            flux = Flux.error(new ApiUnauthorizedException());
                         } else {
                             flux = response.createException().flux()
                                     .flatMap(Flux::error);
                         }
-                        return flux;
-                    });
-                })
+                    } else {
+                        flux = response.createException().flux()
+                                .flatMap(Flux::error);
+                    }
+                    return flux;
+                }))
                 .onErrorResume(throwable -> {
                     if(throwable instanceof ApiUnauthorizedException && !hasRetried) {
                         schwabOauth2Controller.getSchwabAccount(schwabUserId).setAccessToken(null);
@@ -834,5 +747,37 @@ public class SchwabBaseApiClient {
                         return Flux.error(throwable);
                     }
                 });
+    }
+
+    private WebClient.RequestBodySpec callApiPreProcess(@NotNull String schwabUserId,
+                                                        @NotNull HttpMethod httpMethod,
+                                                        @NotNull UriComponentsBuilder uriComponentsBuilder,
+                                                        Object body,
+                                                        @NotNull SchwabAccount tokenInfo) {
+        schwabOauth2Controller.validateRefreshToken(tokenInfo);
+
+        URI uri = uriComponentsBuilder
+                .scheme("https")
+                .host(schwabTargetUrl)
+                .build()
+                .toUri();
+        WebClient.RequestBodySpec bodySpec = schwabWebClient.getSchwabWebClient()
+                .method(httpMethod)
+                .uri(uri)
+                .headers(h -> h.setBearerAuth(tokenInfo.getAccessToken()));
+        if (body != null) {
+            bodySpec.body(BodyInserters.fromValue(body));
+        }
+        return bodySpec;
+    }
+
+    private <T> ParameterizedTypeReference<T> classToTypeReference(Class<T> clazz) {
+        return new ParameterizedTypeReference<T>() {
+            @Override
+            public @NotNull Type getType() {
+                return clazz;
+            }
+        };
+
     }
 }

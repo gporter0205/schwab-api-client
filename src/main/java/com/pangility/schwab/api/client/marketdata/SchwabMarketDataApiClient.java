@@ -696,7 +696,7 @@ public class SchwabMarketDataApiClient extends SchwabBaseApiClient {
      */
     @Deprecated
     public InstrumentsResponse fetchInstrumentsByCusip(@NotNull String cusip) {
-        return this.fetchInstrumentsByCusipToMono(cusip)
+        return this.fetchInstrumentByCusipToMono(cusip)
                 .block();
     }
 
@@ -705,7 +705,7 @@ public class SchwabMarketDataApiClient extends SchwabBaseApiClient {
      * @param cusip {@literal @}NotNull String
      * @return {@link Mono}{@literal <}{@link InstrumentsResponse}{@literal >}
      */
-    public Mono<InstrumentsResponse> fetchInstrumentsByCusipToMono(@NotNull String cusip) {
+    public Mono<InstrumentsResponse> fetchInstrumentByCusipToMono(@NotNull String cusip) {
         log.info("Fetch Instruments by cusip [{}]", cusip);
         Mono<InstrumentsResponse> response;
 

@@ -278,7 +278,7 @@ public class SchwabMarketDataApiTest {
 
     @Test
     public void instrumentsByCusipTest() {
-        Mono<InstrumentsResponse> instrumentsResponse = schwabMarketDataApiClient.fetchInstrumentsByCusipToMono("037833100");
+        Mono<InstrumentsResponse> instrumentsResponse = schwabMarketDataApiClient.fetchInstrumentByCusipToMono("037833100");
         StepVerifier
                 .create(instrumentsResponse)
                 .expectNextMatches(response -> response.getInstruments() != null &&
@@ -290,7 +290,7 @@ public class SchwabMarketDataApiTest {
 
     @Test
     public void instrumentsByCusipNotFoundTest() {
-        Mono<InstrumentsResponse> instrumentsResponse = schwabMarketDataApiClient.fetchInstrumentsByCusipToMono("999999999");
+        Mono<InstrumentsResponse> instrumentsResponse = schwabMarketDataApiClient.fetchInstrumentByCusipToMono("999999999");
         StepVerifier
                 .create(instrumentsResponse)
                 .expectError(SymbolNotFoundException.class)
