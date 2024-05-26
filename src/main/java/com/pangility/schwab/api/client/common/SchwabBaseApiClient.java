@@ -1,5 +1,6 @@
 package com.pangility.schwab.api.client.common;
 
+import com.pangility.schwab.api.client.common.deserializers.ApiTooManyRequestsException;
 import com.pangility.schwab.api.client.oauth2.SchwabAccount;
 import com.pangility.schwab.api.client.oauth2.SchwabOauth2Controller;
 import com.pangility.schwab.api.client.oauth2.SchwabTokenHandler;
@@ -16,9 +17,11 @@ import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.util.UriComponentsBuilder;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import reactor.util.retry.Retry;
 
 import java.lang.reflect.Type;
 import java.net.URI;
+import java.time.Duration;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -608,7 +611,7 @@ public class SchwabBaseApiClient {
                                       @NotNull UriComponentsBuilder uriComponentsBuilder,
                                       Object body,
                                       @NotNull Class<T> clazz,
-                                      @NotNull Boolean hasRetried) {
+                                      @NotNull Boolean hasRetried401WithNewAccessToken) {
         return schwabOauth2Controller.getAccessToken(schwabUserId)
                 .flatMap(tokenInfo -> {
                     //Validate refresh token
@@ -646,7 +649,7 @@ public class SchwabBaseApiClient {
                     });
                 })
                 .onErrorResume(throwable -> {
-                    if(throwable instanceof ApiUnauthorizedException && !hasRetried) {
+                    if(throwable instanceof ApiUnauthorizedException && !hasRetried401WithNewAccessToken) {
                         schwabOauth2Controller.getSchwabAccount(schwabUserId).setAccessToken(null);
                         return this.callApiToMono(schwabUserId, httpMethod, uriComponentsBuilder, body, clazz, true);
                     } else {
@@ -668,7 +671,7 @@ public class SchwabBaseApiClient {
                                         @NotNull UriComponentsBuilder uriComponentsBuilder,
                                         Object body,
                                         @NotNull ParameterizedTypeReference<T> bodyTypeReference,
-                                        @NotNull Boolean hasRetried) {
+                                        @NotNull Boolean hasRetried401WithNewAccessToken) {
 
         return schwabOauth2Controller.getAccessToken(schwabUserId)
                 .flatMap(tokenInfo -> this.callApiPreProcess(schwabUserId, httpMethod, uriComponentsBuilder, body, tokenInfo).exchangeToMono(response -> {
@@ -678,6 +681,8 @@ public class SchwabBaseApiClient {
                     } else if (response.statusCode().is4xxClientError() || response.statusCode().is5xxServerError()) {
                         if (response.statusCode().isSameCodeAs(HttpStatus.UNAUTHORIZED)) {
                             mono = Mono.error(new ApiUnauthorizedException());
+                        } else if (response.statusCode().isSameCodeAs(HttpStatus.TOO_MANY_REQUESTS)) {
+                                mono = Mono.error(new ApiTooManyRequestsException());
                         } else {
                             mono = response.createException()
                                     .flatMap(Mono::error);
@@ -688,8 +693,12 @@ public class SchwabBaseApiClient {
                     }
                     return mono;
                 }))
+                .retryWhen(Retry.backoff(10, Duration.ofSeconds(1)).jitter(0.25)
+                        .filter(throwable -> throwable instanceof ApiTooManyRequestsException)
+                )
                 .onErrorResume(throwable -> {
-                    if(throwable instanceof ApiUnauthorizedException && !hasRetried) {
+                    if(throwable instanceof ApiUnauthorizedException && !hasRetried401WithNewAccessToken) {
+                        // Invalidate the access token and try again
                         schwabOauth2Controller.getSchwabAccount(schwabUserId).setAccessToken(null);
                         return this.callApiToMono(schwabUserId, httpMethod, uriComponentsBuilder, body, bodyTypeReference, true);
                     } else {
@@ -719,7 +728,7 @@ public class SchwabBaseApiClient {
                                       @NotNull UriComponentsBuilder uriComponentsBuilder,
                                       Object body,
                                       @NotNull ParameterizedTypeReference<T> bodyTypeReference,
-                                      @NotNull Boolean hasRetried) {
+                                      @NotNull Boolean hasRetried401WithNewAccessToken) {
         return schwabOauth2Controller.getAccessToken(schwabUserId)
                 .flux()
                 .flatMap(tokenInfo -> this.callApiPreProcess(schwabUserId, httpMethod, uriComponentsBuilder, body, tokenInfo).exchangeToFlux(response -> {
@@ -729,6 +738,8 @@ public class SchwabBaseApiClient {
                     } else if (response.statusCode().is4xxClientError() || response.statusCode().is5xxServerError()) {
                         if (response.statusCode().isSameCodeAs(HttpStatus.UNAUTHORIZED)) {
                             flux = Flux.error(new ApiUnauthorizedException());
+                        } else if (response.statusCode().isSameCodeAs(HttpStatus.TOO_MANY_REQUESTS)) {
+                            flux = Flux.error(new ApiTooManyRequestsException());
                         } else {
                             flux = response.createException().flux()
                                     .flatMap(Flux::error);
@@ -739,8 +750,12 @@ public class SchwabBaseApiClient {
                     }
                     return flux;
                 }))
+                .retryWhen(Retry.backoff(10, Duration.ofSeconds(1)).jitter(0.25)
+                        .filter(throwable -> throwable instanceof ApiTooManyRequestsException)
+                )
                 .onErrorResume(throwable -> {
-                    if(throwable instanceof ApiUnauthorizedException && !hasRetried) {
+                    if(throwable instanceof ApiUnauthorizedException && !hasRetried401WithNewAccessToken) {
+                        // Invalidate the access token and try again
                         schwabOauth2Controller.getSchwabAccount(schwabUserId).setAccessToken(null);
                         return this.callApiToFlux(schwabUserId, httpMethod, uriComponentsBuilder, body, bodyTypeReference, true);
                     } else {
