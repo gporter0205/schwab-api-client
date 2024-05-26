@@ -7,11 +7,11 @@ import com.pangility.schwab.api.client.marketdata.model.AssetMainType;
 import com.pangility.schwab.api.client.marketdata.model.chains.OptionChainRequest;
 import com.pangility.schwab.api.client.marketdata.model.chains.OptionChainResponse;
 import com.pangility.schwab.api.client.marketdata.model.expirationchain.ExpirationChainResponse;
+import com.pangility.schwab.api.client.marketdata.model.instruments.Instrument;
 import com.pangility.schwab.api.client.marketdata.model.instruments.InstrumentsRequest;
-import com.pangility.schwab.api.client.marketdata.model.instruments.InstrumentsResponse;
 import com.pangility.schwab.api.client.marketdata.model.markets.Hours;
 import com.pangility.schwab.api.client.marketdata.model.movers.MoversRequest;
-import com.pangility.schwab.api.client.marketdata.model.movers.MoversResponse;
+import com.pangility.schwab.api.client.marketdata.model.movers.Screener;
 import com.pangility.schwab.api.client.marketdata.model.pricehistory.PriceHistoryRequest;
 import com.pangility.schwab.api.client.marketdata.model.pricehistory.PriceHistoryResponse;
 import com.pangility.schwab.api.client.marketdata.model.quotes.QuoteResponse;
@@ -26,6 +26,7 @@ import org.springframework.boot.SpringBootConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.test.context.ActiveProfiles;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
@@ -33,9 +34,7 @@ import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Map;
+import java.util.*;
 
 @SpringBootTest
 @EnableSchwabMarketDataApi
@@ -195,11 +194,12 @@ public class SchwabMarketDataApiTest {
     @Test
     public void moversTest() {
         MoversRequest moversRequest = MoversRequest.Builder.moversRequest().withIndexSymbol(MoversRequest.IndexSymbol.$DJI).build();
-        Mono<MoversResponse> moversResponse = schwabMarketDataApiClient.fetchMoversToMono(moversRequest);
+        Flux<Screener> moversResponse = schwabMarketDataApiClient.fetchMoversToFlux(moversRequest);
         StepVerifier
                 .create(moversResponse)
-                .expectNextMatches(response -> response.getScreeners() != null &&
-                        !response.getScreeners().isEmpty())
+                .recordWith(ArrayList::new)
+                .thenConsumeWhile(element -> true)
+                .expectRecordedMatches(Objects::nonNull)
                 .verifyComplete();
     }
 
@@ -237,13 +237,14 @@ public class SchwabMarketDataApiTest {
                 .withSymbol("AAPL")
                 .withProjection(InstrumentsRequest.Projection.SYMBOL_SEARCH)
                 .build();
-        Mono<InstrumentsResponse> instrumentsResponse = schwabMarketDataApiClient.fetchInstrumentsToMono(instrumentsRequest);
+        Flux<Instrument> instrumentsResponse = schwabMarketDataApiClient.fetchInstrumentsToFlux(instrumentsRequest);
         StepVerifier
                 .create(instrumentsResponse)
-                .expectNextMatches(response -> response.getInstruments() != null &&
-                                                response.getInstruments().size() == 1 &&
-                                                response.getInstruments().get(0).getSymbol().equalsIgnoreCase("AAPL") &&
-                                                response.getInstruments().get(0).getFundamental() == null)
+                .recordWith(ArrayList::new)
+                .thenConsumeWhile(element -> element.getSymbol() != null &&
+                        !element.getSymbol().isEmpty() &&
+                        element.getSymbol().equals("AAPL"))
+                .expectRecordedMatches(elements -> !elements.isEmpty())
                 .verifyComplete();
     }
 
@@ -253,7 +254,7 @@ public class SchwabMarketDataApiTest {
                 .withSymbol("XXXXXX")
                 .withProjection(InstrumentsRequest.Projection.SYMBOL_SEARCH)
                 .build();
-        Mono<InstrumentsResponse> instrumentsResponse = schwabMarketDataApiClient.fetchInstrumentsToMono(instrumentsRequest);
+        Flux<Instrument> instrumentsResponse = schwabMarketDataApiClient.fetchInstrumentsToFlux(instrumentsRequest);
         StepVerifier
                 .create(instrumentsResponse)
                 .expectError(SymbolNotFoundException.class)
@@ -266,33 +267,32 @@ public class SchwabMarketDataApiTest {
                 .withSymbol("AAPL")
                 .withProjection(InstrumentsRequest.Projection.FUNDAMENTAL)
                 .build();
-        Mono<InstrumentsResponse> instrumentsResponse = schwabMarketDataApiClient.fetchInstrumentsToMono(fundamentalRequest);
+        Flux<Instrument> instrumentsResponse = schwabMarketDataApiClient.fetchInstrumentsToFlux(fundamentalRequest);
         StepVerifier
                 .create(instrumentsResponse)
-                .expectNextMatches(response -> response.getInstruments() != null &&
-                        response.getInstruments().size() == 1 &&
-                        response.getInstruments().get(0).getSymbol().equalsIgnoreCase("AAPL") &&
-                        response.getInstruments().get(0).getFundamental() != null)
+                .recordWith(ArrayList::new)
+                .thenConsumeWhile(element -> element.getSymbol() != null &&
+                        !element.getSymbol().isEmpty() &&
+                        element.getSymbol().equals("AAPL"))
+                .expectRecordedMatches(elements -> !elements.isEmpty())
                 .verifyComplete();
     }
 
     @Test
-    public void instrumentsByCusipTest() {
-        Mono<InstrumentsResponse> instrumentsResponse = schwabMarketDataApiClient.fetchInstrumentByCusipToMono("037833100");
+    public void instrumentByCusipTest() {
+        Mono<Instrument> instrumentResponse = schwabMarketDataApiClient.fetchInstrumentByCusipToMono("037833100");
         StepVerifier
-                .create(instrumentsResponse)
-                .expectNextMatches(response -> response.getInstruments() != null &&
-                        response.getInstruments().size() == 1 &&
-                        response.getInstruments().get(0).getSymbol().equalsIgnoreCase("AAPL") &&
-                        response.getInstruments().get(0).getFundamental() == null)
+                .create(instrumentResponse)
+                .expectNextMatches(response -> response.getSymbol().equalsIgnoreCase("AAPL") &&
+                        response.getFundamental() == null)
                 .verifyComplete();
     }
 
     @Test
-    public void instrumentsByCusipNotFoundTest() {
-        Mono<InstrumentsResponse> instrumentsResponse = schwabMarketDataApiClient.fetchInstrumentByCusipToMono("999999999");
+    public void instrumentByCusipNotFoundTest() {
+        Mono<Instrument> instrumentResponse = schwabMarketDataApiClient.fetchInstrumentByCusipToMono("999999999");
         StepVerifier
-                .create(instrumentsResponse)
+                .create(instrumentResponse)
                 .expectError(SymbolNotFoundException.class)
                 .verify();
     }

@@ -2,8 +2,8 @@ package com.pangility.schwab.api.client.unittest;
 
 import com.pangility.schwab.api.client.marketdata.EnableSchwabMarketDataApi;
 import com.pangility.schwab.api.client.marketdata.SchwabMarketDataApiClient;
+import com.pangility.schwab.api.client.marketdata.model.instruments.Instrument;
 import com.pangility.schwab.api.client.marketdata.model.instruments.InstrumentsRequest;
-import com.pangility.schwab.api.client.marketdata.model.instruments.InstrumentsResponse;
 import com.pangility.schwab.api.client.oauth2.InvalidRefreshTokenException;
 import com.pangility.schwab.api.client.oauth2.SchwabAccount;
 import com.pangility.schwab.api.client.oauth2.SchwabTokenHandler;
@@ -18,7 +18,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.http.HttpStatus;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.web.server.ResponseStatusException;
-import reactor.core.publisher.Mono;
+import reactor.core.publisher.Flux;
 import reactor.test.StepVerifier;
 
 import java.time.LocalDateTime;
@@ -61,7 +61,7 @@ public class SchwabErrorHandlingTest {
                 .withSymbol("TSLA")
                 .withProjection(InstrumentsRequest.Projection.SYMBOL_SEARCH)
                 .build();
-        Mono<InstrumentsResponse> instrumentsResponse = schwabMarketDataApiClient.fetchInstrumentsToMono(instrumentsRequest);
+        Flux<Instrument> instrumentsResponse = schwabMarketDataApiClient.fetchInstrumentsToFlux(instrumentsRequest);
         StepVerifier
                 .create(instrumentsResponse)
                 .expectError(InvalidRefreshTokenException.class)
@@ -81,7 +81,7 @@ public class SchwabErrorHandlingTest {
                 .withSymbol("TSLA")
                 .withProjection(InstrumentsRequest.Projection.SYMBOL_SEARCH)
                 .build();
-        Mono<InstrumentsResponse> instrumentsResponse = schwabMarketDataApiClient.fetchInstrumentsToMono(instrumentsRequest);
+        Flux<Instrument> instrumentsResponse = schwabMarketDataApiClient.fetchInstrumentsToFlux(instrumentsRequest);
         StepVerifier
                 .create(instrumentsResponse)
                 .expectErrorMatches(throwable -> throwable instanceof ResponseStatusException &&
@@ -104,12 +104,12 @@ public class SchwabErrorHandlingTest {
                 .withSymbol("TSLA")
                 .withProjection(InstrumentsRequest.Projection.SYMBOL_SEARCH)
                 .build();
-        Mono<InstrumentsResponse> instrumentsResponse = schwabMarketDataApiClient.fetchInstrumentsToMono(instrumentsRequest);
+        Flux<Instrument> instrumentsResponse = schwabMarketDataApiClient.fetchInstrumentsToFlux(instrumentsRequest);
         StepVerifier
                 .create(instrumentsResponse)
-                .expectNextMatches(response -> response.getInstruments() != null &&
-                        response.getInstruments().size() == 1 &&
-                        response.getInstruments().get(0).getSymbol().equalsIgnoreCase("TSLA"))
+                .expectNextMatches(response -> response.getSymbol() != null &&
+                        !response.getSymbol().isEmpty() &&
+                        response.getSymbol().equalsIgnoreCase("TSLA"))
                 .verifyComplete();
         assertThat(schwabAccount.getAccessToken()).isNotEqualTo("12345678".repeat(8));
         assertThat(schwabAccount.getAccessExpiration()).isAfter(LocalDateTime.now().plusMinutes(29).plusSeconds(58));

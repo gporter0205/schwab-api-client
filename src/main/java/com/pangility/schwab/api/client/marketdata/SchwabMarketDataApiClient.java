@@ -4,11 +4,13 @@ import com.pangility.schwab.api.client.common.SchwabBaseApiClient;
 import com.pangility.schwab.api.client.marketdata.model.chains.OptionChainRequest;
 import com.pangility.schwab.api.client.marketdata.model.chains.OptionChainResponse;
 import com.pangility.schwab.api.client.marketdata.model.expirationchain.ExpirationChainResponse;
+import com.pangility.schwab.api.client.marketdata.model.instruments.Instrument;
 import com.pangility.schwab.api.client.marketdata.model.instruments.InstrumentsRequest;
 import com.pangility.schwab.api.client.marketdata.model.instruments.InstrumentsResponse;
 import com.pangility.schwab.api.client.marketdata.model.markets.Hours;
 import com.pangility.schwab.api.client.marketdata.model.movers.MoversRequest;
 import com.pangility.schwab.api.client.marketdata.model.movers.MoversResponse;
+import com.pangility.schwab.api.client.marketdata.model.movers.Screener;
 import com.pangility.schwab.api.client.marketdata.model.pricehistory.PriceHistoryRequest;
 import com.pangility.schwab.api.client.marketdata.model.pricehistory.PriceHistoryResponse;
 import com.pangility.schwab.api.client.marketdata.model.quotes.QuoteResponse;
@@ -23,6 +25,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import org.springframework.web.util.UriComponentsBuilder;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.time.Instant;
@@ -501,15 +504,17 @@ public class SchwabMarketDataApiClient extends SchwabBaseApiClient {
      */
     @Deprecated
     public MoversResponse fetchMovers(@NotNull MoversRequest moversRequest) {
-        return this.fetchMoversToMono(moversRequest).block();
+        MoversResponse moversResponse = new MoversResponse();
+        moversResponse.setScreeners(this.fetchMoversToFlux(moversRequest).toStream().toList());
+        return moversResponse;
     }
 
     /**
      * reactively fetch the movers from the Schwab API
      * @param moversRequest {@literal @}NotNull {@link MoversRequest}
-     * @return {@link Mono}{@literal <}{@link MoversResponse}{@literal >}
+     * @return {@link Flux}{@literal <}{@link Screener}{@literal >}
      */
-    public Mono<MoversResponse> fetchMoversToMono(@NotNull MoversRequest moversRequest) {
+    public Flux<Screener> fetchMoversToFlux(@NotNull MoversRequest moversRequest) {
         log.info("Fetch Movers -> {}", moversRequest);
 
         if (moversRequest.getIndexSymbol() == null) {
@@ -527,13 +532,8 @@ public class SchwabMarketDataApiClient extends SchwabBaseApiClient {
                     }
                     return Mono.error(throwable);
                 })
-                .flatMap(response -> {
-                    if(response.getScreeners() != null && !response.getScreeners().isEmpty()) {
-                        return Mono.just(response);
-                    } else {
-                        return Mono.error(new SymbolNotFoundException("Movers for '" + moversRequest.getIndexSymbol().toString() + "' not found"));
-                    }
-                });
+                .flux()
+                .flatMap(moversResponse -> Flux.fromIterable(moversResponse.getScreeners()));
     }
 
     /**
@@ -657,36 +657,37 @@ public class SchwabMarketDataApiClient extends SchwabBaseApiClient {
      */
     @Deprecated
     public InstrumentsResponse fetchInstruments(@NotNull InstrumentsRequest instrumentsRequest) {
-        return fetchInstrumentsToMono(instrumentsRequest)
-                .block();
+        InstrumentsResponse instrumentsResponse = new InstrumentsResponse();
+        instrumentsResponse.setInstruments(fetchInstrumentsToFlux(instrumentsRequest).toStream().toList());
+        return instrumentsResponse;
     }
 
     /**
      * reactively fetch instruments from the Schwab API
      * @param instrumentsRequest {@literal @}NotNull {@link InstrumentsRequest}
-     * @return {@link Mono}{@literal <}{@link InstrumentsResponse}{@literal >}
+     * @return {@link Flux}{@literal <}{@link Instrument}{@literal >}
      */
-    public Mono<InstrumentsResponse> fetchInstrumentsToMono(@NotNull InstrumentsRequest instrumentsRequest) {
+    public Flux<Instrument> fetchInstrumentsToFlux(@NotNull InstrumentsRequest instrumentsRequest) {
         log.info("Fetch Instruments -> {}", instrumentsRequest);
-        Mono<InstrumentsResponse> response;
 
-        if (instrumentsRequest.getSymbol() != null && !instrumentsRequest.getSymbol().isEmpty() && instrumentsRequest.getProjection() != null) {
-            UriComponentsBuilder uriBuilder = this.getUriBuilder()
-                    .pathSegment("instruments")
-                    .queryParam("symbol", instrumentsRequest.getSymbol())
-                    .queryParam("projection", instrumentsRequest.getProjection().value());
-            response = this.callGetApiToMono(defaultUserId, uriBuilder, InstrumentsResponse.class)
-                    .flatMap(instrumentResponse -> {
-                        if(instrumentResponse.getInstruments() == null) {
-                            return Mono.error(new SymbolNotFoundException("Instruments for '" + instrumentsRequest.getSymbol() + "' not found"));
-                        } else {
-                            return Mono.just(instrumentResponse);
-                        }
-                    });
-        } else {
+        if (instrumentsRequest.getSymbol() == null || instrumentsRequest.getSymbol().isEmpty() || instrumentsRequest.getProjection() == null) {
             throw new IllegalArgumentException("A request for Instruments must include a symbol and a projection.");
         }
-        return response;
+
+        UriComponentsBuilder uriBuilder = this.getUriBuilder()
+                .pathSegment("instruments")
+                .queryParam("symbol", instrumentsRequest.getSymbol())
+                .queryParam("projection", instrumentsRequest.getProjection().value());
+        return this.callGetApiToMono(defaultUserId, uriBuilder, InstrumentsResponse.class)
+                .flatMap(instrumentsResponse -> {
+                    if(instrumentsResponse.getInstruments() == null) {
+                        return Mono.error(new SymbolNotFoundException("Instruments for '" + instrumentsRequest.getSymbol() + "' not found"));
+                    } else {
+                        return Mono.just(instrumentsResponse);
+                    }
+                })
+                .flux()
+                .flatMap(instrumentsResponse -> Flux.fromIterable(instrumentsResponse.getInstruments()));
     }
 
     /**
@@ -696,42 +697,44 @@ public class SchwabMarketDataApiClient extends SchwabBaseApiClient {
      */
     @Deprecated
     public InstrumentsResponse fetchInstrumentsByCusip(@NotNull String cusip) {
-        return this.fetchInstrumentByCusipToMono(cusip)
-                .block();
+        Instrument instrument = this.fetchInstrumentByCusipToMono(cusip).block();
+        InstrumentsResponse instrumentsResponse = new InstrumentsResponse();
+        if(instrument != null) {
+            instrumentsResponse.setInstruments(List.of(instrument));
+        }
+        return instrumentsResponse;
     }
 
     /**
      * reactively fetch instruments by cusip from the Schwab API
      * @param cusip {@literal @}NotNull String
-     * @return {@link Mono}{@literal <}{@link InstrumentsResponse}{@literal >}
+     * @return {@link Mono}{@literal <}{@link Instrument}{@literal >}
      */
-    public Mono<InstrumentsResponse> fetchInstrumentByCusipToMono(@NotNull String cusip) {
-        log.info("Fetch Instruments by cusip [{}]", cusip);
-        Mono<InstrumentsResponse> response;
+    public Mono<Instrument> fetchInstrumentByCusipToMono(@NotNull String cusip) {
+        log.info("Fetch Instrument by cusip [{}]", cusip);
 
-        if (!cusip.isEmpty()) {
-            UriComponentsBuilder uriBuilder = this.getUriBuilder()
-                .pathSegment("instruments", cusip);
-            response = this.callGetApiToMono(defaultUserId, uriBuilder, InstrumentsResponse.class)
-                    .onErrorResume(throwable -> {
-                        if(throwable instanceof WebClientResponseException) {
-                            if(((WebClientResponseException) throwable).getStatusCode().isSameCodeAs(HttpStatus.NOT_FOUND)) {
-                                return Mono.error(new SymbolNotFoundException("Instrument for cusip '" + cusip + "' not found"));
-                            }
-                        }
-                        return Mono.error(throwable);
-                    })
-                    .flatMap(instrumentResponse -> {
-                        if(instrumentResponse.getInstruments() == null || instrumentResponse.getInstruments().isEmpty()) {
-                            return Mono.error(new SymbolNotFoundException("Instrument for cusip '" + cusip + "' not found"));
-                        } else {
-                            return Mono.just(instrumentResponse);
-                        }
-                    });
-        } else {
+        if (cusip.isEmpty()) {
             throw new IllegalArgumentException("Cusip is required");
         }
-        return response;
+
+        UriComponentsBuilder uriBuilder = this.getUriBuilder()
+            .pathSegment("instruments", cusip);
+        return this.callGetApiToMono(defaultUserId, uriBuilder, InstrumentsResponse.class)
+                .onErrorResume(throwable -> {
+                    if(throwable instanceof WebClientResponseException) {
+                        if(((WebClientResponseException) throwable).getStatusCode().isSameCodeAs(HttpStatus.NOT_FOUND)) {
+                            return Mono.error(new SymbolNotFoundException("Instrument for cusip '" + cusip + "' not found"));
+                        }
+                    }
+                    return Mono.error(throwable);
+                })
+                .flatMap(instrumentResponse -> {
+                    if(instrumentResponse.getInstruments() == null || instrumentResponse.getInstruments().isEmpty()) {
+                        return Mono.error(new SymbolNotFoundException("Instrument for cusip '" + cusip + "' not found"));
+                    } else {
+                        return Mono.just(instrumentResponse.getInstruments().get(0));
+                    }
+                });
     }
 
     private UriComponentsBuilder getUriBuilder() {
