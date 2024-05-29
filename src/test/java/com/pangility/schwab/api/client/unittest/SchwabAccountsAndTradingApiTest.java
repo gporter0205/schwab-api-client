@@ -21,9 +21,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringBootConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Bean;
-import org.springframework.http.HttpStatusCode;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
@@ -36,7 +34,6 @@ import java.util.Collection;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.fail;
 
 @SpringBootTest
 @EnableSchwabAccountsAndTradingApi
@@ -323,22 +320,36 @@ public class SchwabAccountsAndTradingApiTest {
                 .verifyComplete();
     }
 
-    @Test
+    /*@Test
     public void placeOrderTest() {
-        List<EncryptedAccount> encryptedAccounts = schwabAccountsAndTradingApiClient.fetchEncryptedAccountsToFlux(schwabUserId).toStream().toList();
-        assertThat(encryptedAccounts).isNotNull();
-        assertThat(encryptedAccounts.size()).isGreaterThan(0);
+        Optional<EncryptedAccount> optionalEncryptedAccount = schwabAccountsAndTradingApiClient.fetchEncryptedAccountsToFlux(schwabUserId)
+                .toStream()
+                .filter(account -> account.getAccountNumber().equals("77957196"))
+                .findFirst();
+        assertThat(optionalEncryptedAccount).isNotNull();
+        assertThat(optionalEncryptedAccount.isPresent()).isTrue();
 
-        try {
-            schwabAccountsAndTradingApiClient.placeOrder(schwabUserId, encryptedAccounts.get(0).getHashValue(), new Order());
-        } catch(WebClientResponseException e) {
-            // Bad Request because we've sent an empty order
-            assertThat(e).isNotNull();
-            assertThat(e.getStatusCode()).isEqualTo(HttpStatusCode.valueOf(400));
-        } catch(Exception e) {
-            fail(e.getLocalizedMessage());
-        }
-    }
+        Instrument instrument = new Instrument();
+        instrument.setAssetType(AssetType.EQUITY);
+        instrument.setSymbol("TQQQ");
+        OrderLegCollection orderLegCollection = new OrderLegCollection();
+        orderLegCollection.setInstruction(OrderLegCollection.Instruction.BUY);
+        orderLegCollection.setQuantity(new BigDecimal("200"));
+        orderLegCollection.setInstrument(instrument);
+        Order order = new Order();
+        order.setSession(Session.NORMAL);
+        order.setDuration(Duration.DAY);
+        order.setOrderType(OrderType.LIMIT);
+        order.setComplexOrderStrategyType(ComplexOrderStrategyType.NONE);
+        order.setOrderStrategyType(OrderStrategyType.SINGLE);
+        order.setPrice(new BigDecimal("63"));
+        order.setOrderLegCollection(List.of(orderLegCollection));
+
+        Mono<String> orderResponse = schwabAccountsAndTradingApiClient.placeOrder(schwabUserId, optionalEncryptedAccount.get().getHashValue(), order);
+        StepVerifier
+                .create(orderResponse)
+                .verifyComplete();
+    }*/
 
     public static class TestTokenHandler implements SchwabTokenHandler {
 

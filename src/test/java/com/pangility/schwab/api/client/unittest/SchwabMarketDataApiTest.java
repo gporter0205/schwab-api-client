@@ -92,8 +92,25 @@ public class SchwabMarketDataApiTest {
     }
 
     @Test
-    public void quoteNotFoundTest() {
+    public void equityQuoteNotFoundTest() {
         Mono<QuoteResponse> quoteResponse = schwabMarketDataApiClient.fetchQuoteToMono("XXXXXX");
+        StepVerifier
+                .create(quoteResponse)
+                .expectError(SymbolNotFoundException.class)
+                .verify();
+    }
+
+    @Test
+    public void optionQuoteNotFoundTest() {
+        // get next Friday
+        LocalDate nextFriday = LocalDate.now().plusDays(3);
+        while(!nextFriday.getDayOfWeek().equals(DayOfWeek.FRIDAY)) {
+            nextFriday = nextFriday.plusDays(1);
+        }
+        // Not enough spaces padding this symbol to simulate bad symbol.
+        String symbol = "SSO  " + nextFriday.format(DateTimeFormatter.ofPattern("yyMMdd")) + "C00071000";
+
+        Mono<QuoteResponse> quoteResponse = schwabMarketDataApiClient.fetchQuoteToMono(symbol);
         StepVerifier
                 .create(quoteResponse)
                 .expectError(SymbolNotFoundException.class)
