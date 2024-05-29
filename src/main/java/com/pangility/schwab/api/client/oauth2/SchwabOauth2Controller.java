@@ -139,6 +139,8 @@ public class SchwabOauth2Controller {
         Mono<SchwabAccount> schwabAccountMono = Mono.empty();
         SchwabAccount schwabAccount = accountMapByUserId.get(schwabUserId);
         if(schwabAccount != null) {
+            this.validateRefreshToken(schwabAccount);
+
             String accessToken = schwabAccount.getAccessToken();
             LocalDateTime accessExpiration = schwabAccount.getAccessExpiration();
             if(accessToken == null || (accessExpiration != null && LocalDateTime.now().plusMinutes(5).isAfter(accessExpiration))) {
