@@ -440,7 +440,7 @@ public class SchwabAccountsAndTradingApiClient extends SchwabBaseApiClient {
      * @param encryptedAccount encrypted account id
      * @param order information to place the order
      */
-    public void placeOrder(@NotNull String schwabUserId,
+    public Mono<String> placeOrder(@NotNull String schwabUserId,
                            @NotNull String encryptedAccount,
                            @NotNull Order order) {
         log.info("Place Order on Account [{}] -> {}", encryptedAccount, order);
@@ -451,7 +451,7 @@ public class SchwabAccountsAndTradingApiClient extends SchwabBaseApiClient {
 
         UriComponentsBuilder uriBuilder = this.getUriBuilder()
                 .pathSegment("accounts", encryptedAccount, "orders");
-        this.callPostApi(schwabUserId, uriBuilder, order);
+        return this.callPostApiToMono(schwabUserId, uriBuilder, order, String.class);
     }
 
     /**
@@ -461,7 +461,7 @@ public class SchwabAccountsAndTradingApiClient extends SchwabBaseApiClient {
      * @param orderId order to be replaced
      * @param order replacement order information
      */
-    public void replaceOrder(@NotNull String schwabUserId,
+    public Mono<String> replaceOrder(@NotNull String schwabUserId,
                              @NotNull String encryptedAccount,
                              @NotNull Long orderId,
                              @NotNull Order order) {
@@ -476,7 +476,7 @@ public class SchwabAccountsAndTradingApiClient extends SchwabBaseApiClient {
 
         UriComponentsBuilder uriBuilder = this.getUriBuilder()
                 .pathSegment("accounts", encryptedAccount, "orders", orderId.toString());
-        this.callPutApi(schwabUserId, uriBuilder, order);
+        return this.callPutApiToMono(schwabUserId, uriBuilder, order, String.class);
     }
 
     /**
@@ -485,10 +485,10 @@ public class SchwabAccountsAndTradingApiClient extends SchwabBaseApiClient {
      * @param encryptedAccount encrypted account id
      * @param orderId order to be cancelled
      */
-    public void cancelOrder(@NotNull String schwabUserId,
+    public Mono<String> cancelOrder(@NotNull String schwabUserId,
                             @NotNull String encryptedAccount,
                             @NotNull Long orderId) {
-        log.info("Cancel Order [{}] on Account [{}]", encryptedAccount, orderId);
+        log.info("Cancel Order [{}] on Account [{}]", orderId, encryptedAccount);
 
         if(encryptedAccount.isEmpty()) {
             throw new IllegalArgumentException("Encrypted account number is required");
@@ -499,7 +499,7 @@ public class SchwabAccountsAndTradingApiClient extends SchwabBaseApiClient {
 
         UriComponentsBuilder uriBuilder = this.getUriBuilder()
                 .pathSegment("accounts", encryptedAccount, "orders", orderId.toString());
-        this.callDeleteApi(schwabUserId, uriBuilder);
+        return this.callDeleteApiToMono(schwabUserId, uriBuilder, null, String.class);
     }
 
     private UriComponentsBuilder getUriBuilder() {
