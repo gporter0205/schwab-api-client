@@ -676,7 +676,7 @@ public class SchwabBaseApiClient {
         return schwabOauth2Controller.getAccessToken(schwabUserId)
                 .flatMap(tokenInfo -> this.callApiPreProcess(schwabUserId, httpMethod, uriComponentsBuilder, body, tokenInfo).exchangeToMono(response -> {
                     Mono<T> mono;
-                    if (response.statusCode().equals(HttpStatus.OK)) {
+                    if (response.statusCode().is2xxSuccessful()) {
                         mono = response.bodyToMono(bodyTypeReference);
                     } else if (response.statusCode().is4xxClientError() || response.statusCode().is5xxServerError()) {
                         if (response.statusCode().isSameCodeAs(HttpStatus.UNAUTHORIZED)) {
