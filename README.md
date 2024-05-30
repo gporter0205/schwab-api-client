@@ -46,13 +46,15 @@ an `otherfields` Map is contained in most model classes where you can get any ne
 to the following:
 
 ```java
-QuoteResponse quote = schwabMarketDataClient.fetchQuote("msft");
-String someField = (String)quote.getOtherFields().get("someField"))
+Mono<QuoteResponse> quote = schwabMarketDataApiClient.fetchQuoteToMono("msft");
+quote
+   .map(quoteResponse -> (String) quoteResponse.getOtherFields().get("someField"))
+   .subscribe(System.out::println);
 ```
 
 ## Error Handling
 
-If a Refresh Token is invalid or expired, an InvalidRefreshTokenException is thrown.  This is the trigger that should
+If a Refresh Token is invalid or expired, a RefreshTokenException is thrown.  This is the trigger that should
 start whatever your flow is to retrieve a refresh token.
 
 Certain fetch methods throw custom exceptions in specific situations.  For example, fetchQuote will throw a
@@ -63,4 +65,4 @@ specific exception info.
 The API uses the Lombok @Slf4j annotation to instantiate a log object.
 
 ## TODO
-* Improved error handling for all end points.
+* Add the Schwab streamer API
