@@ -439,6 +439,7 @@ public class SchwabAccountsAndTradingApiClient extends SchwabBaseApiClient {
      * @param schwabUserId the Charles Schwab user id of the account to be used for API authentication
      * @param encryptedAccount encrypted account id
      * @param order information to place the order
+     * @return {@link Mono}{@literal <}String{@literal >}
      */
     public Mono<String> placeOrder(@NotNull String schwabUserId,
                            @NotNull String encryptedAccount,
@@ -460,6 +461,7 @@ public class SchwabAccountsAndTradingApiClient extends SchwabBaseApiClient {
      * @param encryptedAccount encrypted account id
      * @param orderId order to be replaced
      * @param order replacement order information
+     * @return {@link Mono}{@literal <}String{@literal >}
      */
     public Mono<String> replaceOrder(@NotNull String schwabUserId,
                              @NotNull String encryptedAccount,
@@ -484,6 +486,7 @@ public class SchwabAccountsAndTradingApiClient extends SchwabBaseApiClient {
      * @param schwabUserId the Charles Schwab user id of the account to be used for API authentication
      * @param encryptedAccount encrypted account id
      * @param orderId order to be cancelled
+     * @return {@link Mono}{@literal <}String{@literal >}
      */
     public Mono<String> cancelOrder(@NotNull String schwabUserId,
                             @NotNull String encryptedAccount,
