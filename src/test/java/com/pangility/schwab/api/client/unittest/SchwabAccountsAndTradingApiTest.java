@@ -6,9 +6,8 @@ import com.pangility.schwab.api.client.accountsandtrading.SchwabAccountsAndTradi
 import com.pangility.schwab.api.client.accountsandtrading.TransactionNotFoundException;
 import com.pangility.schwab.api.client.accountsandtrading.model.account.Account;
 import com.pangility.schwab.api.client.accountsandtrading.model.encryptedaccounts.EncryptedAccount;
-import com.pangility.schwab.api.client.accountsandtrading.model.instrument.AssetType;
-import com.pangility.schwab.api.client.accountsandtrading.model.instrument.EquityInstrument;
-import com.pangility.schwab.api.client.accountsandtrading.model.order.*;
+import com.pangility.schwab.api.client.accountsandtrading.model.order.Order;
+import com.pangility.schwab.api.client.accountsandtrading.model.order.OrderRequest;
 import com.pangility.schwab.api.client.accountsandtrading.model.transaction.Transaction;
 import com.pangility.schwab.api.client.accountsandtrading.model.transaction.TransactionRequest;
 import com.pangility.schwab.api.client.accountsandtrading.model.userpreference.UserPreferenceResponse;
@@ -27,14 +26,12 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
