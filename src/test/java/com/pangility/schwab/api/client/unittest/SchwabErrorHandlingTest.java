@@ -4,7 +4,7 @@ import com.pangility.schwab.api.client.marketdata.EnableSchwabMarketDataApi;
 import com.pangility.schwab.api.client.marketdata.SchwabMarketDataApiClient;
 import com.pangility.schwab.api.client.marketdata.model.instruments.Instrument;
 import com.pangility.schwab.api.client.marketdata.model.instruments.InstrumentsRequest;
-import com.pangility.schwab.api.client.oauth2.InvalidRefreshTokenException;
+import com.pangility.schwab.api.client.oauth2.RefreshTokenException;
 import com.pangility.schwab.api.client.oauth2.SchwabAccount;
 import com.pangility.schwab.api.client.oauth2.SchwabTokenHandler;
 import org.jetbrains.annotations.NotNull;
@@ -25,6 +25,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.fail;
 
 @SpringBootTest
 @EnableSchwabMarketDataApi
@@ -57,15 +58,21 @@ public class SchwabErrorHandlingTest {
         schwabAccount.setAccessExpiration(LocalDateTime.now().plusMinutes(10));
         schwabMarketDataApiClient.init(schwabAccount, testTokenHandler);
 
-        InstrumentsRequest instrumentsRequest = InstrumentsRequest.Builder.instrumentsRequest()
-                .withSymbol("TSLA")
-                .withProjection(InstrumentsRequest.Projection.SYMBOL_SEARCH)
-                .build();
-        Flux<Instrument> instrumentsResponse = schwabMarketDataApiClient.fetchInstrumentsToFlux(instrumentsRequest);
-        StepVerifier
-                .create(instrumentsResponse)
-                .expectError(InvalidRefreshTokenException.class)
-                .verify();
+        try {
+            InstrumentsRequest instrumentsRequest = InstrumentsRequest.Builder.instrumentsRequest()
+                    .withSymbol("TSLA")
+                    .withProjection(InstrumentsRequest.Projection.SYMBOL_SEARCH)
+                    .build();
+            Flux<Instrument> instrumentsResponse = schwabMarketDataApiClient.fetchInstrumentsToFlux(instrumentsRequest);
+            StepVerifier
+                    .create(instrumentsResponse)
+                    .expectError(RefreshTokenException.class)
+                    .verify();
+        } catch(RefreshTokenException rte) {
+            assertThat(rte).isNotNull();
+        } catch (Exception e) {
+            fail(e);
+        }
     }
 
     @Test

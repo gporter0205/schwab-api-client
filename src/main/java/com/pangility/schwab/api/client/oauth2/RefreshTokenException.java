@@ -8,7 +8,7 @@ import lombok.Getter;
  * a new refresh token from the Schwab API.
  */
 @Getter
-public class InvalidRefreshTokenException extends RuntimeException {
+public class RefreshTokenException extends RuntimeException {
     /**
      * property to keep {@link SchwabAccount}
      */
@@ -19,7 +19,7 @@ public class InvalidRefreshTokenException extends RuntimeException {
      * @param msg String
      * @param schwabAccount {@link SchwabAccount}
      */
-    public InvalidRefreshTokenException(String msg, SchwabAccount schwabAccount) {
+    public RefreshTokenException(String msg, SchwabAccount schwabAccount) {
         super(msg);
         this.schwabAccount = schwabAccount;
     }
