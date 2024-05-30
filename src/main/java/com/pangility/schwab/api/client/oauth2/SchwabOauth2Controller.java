@@ -108,15 +108,15 @@ public class SchwabOauth2Controller {
     /**
      * validate the refresh token (i.e. is it present and not expired)
      * @param schwabAccount {@link SchwabAccount}
-     * @throws InvalidRefreshTokenException throws if the refresh token is not present or expired
+     * @throws RefreshTokenException throws if the refresh token is not present or expired
      */
-    public void validateRefreshToken(SchwabAccount schwabAccount) throws InvalidRefreshTokenException {
+    public void validateRefreshToken(SchwabAccount schwabAccount) throws RefreshTokenException {
         if(schwabAccount == null) {
-            throw new InvalidRefreshTokenException("Unable to retrieve Refresh Token", schwabAccount);
+            throw new RefreshTokenException("Unable to retrieve Refresh Token", schwabAccount);
         } else if(schwabAccount.getRefreshToken() == null) {
-            throw new InvalidRefreshTokenException("Missing Refresh Token", schwabAccount);
+            throw new RefreshTokenException("Missing Refresh Token", schwabAccount);
         } else if(LocalDateTime.now().plusMinutes(60).isAfter(schwabAccount.getRefreshExpiration())) {
-            throw new InvalidRefreshTokenException("Expired Refresh Token", schwabAccount);
+            throw new RefreshTokenException("Expired Refresh Token", schwabAccount);
         }
     }
 
@@ -311,7 +311,7 @@ public class SchwabOauth2Controller {
                                 redirectView.setHosts(callback);
                                 retMono = Mono.just(schwabAccount);
                             } else {
-                                retMono = Mono.error(new InvalidRefreshTokenException("Unable to retrieve refresh token", null));
+                                retMono = Mono.error(new RefreshTokenException("Unable to retrieve refresh token", null));
                             }
                             return retMono;
                         }).subscribe();
