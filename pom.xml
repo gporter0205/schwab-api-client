@@ -10,9 +10,9 @@
 
   <groupId>com.pangility</groupId>
   <artifactId>schwab-api-client</artifactId>
-  <version>0.1.3-SNAPSHOT</version>
+  <version>0.1.3</version>
   <name>schwab-api-client</name>
-  <description>Java Spring Boot Library for interacting with the Charles Schwab API</description>
+  <description>Reactive Java Spring Boot Library for interacting with the Charles Schwab API</description>
   <packaging>jar</packaging>
 
   <inceptionYear>2024</inceptionYear>
