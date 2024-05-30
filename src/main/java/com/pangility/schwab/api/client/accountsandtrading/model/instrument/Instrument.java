@@ -1,7 +1,6 @@
 package com.pangility.schwab.api.client.accountsandtrading.model.instrument;
 
 import com.fasterxml.jackson.annotation.*;
-import com.fasterxml.jackson.annotation.JsonTypeInfo.Id;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -14,7 +13,8 @@ import java.util.Map;
  * See the <a href="https://developer.schwab.com">Schwab Developer Portal</a> for more information
  */
 @JsonTypeInfo(
-    use = Id.NAME,
+    use = JsonTypeInfo.Id.NAME,
+    include = JsonTypeInfo.As.EXISTING_PROPERTY,
     property = "assetType",
     visible = true
 )
@@ -32,7 +32,7 @@ import java.util.Map;
 @Setter
 @ToString
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
-public abstract class Instrument {
+public class Instrument {
   /**
    * Instrument Asset Type
    */

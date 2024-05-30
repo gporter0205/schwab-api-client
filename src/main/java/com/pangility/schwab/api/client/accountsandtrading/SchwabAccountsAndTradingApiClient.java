@@ -12,9 +12,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnResource;
-import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 import org.springframework.web.util.UriComponentsBuilder;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -38,39 +41,23 @@ public class SchwabAccountsAndTradingApiClient extends SchwabBaseApiClient {
      * @param schwabUserId the Charles Schwab user id of the account to be used for API authentication
      * @return {@link List}{@literal <}{@link EncryptedAccount}{@literal >}
      */
+    @Deprecated
     public List<EncryptedAccount> fetchEncryptedAccounts(@NotNull String schwabUserId) {
+        return this.fetchEncryptedAccountsToFlux(schwabUserId).toStream().toList();
+    }
+
+    /**
+     * fetch the list of accounts and encrypted account numbers to be
+     * used for subsequent API requests that require account number;
+     * @param schwabUserId the Charles Schwab user id of the account to be used for API authentication
+     * @return {@link List}{@literal <}{@link EncryptedAccount}{@literal >}
+     */
+    public Flux<EncryptedAccount> fetchEncryptedAccountsToFlux(@NotNull String schwabUserId) {
         log.info("Fetch Encrypted Accounts");
 
         UriComponentsBuilder uriBuilder = this.getUriBuilder()
                 .pathSegment("accounts", "accountNumbers");
-        return this.callGetApiAsList(schwabUserId, uriBuilder, new ParameterizedTypeReference<>() {});
-    }
-
-    /**
-     * fetch the list of accounts without positions
-     * @param schwabUserId the Charles Schwab user id of the account to be used for API authentication
-     * @return {@link List}{@literal <}{@link Account}{@literal >}
-     */
-    public List<Account> fetchAccounts(@NotNull String schwabUserId) {
-        return fetchAccounts(schwabUserId, null);
-    }
-
-    /**
-     * fetch the list of accounts
-     * @param schwabUserId the Charles Schwab user id of the account to be used for API authentication
-     * @param fields positions to include account position data or null
-     * @return {@link List}{@literal <}{@link Account}{@literal >}
-     */
-    public List<Account> fetchAccounts(@NotNull String schwabUserId,
-                                       String fields) {
-        log.info("Fetch All Accounts {}", fields != null && fields.equalsIgnoreCase("positions") ? "with positions" : "");
-
-        UriComponentsBuilder uriBuilder = this.getUriBuilder()
-                .pathSegment("accounts");
-        if(fields != null) {
-            uriBuilder.queryParam("fields", fields);
-        }
-        return this.callGetApiAsList(schwabUserId, uriBuilder, new ParameterizedTypeReference<>() {});
+        return this.callGetApiToFlux(schwabUserId, uriBuilder, EncryptedAccount.class);
     }
 
     /**
@@ -79,6 +66,7 @@ public class SchwabAccountsAndTradingApiClient extends SchwabBaseApiClient {
      * @param encryptedAccount encrypted account id
      * @return {@link List}{@literal <}{@link Account}{@literal >}
      */
+    @Deprecated
     public Account fetchAccount(@NotNull String schwabUserId,
                                 @NotNull String encryptedAccount) {
         return fetchAccount(schwabUserId, encryptedAccount, null);
@@ -91,9 +79,34 @@ public class SchwabAccountsAndTradingApiClient extends SchwabBaseApiClient {
      * @param fields positions to include account position data or null
      * @return {@link List}{@literal <}{@link Account}{@literal >}
      */
+    @Deprecated
     public Account fetchAccount(@NotNull String schwabUserId,
                                 @NotNull String encryptedAccount,
                                 String fields) {
+        return this.fetchAccountToMono(schwabUserId, encryptedAccount, fields).block();
+    }
+
+    /**
+     * reactively fetch an account
+     * @param schwabUserId the Charles Schwab user id of the account to be used for API authentication
+     * @param encryptedAccount encrypted account id
+     * @return {@link Mono}{@literal <}{@link Account}{@literal >}
+     */
+    public Mono<Account> fetchAccountToMono(@NotNull String schwabUserId,
+                                            @NotNull String encryptedAccount) {
+        return this.fetchAccountToMono(schwabUserId, encryptedAccount, null);
+    }
+
+    /**
+     * reactively fetch an account
+     * @param schwabUserId the Charles Schwab user id of the account to be used for API authentication
+     * @param encryptedAccount encrypted account id
+     * @param fields positions to include account position data or null
+     * @return {@link Mono}{@literal <}{@link Account}{@literal >}
+     */
+    public Mono<Account> fetchAccountToMono(@NotNull String schwabUserId,
+                                            @NotNull String encryptedAccount,
+                                            String fields) {
         log.info("Fetch Account [{}] {}", encryptedAccount, fields != null && fields.equalsIgnoreCase("positions") ? "with positions" : "");
 
         if(encryptedAccount.isEmpty()) {
@@ -105,7 +118,121 @@ public class SchwabAccountsAndTradingApiClient extends SchwabBaseApiClient {
         if(fields != null) {
             uriBuilder.queryParam("fields", fields);
         }
-        return this.callGetAPI(schwabUserId, uriBuilder, Account.class);
+        return this.callGetApiToMono(schwabUserId, uriBuilder, Account.class)
+                .onErrorResume(throwable -> {
+                    if(throwable instanceof WebClientResponseException) {
+                        if(((WebClientResponseException) throwable).getStatusCode().isSameCodeAs(HttpStatus.NOT_FOUND)) {
+                            return Mono.error(new AccountNotFoundException("Encrypted Account '" + encryptedAccount + "' not found"));
+                        }
+                    }
+                    return Mono.error(throwable);
+                })
+                .flatMap(accountResponse -> {
+                    if(accountResponse.getSecuritiesAccount().getAccountNumber() != null && !accountResponse.getSecuritiesAccount().getAccountNumber().isEmpty()) {
+                        return Mono.just(accountResponse);
+                    } else {
+                        return Mono.error(new AccountNotFoundException("Encrypted Account '" + encryptedAccount + "' not found"));
+                    }
+                });
+    }
+
+    /**
+     * fetch the list of accounts without positions
+     * @param schwabUserId the Charles Schwab user id of the account to be used for API authentication
+     * @return {@link List}{@literal <}{@link Account}{@literal >}
+     */
+    @Deprecated
+    public List<Account> fetchAccounts(@NotNull String schwabUserId) {
+        return fetchAccounts(schwabUserId, null);
+    }
+
+    /**
+     * fetch the list of accounts
+     * @param schwabUserId the Charles Schwab user id of the account to be used for API authentication
+     * @param fields positions to include account position data or null
+     * @return {@link List}{@literal <}{@link Account}{@literal >}
+     */
+    @Deprecated
+    public List<Account> fetchAccounts(@NotNull String schwabUserId,
+                                       String fields) {
+        return this.fetchAccountsToFlux(schwabUserId, fields).toStream().toList();
+    }
+
+    /**
+     * reactively fetch the list of accounts without positions
+     * @param schwabUserId the Charles Schwab user id of the account to be used for API authentication
+     * @return {@link Flux}{@literal <}{@link Account}{@literal >}
+     */
+    public Flux<Account> fetchAccountsToFlux(@NotNull String schwabUserId) {
+        return fetchAccountsToFlux(schwabUserId, null);
+    }
+
+    /**
+     * reactively fetch the list of accounts
+     * @param schwabUserId the Charles Schwab user id of the account to be used for API authentication
+     * @param fields positions to include account position data or null
+     * @return {@link Flux}{@literal <}{@link Account}{@literal >}
+     */
+    public Flux<Account> fetchAccountsToFlux(@NotNull String schwabUserId,
+                                       String fields) {
+        log.info("Fetch All Accounts {}", fields != null && fields.equalsIgnoreCase("positions") ? "with positions" : "");
+
+        UriComponentsBuilder uriBuilder = this.getUriBuilder()
+                .pathSegment("accounts");
+        if(fields != null) {
+            uriBuilder.queryParam("fields", fields);
+        }
+        return this.callGetApiToFlux(schwabUserId, uriBuilder, Account.class);
+    }
+
+    /**
+     * fetch an order for a specified account and order id
+     * @param schwabUserId the Charles Schwab user id of the account to be used for API authentication
+     * @param encryptedAccount encrypted account id
+     * @param orderId order id to fetch
+     * @return {@link Order}
+     */
+    @Deprecated
+    public Order fetchOrder(@NotNull String schwabUserId,
+                            @NotNull String encryptedAccount,
+                            @NotNull Long orderId) {
+        return this.fetchOrderToMono(schwabUserId, encryptedAccount, orderId).block();
+    }
+
+    /**
+     * reactively fetch an order for a specified account and order id
+     * @param schwabUserId the Charles Schwab user id of the account to be used for API authentication
+     * @param encryptedAccount encrypted account id
+     * @param orderId order id to fetch
+     * @return {@link Mono}{@literal <}{@link Order}{@literal >}
+     */
+    public Mono<Order> fetchOrderToMono(@NotNull String schwabUserId,
+                                        @NotNull String encryptedAccount,
+                                        @NotNull Long orderId) {
+        log.info("Fetch Order [{}] for Encrypted Account [{}]", orderId, encryptedAccount);
+
+        if(encryptedAccount.isEmpty() || orderId <= 0) {
+            throw new IllegalArgumentException("Account Number and Order ID are required");
+        }
+
+        UriComponentsBuilder uriBuilder = this.getUriBuilder()
+                .pathSegment("accounts", encryptedAccount, "orders", orderId.toString());
+        return this.callGetApiToMono(schwabUserId, uriBuilder, Order.class)
+                .onErrorResume(throwable -> {
+                    if(throwable instanceof WebClientResponseException) {
+                        if(((WebClientResponseException) throwable).getStatusCode().isSameCodeAs(HttpStatus.NOT_FOUND)) {
+                            return Mono.error(new OrderNotFoundException("Order [" + orderId + "] on Encrypted Account [" + encryptedAccount + "] not found"));
+                        }
+                    }
+                    return Mono.error(throwable);
+                })
+                .flatMap(orderResponse -> {
+                    if(orderResponse.getAccountNumber() > 0 && orderResponse.getOrderId().equals(orderId)) {
+                        return Mono.just(orderResponse);
+                    } else {
+                        return Mono.error(new OrderNotFoundException("Order [" + orderId + "] on Encrypted Account [" + encryptedAccount + "] not found"));
+                    }
+                });
     }
 
     /**
@@ -114,9 +241,10 @@ public class SchwabAccountsAndTradingApiClient extends SchwabBaseApiClient {
      * @param orderRequest parameters of the orders.  FromEnteredDate and ToEnteredDate are required.
      * @return {@link List}{@literal <}{@link Order}{@literal >}
      */
+    @Deprecated
     public List<Order> fetchOrders(@NotNull String schwabUserId,
                                    @NotNull OrderRequest orderRequest) {
-        return fetchOrders(schwabUserId, null, orderRequest);
+        return this.fetchOrders(schwabUserId, null, orderRequest);
     }
 
     /**
@@ -126,9 +254,34 @@ public class SchwabAccountsAndTradingApiClient extends SchwabBaseApiClient {
      * @param orderRequest parameters of the orders.  FromEnteredDate and ToEnteredDate are required.
      * @return {@link List}{@literal <}{@link Order}{@literal >}
      */
+    @Deprecated
     public List<Order> fetchOrders(@NotNull String schwabUserId,
                                    String encryptedAccount,
                                    @NotNull OrderRequest orderRequest) {
+        return this.fetchOrdersToFlux(schwabUserId, encryptedAccount, orderRequest).toStream().toList();
+    }
+
+    /**
+     * reactively fetch the list of orders for all accounts
+     * @param schwabUserId the Charles Schwab user id of the account to be used for API authentication
+     * @param orderRequest parameters of the orders.  FromEnteredDate and ToEnteredDate are required.
+     * @return {@link Flux}{@literal <}{@link Order}{@literal >}
+     */
+    public Flux<Order> fetchOrdersToFlux(@NotNull String schwabUserId,
+                                       @NotNull OrderRequest orderRequest) {
+        return this.fetchOrdersToFlux(schwabUserId, null, orderRequest);
+    }
+
+    /**
+     * reactively fetch the list of orders for all accounts or a specified account
+     * @param schwabUserId the Charles Schwab user id of the account to be used for API authentication
+     * @param encryptedAccount encrypted account id
+     * @param orderRequest parameters of the orders.  FromEnteredDate and ToEnteredDate are required.
+     * @return {@link Flux}{@literal <}{@link Order}{@literal >}
+     */
+    public Flux<Order> fetchOrdersToFlux(@NotNull String schwabUserId,
+                                           String encryptedAccount,
+                                           @NotNull OrderRequest orderRequest) {
         log.info("Fetch Orders for Account [{}] -> {}", encryptedAccount == null ? "all accounts" : encryptedAccount, orderRequest);
 
         if(orderRequest.getFromEnteredTime() == null || orderRequest.getToEnteredTime() == null) {
@@ -148,96 +301,60 @@ public class SchwabAccountsAndTradingApiClient extends SchwabBaseApiClient {
         if(orderRequest.getStatus() != null) {
             uriBuilder.queryParam("status", orderRequest.getStatus());
         }
-        return this.callGetApiAsList(schwabUserId, uriBuilder, new ParameterizedTypeReference<>() {});
+        return this.callGetApiToFlux(schwabUserId, uriBuilder, Order.class);
     }
 
     /**
-     * fetch an order for a specified account and order id
+     * fetch a transaction for a specified account and activity/transaction id
      * @param schwabUserId the Charles Schwab user id of the account to be used for API authentication
      * @param encryptedAccount encrypted account id
-     * @param orderId order id to fetch
-     * @return {@link Order}
+     * @param activityId activity/transaction id
+     * @return {@link Transaction}
      */
-    public Order fetchOrder(@NotNull String schwabUserId,
-                            @NotNull String encryptedAccount,
-                            @NotNull Long orderId) {
-        log.info("Fetch Order [{}] for Account [{}]", orderId, encryptedAccount);
-
-        if(encryptedAccount.isEmpty() || orderId <= 0) {
-            throw new IllegalArgumentException("Account Number and Order ID are required");
-        }
-
-        UriComponentsBuilder uriBuilder = this.getUriBuilder()
-                .pathSegment("accounts", encryptedAccount, "orders", orderId.toString());
-        return this.callGetAPI(schwabUserId, uriBuilder, Order.class);
+    @Deprecated
+    public Transaction fetchTransaction(@NotNull String schwabUserId,
+                                        @NotNull String encryptedAccount,
+                                        @NotNull Long activityId) {
+        return this.fetchTransactionToMono(schwabUserId, encryptedAccount, activityId).block();
     }
 
     /**
-     * place a new order for a specified account
+     * reactively fetch a transaction for a specified account and activity/transaction id
      * @param schwabUserId the Charles Schwab user id of the account to be used for API authentication
      * @param encryptedAccount encrypted account id
-     * @param order information to place the order
+     * @param activityId activity/transaction id
+     * @return {@link Mono}{@literal <}{@link Transaction}{@literal >}
      */
-    public void placeOrder(@NotNull String schwabUserId,
-                           @NotNull String encryptedAccount,
-                           @NotNull Order order) {
-        log.info("Place Order on Account [{}] -> {}", encryptedAccount, order);
+    public Mono<Transaction> fetchTransactionToMono(@NotNull String schwabUserId,
+                                            @NotNull String encryptedAccount,
+                                            @NotNull Long activityId) {
+        log.info("Fetch Transaction [{}] for Account [{}]", activityId, encryptedAccount);
 
         if(encryptedAccount.isEmpty()) {
-            throw new IllegalArgumentException("Encrypted account number is required");
+            throw new IllegalArgumentException("Encrypted Account is required");
+        }
+        if(activityId <= 0) {
+            throw new IllegalArgumentException("Activity ID is required");
         }
 
         UriComponentsBuilder uriBuilder = this.getUriBuilder()
-            .pathSegment("accounts", encryptedAccount, "orders");
-        this.callPostAPI(schwabUserId, uriBuilder, order);
-    }
-
-    /**
-     * replace a specified order for a specified account
-     * @param schwabUserId the Charles Schwab user id of the account to be used for API authentication
-     * @param encryptedAccount encrypted account id
-     * @param orderId order to be replaced
-     * @param order replacement order information
-     */
-    public void replaceOrder(@NotNull String schwabUserId,
-                             @NotNull String encryptedAccount,
-                             @NotNull Long orderId,
-                             @NotNull Order order) {
-        log.info("Replace Order [{}] on Account [{}] -> {}", orderId, encryptedAccount, order);
-
-        if(encryptedAccount.isEmpty()) {
-            throw new IllegalArgumentException("Encrypted account number is required");
-        }
-        if(orderId <= 0) {
-            throw new IllegalArgumentException("Order ID is required");
-        }
-
-        UriComponentsBuilder uriBuilder = this.getUriBuilder()
-                .pathSegment("accounts", encryptedAccount, "orders", orderId.toString());
-        this.callPutAPI(schwabUserId, uriBuilder, order);
-    }
-
-    /**
-     * cancel a specified order for a specified account
-     * @param schwabUserId the Charles Schwab user id of the account to be used for API authentication
-     * @param encryptedAccount encrypted account id
-     * @param orderId order to be cancelled
-     */
-    public void cancelOrder(@NotNull String schwabUserId,
-                            @NotNull String encryptedAccount,
-                            @NotNull Long orderId) {
-        log.info("Cancel Order [{}] on Account [{}]", encryptedAccount, orderId);
-
-        if(encryptedAccount.isEmpty()) {
-            throw new IllegalArgumentException("Encrypted account number is required");
-        }
-        if(orderId <= 0) {
-            throw new IllegalArgumentException("Order Id is required");
-        }
-
-        UriComponentsBuilder uriBuilder = this.getUriBuilder()
-                .pathSegment("accounts", encryptedAccount, "orders", orderId.toString());
-        this.callDeleteAPI(schwabUserId, uriBuilder);
+                .pathSegment("accounts", encryptedAccount, "transactions", activityId.toString());
+        return this.callGetApiToMono(schwabUserId, uriBuilder, Transaction.class)
+                .onErrorResume(throwable -> {
+                    if(throwable instanceof WebClientResponseException) {
+                        if(((WebClientResponseException) throwable).getStatusCode().isSameCodeAs(HttpStatus.NOT_FOUND)) {
+                            return Mono.error(new TransactionNotFoundException("Transaction [" + activityId + "] on Encrypted Account [" + encryptedAccount + "] not found"));
+                        }
+                    }
+                    return Mono.error(throwable);
+                })
+                .flatMap(transactionResponse -> {
+                    if(transactionResponse.getAccountNumber() != null && !transactionResponse.getAccountNumber().isEmpty()) {
+                        return Mono.just(transactionResponse);
+                    } else {
+                        return Mono.error(new TransactionNotFoundException("Transaction [" + activityId + "] on Encrypted Account [" + encryptedAccount + "] not found"));
+                    }
+                });
     }
 
     /**
@@ -247,9 +364,23 @@ public class SchwabAccountsAndTradingApiClient extends SchwabBaseApiClient {
      * @param transactionRequest parameters of the orders.  FromEnteredDate and ToEnteredDate are required.
      * @return {@link List}{@literal <}{@link Transaction}{@literal >}
      */
+    @Deprecated
     public List<Transaction> fetchTransactions(@NotNull String schwabUserId,
                                                @NotNull String encryptedAccount,
                                                @NotNull TransactionRequest transactionRequest) {
+        return this.fetchTransactionsToFlux(schwabUserId, encryptedAccount, transactionRequest).toStream().toList();
+    }
+
+    /**
+     * reactively fetch the list of transactions for a specified account
+     * @param schwabUserId the Charles Schwab user id of the account to be used for API authentication
+     * @param encryptedAccount encrypted account id
+     * @param transactionRequest parameters of the orders.  FromEnteredDate and ToEnteredDate are required.
+     * @return {@link Flux}{@literal <}{@link Transaction}{@literal >}
+     */
+    public Flux<Transaction> fetchTransactionsToFlux(@NotNull String schwabUserId,
+                                                   @NotNull String encryptedAccount,
+                                                   @NotNull TransactionRequest transactionRequest) {
         log.info("Fetch Transactions for Account [{}] -> {}", encryptedAccount, transactionRequest);
 
         if(encryptedAccount.isEmpty()) {
@@ -269,31 +400,15 @@ public class SchwabAccountsAndTradingApiClient extends SchwabBaseApiClient {
         if(transactionRequest.getTypes() != null) {
             uriBuilder.queryParam("types", transactionRequest.getTypes());
         }
-        return this.callGetApiAsList(schwabUserId, uriBuilder, new ParameterizedTypeReference<>() {});
-    }
-
-    /**
-     * fetch a transaction for a specified account and activity/transaction id
-     * @param schwabUserId the Charles Schwab user id of the account to be used for API authentication
-     * @param encryptedAccount encrypted account id
-     * @param activityId activity/transaction id
-     * @return {@link Transaction}
-     */
-    public Transaction fetchTransaction(@NotNull String schwabUserId,
-                                        @NotNull String encryptedAccount,
-                                        @NotNull Long activityId) {
-        log.info("Fetch Transaction [{}] for Account [{}]", activityId, encryptedAccount);
-
-        if(encryptedAccount.isEmpty()) {
-            throw new IllegalArgumentException("Encrypted Account is required");
-        }
-        if(activityId <= 0) {
-            throw new IllegalArgumentException("Activity ID is required");
-        }
-
-        UriComponentsBuilder uriBuilder = this.getUriBuilder()
-                .pathSegment("accounts", encryptedAccount, "transactions", activityId.toString());
-        return this.callGetAPI(schwabUserId, uriBuilder, Transaction.class);
+        return this.callGetApiToFlux(schwabUserId, uriBuilder, Transaction.class)
+                .onErrorResume(throwable -> {
+                    if(throwable instanceof WebClientResponseException) {
+                        if(((WebClientResponseException) throwable).getStatusCode().isSameCodeAs(HttpStatus.NOT_FOUND)) {
+                            return Flux.error(new TransactionNotFoundException("Transactions on Encrypted Account [" + encryptedAccount + "] not found"));
+                        }
+                    }
+                    return Flux.error(throwable);
+                });
     }
 
     /**
@@ -301,12 +416,93 @@ public class SchwabAccountsAndTradingApiClient extends SchwabBaseApiClient {
      * @param schwabUserId the Charles Schwab user id of the account to be used for API authentication
      * @return {@link UserPreferenceResponse}
      */
+    @Deprecated
     public UserPreferenceResponse fetchUserPreference(@NotNull String schwabUserId) {
+        return this.fetchUserPreferenceToMono(schwabUserId).block();
+    }
+
+    /**
+     * fetch the user preferences
+     * @param schwabUserId the Charles Schwab user id of the account to be used for API authentication
+     * @return {@link UserPreferenceResponse}
+     */
+    public Mono<UserPreferenceResponse> fetchUserPreferenceToMono(@NotNull String schwabUserId) {
         log.info("Fetch User Preference");
 
         UriComponentsBuilder uriBuilder = this.getUriBuilder()
                 .pathSegment("userPreference");
-        return this.callGetAPI(schwabUserId, uriBuilder, UserPreferenceResponse.class);
+        return this.callGetApiToMono(schwabUserId, uriBuilder, UserPreferenceResponse.class);
+    }
+
+    /**
+     * place a new order for a specified account
+     * @param schwabUserId the Charles Schwab user id of the account to be used for API authentication
+     * @param encryptedAccount encrypted account id
+     * @param order information to place the order
+     * @return {@link Mono}{@literal <}String{@literal >}
+     */
+    public Mono<String> placeOrder(@NotNull String schwabUserId,
+                           @NotNull String encryptedAccount,
+                           @NotNull Order order) {
+        log.info("Place Order on Account [{}] -> {}", encryptedAccount, order);
+
+        if(encryptedAccount.isEmpty()) {
+            throw new IllegalArgumentException("Encrypted account number is required");
+        }
+
+        UriComponentsBuilder uriBuilder = this.getUriBuilder()
+                .pathSegment("accounts", encryptedAccount, "orders");
+        return this.callPostApiToMono(schwabUserId, uriBuilder, order, String.class);
+    }
+
+    /**
+     * replace a specified order for a specified account
+     * @param schwabUserId the Charles Schwab user id of the account to be used for API authentication
+     * @param encryptedAccount encrypted account id
+     * @param orderId order to be replaced
+     * @param order replacement order information
+     * @return {@link Mono}{@literal <}String{@literal >}
+     */
+    public Mono<String> replaceOrder(@NotNull String schwabUserId,
+                             @NotNull String encryptedAccount,
+                             @NotNull Long orderId,
+                             @NotNull Order order) {
+        log.info("Replace Order [{}] on Account [{}] -> {}", orderId, encryptedAccount, order);
+
+        if(encryptedAccount.isEmpty()) {
+            throw new IllegalArgumentException("Encrypted account number is required");
+        }
+        if(orderId <= 0) {
+            throw new IllegalArgumentException("Order ID is required");
+        }
+
+        UriComponentsBuilder uriBuilder = this.getUriBuilder()
+                .pathSegment("accounts", encryptedAccount, "orders", orderId.toString());
+        return this.callPutApiToMono(schwabUserId, uriBuilder, order, String.class);
+    }
+
+    /**
+     * cancel a specified order for a specified account
+     * @param schwabUserId the Charles Schwab user id of the account to be used for API authentication
+     * @param encryptedAccount encrypted account id
+     * @param orderId order to be cancelled
+     * @return {@link Mono}{@literal <}String{@literal >}
+     */
+    public Mono<String> cancelOrder(@NotNull String schwabUserId,
+                            @NotNull String encryptedAccount,
+                            @NotNull Long orderId) {
+        log.info("Cancel Order [{}] on Account [{}]", orderId, encryptedAccount);
+
+        if(encryptedAccount.isEmpty()) {
+            throw new IllegalArgumentException("Encrypted account number is required");
+        }
+        if(orderId <= 0) {
+            throw new IllegalArgumentException("Order Id is required");
+        }
+
+        UriComponentsBuilder uriBuilder = this.getUriBuilder()
+                .pathSegment("accounts", encryptedAccount, "orders", orderId.toString());
+        return this.callDeleteApiToMono(schwabUserId, uriBuilder, null, String.class);
     }
 
     private UriComponentsBuilder getUriBuilder() {
