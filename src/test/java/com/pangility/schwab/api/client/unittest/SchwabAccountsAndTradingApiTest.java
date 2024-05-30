@@ -6,8 +6,9 @@ import com.pangility.schwab.api.client.accountsandtrading.SchwabAccountsAndTradi
 import com.pangility.schwab.api.client.accountsandtrading.TransactionNotFoundException;
 import com.pangility.schwab.api.client.accountsandtrading.model.account.Account;
 import com.pangility.schwab.api.client.accountsandtrading.model.encryptedaccounts.EncryptedAccount;
-import com.pangility.schwab.api.client.accountsandtrading.model.order.Order;
-import com.pangility.schwab.api.client.accountsandtrading.model.order.OrderRequest;
+import com.pangility.schwab.api.client.accountsandtrading.model.instrument.AssetType;
+import com.pangility.schwab.api.client.accountsandtrading.model.instrument.EquityInstrument;
+import com.pangility.schwab.api.client.accountsandtrading.model.order.*;
 import com.pangility.schwab.api.client.accountsandtrading.model.transaction.Transaction;
 import com.pangility.schwab.api.client.accountsandtrading.model.transaction.TransactionRequest;
 import com.pangility.schwab.api.client.accountsandtrading.model.userpreference.UserPreferenceResponse;
@@ -26,12 +27,14 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -321,20 +324,20 @@ public class SchwabAccountsAndTradingApiTest {
     }
 
     /*@Test
-    public void placeOrderTest() {
+    public void placeEquityOrderTest() {
         Optional<EncryptedAccount> optionalEncryptedAccount = schwabAccountsAndTradingApiClient.fetchEncryptedAccountsToFlux(schwabUserId)
                 .toStream()
-                .filter(account -> account.getAccountNumber().equals("77957196"))
+                .filter(account -> account.getAccountNumber().equals("39760601"))
                 .findFirst();
         assertThat(optionalEncryptedAccount).isNotNull();
         assertThat(optionalEncryptedAccount.isPresent()).isTrue();
 
-        Instrument instrument = new Instrument();
+        EquityInstrument instrument = new EquityInstrument();
         instrument.setAssetType(AssetType.EQUITY);
         instrument.setSymbol("TQQQ");
         OrderLegCollection orderLegCollection = new OrderLegCollection();
         orderLegCollection.setInstruction(OrderLegCollection.Instruction.BUY);
-        orderLegCollection.setQuantity(new BigDecimal("200"));
+        orderLegCollection.setQuantity(new BigDecimal("525"));
         orderLegCollection.setInstrument(instrument);
         Order order = new Order();
         order.setSession(Session.NORMAL);
@@ -342,7 +345,38 @@ public class SchwabAccountsAndTradingApiTest {
         order.setOrderType(OrderType.LIMIT);
         order.setComplexOrderStrategyType(ComplexOrderStrategyType.NONE);
         order.setOrderStrategyType(OrderStrategyType.SINGLE);
-        order.setPrice(new BigDecimal("63"));
+        order.setPrice(new BigDecimal("63.70"));
+        order.setOrderLegCollection(List.of(orderLegCollection));
+
+        Mono<String> orderResponse = schwabAccountsAndTradingApiClient.placeOrder(schwabUserId, optionalEncryptedAccount.get().getHashValue(), order);
+        StepVerifier
+                .create(orderResponse)
+                .verifyComplete();
+    }
+
+    @Test
+    public void placeOptionOrderTest() {
+        Optional<EncryptedAccount> optionalEncryptedAccount = schwabAccountsAndTradingApiClient.fetchEncryptedAccountsToFlux(schwabUserId)
+                .toStream()
+                .filter(account -> account.getAccountNumber().equals("39760601"))
+                .findFirst();
+        assertThat(optionalEncryptedAccount).isNotNull();
+        assertThat(optionalEncryptedAccount.isPresent()).isTrue();
+
+        EquityInstrument instrument = new EquityInstrument();
+        instrument.setAssetType(AssetType.OPTION);
+        instrument.setSymbol("TQQQ  240607C00064500");
+        OrderLegCollection orderLegCollection = new OrderLegCollection();
+        orderLegCollection.setInstruction(OrderLegCollection.Instruction.SELL_TO_OPEN);
+        orderLegCollection.setQuantity(new BigDecimal("5"));
+        orderLegCollection.setInstrument(instrument);
+        Order order = new Order();
+        order.setSession(Session.NORMAL);
+        order.setDuration(Duration.DAY);
+        order.setOrderType(OrderType.LIMIT);
+        order.setComplexOrderStrategyType(ComplexOrderStrategyType.NONE);
+        order.setOrderStrategyType(OrderStrategyType.SINGLE);
+        order.setPrice(new BigDecimal("1.0"));
         order.setOrderLegCollection(List.of(orderLegCollection));
 
         Mono<String> orderResponse = schwabAccountsAndTradingApiClient.placeOrder(schwabUserId, optionalEncryptedAccount.get().getHashValue(), order);
