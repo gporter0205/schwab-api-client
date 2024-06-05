@@ -72,7 +72,7 @@
       <groupId>io.projectreactor</groupId>
       <artifactId>reactor-test</artifactId>
       <scope>test</scope>
-      <version>3.6.0</version>
+      <version>3.6.6</version>
     </dependency>
   </dependencies>
   <build>
