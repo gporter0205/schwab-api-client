@@ -1,7 +1,7 @@
 # Charles Schwab Java API Client
 
-Spring Boot Java rest client for the [Charles Schwab API](https://developer.schwab.com/).  
-Currently, the happy path of all endpoints of the [Schwab Market Data API](https://developer.schwab.com/products/trader-api--individual/details/specifications/Market%20Data%20Production) and the [Accounts and Trading API](https://developer.schwab.com/products/trader-api--individual/details/specifications/Retail%20Trader%20API%20Production) is implemented.  Better error handling will be coming in the future.
+Java Spring Boot reactive rest client for the [Charles Schwab API](https://developer.schwab.com/)
+that covers all endpoints of the [Schwab Market Data API](https://developer.schwab.com/products/trader-api--individual/details/specifications/Market%20Data%20Production) and the [Accounts and Trading API](https://developer.schwab.com/products/trader-api--individual/details/specifications/Retail%20Trader%20API%20Production).
 
 * Javadocs and Source is included when building the jar or by downloading it as a dependency from Maven.
 * [How-To Guide](https://github.com/gporter0205/schwab-api-client/wiki/home) on the Wiki shows specifics on how to use this Java API.
@@ -46,14 +46,16 @@ an `otherfields` Map is contained in most model classes where you can get any ne
 to the following:
 
 ```java
-QuoteResponse quote = schwabMarketDataClient.fetchQuote("msft");
-String someField = (String)quote.getOtherFields().get("someField"))
+Mono<QuoteResponse> quoteMono = schwabMarketDataApiClient
+        .fetchQuoteToMono("msft");
+quoteMono
+        .map(quoteResponse -> (String) quoteResponse.getOtherFields().get("someField"))
+        .subscribe(System.out::println);
 ```
 
 ## Error Handling
 
-If a Refresh Token is invalid or expired, an InvalidRefreshTokenException is thrown.  This is the trigger that should
-start whatever your flow is to retrieve a refresh token.
+If a Refresh Token is invalid or expired or a 401 error is returned from an API call, a RefreshTokenException is thrown.  This is the trigger that should start whatever your flow is to retrieve a refresh token.
 
 Certain fetch methods throw custom exceptions in specific situations.  For example, fetchQuote will throw a
 SymbolNotFoundException if (obviously) the symbol is not valid and the API can't return a quote.  See the JavaDocs for
@@ -63,4 +65,4 @@ specific exception info.
 The API uses the Lombok @Slf4j annotation to instantiate a log object.
 
 ## TODO
-* Improved error handling for all end points.
+* Implement the Schwab streaming API
