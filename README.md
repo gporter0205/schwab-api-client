@@ -65,4 +65,4 @@ specific exception info.
 The API uses the Lombok @Slf4j annotation to instantiate a log object.
 
 ## TODO
-* Implement the Schwab streaming API
+* Add the Schwab streamer API
