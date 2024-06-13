@@ -478,14 +478,14 @@ public class SchwabMarketDataApiClient extends SchwabBaseApiClient {
                     if(priceHistoryResponse.getPreviousCloseDate() != null && priceHistoryResponse.getPreviousCloseDateISO8601() == null) {
                         LocalDate ld = Instant.ofEpochMilli(priceHistoryResponse.getPreviousCloseDate()).atZone(ZoneId.systemDefault()).toLocalDate();
                         priceHistoryResponse.setPreviousCloseDateISO8601(ld);
-                        if(priceHistoryResponse.getCandles() != null) {
-                            priceHistoryResponse.getCandles().forEach(candle -> {
-                                if(candle.getDatetimeISO8601() == null) {
-                                    LocalDateTime ldt = Instant.ofEpochMilli(candle.getDatetime()).atZone(ZoneId.systemDefault()).toLocalDateTime();
-                                    candle.setDatetimeISO8601(ldt);
-                                }
-                            });
-                        }
+                    }
+                    if(priceHistoryResponse.getCandles() != null) {
+                        priceHistoryResponse.getCandles().forEach(candle -> {
+                            if(candle.getDatetime() != null && candle.getDatetimeISO8601() == null) {
+                                LocalDateTime ldt = Instant.ofEpochMilli(candle.getDatetime()).atZone(ZoneId.systemDefault()).toLocalDateTime();
+                                candle.setDatetimeISO8601(ldt);
+                            }
+                        });
                     }
                 })
                 .flatMap(response -> {

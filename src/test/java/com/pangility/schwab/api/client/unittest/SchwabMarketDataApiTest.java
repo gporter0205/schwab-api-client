@@ -142,9 +142,9 @@ public class SchwabMarketDataApiTest {
     @Test
     public void chainsTest() {
         OptionChainRequest optionChainRequest = OptionChainRequest.Builder.optionChainRequest().withSymbol("TQQQ").build();
-        Mono<OptionChainResponse> optionChainResponse = schwabMarketDataApiClient.fetchOptionChainToMono(optionChainRequest);
+        Mono<OptionChainResponse> optionChainResponseMono = schwabMarketDataApiClient.fetchOptionChainToMono(optionChainRequest);
         StepVerifier
-                .create(optionChainResponse)
+                .create(optionChainResponseMono)
                 .expectNextMatches(response -> response.getSymbol() != null &&
                         response.getSymbol().equalsIgnoreCase("TQQQ") &&
                         response.getCallExpDateMap() != null &&
