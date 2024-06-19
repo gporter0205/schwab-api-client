@@ -6,7 +6,7 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
-import org.jetbrains.annotations.NotNull;
+import lombok.NonNull;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Conditional;
 import org.springframework.http.HttpHeaders;
@@ -81,7 +81,7 @@ public class SchwabOauth2Controller {
      * initialize the controller with the Schwab account information
      * @param schwabAccounts {@link List}{@literal <}{@link SchwabAccount}{@literal >}
      */
-    public void init(@NotNull List<SchwabAccount> schwabAccounts) {
+    public void init(@NonNull List<SchwabAccount> schwabAccounts) {
         this.init(schwabAccounts, null);
     }
 
@@ -90,7 +90,7 @@ public class SchwabOauth2Controller {
      * @param schwabAccounts {@link List}{@literal <}{@link SchwabAccount}{@literal >}
      * @param tokenHandler {@link SchwabTokenHandler}
      */
-    public void init(@NotNull List<SchwabAccount> schwabAccounts, SchwabTokenHandler tokenHandler) {
+    public void init(@NonNull List<SchwabAccount> schwabAccounts, SchwabTokenHandler tokenHandler) {
         for(SchwabAccount schwabAccount : schwabAccounts) {
             accountMapByUserId.put(schwabAccount.getUserId(), schwabAccount);
         }
@@ -125,7 +125,7 @@ public class SchwabOauth2Controller {
      * @param schwabUserId {@literal @}NotNull String
      * @return {@link SchwabAccount}
      */
-    public SchwabAccount getSchwabAccount(@NotNull String schwabUserId) {
+    public SchwabAccount getSchwabAccount(@NonNull String schwabUserId) {
         return accountMapByUserId.get(schwabUserId);
     }
 
@@ -135,7 +135,7 @@ public class SchwabOauth2Controller {
      * @param schwabUserId {@literal @}NotNull String
      * @return String
      */
-    public Mono<SchwabAccount> getAccessToken(@NotNull String schwabUserId) {
+    public Mono<SchwabAccount> getAccessToken(@NonNull String schwabUserId) {
         Mono<SchwabAccount> schwabAccountMono = Mono.empty();
         SchwabAccount schwabAccount = accountMapByUserId.get(schwabUserId);
         if(schwabAccount != null) {
@@ -157,7 +157,7 @@ public class SchwabOauth2Controller {
      * @param schwabUserId {@literal @}NotNull String
      * @return {@link Mono}{@literal <}{@link SchwabAccount}{@literal >}
      */
-    public Mono<SchwabAccount> refreshAccessToken(@NotNull String schwabUserId) {
+    public Mono<SchwabAccount> refreshAccessToken(@NonNull String schwabUserId) {
         Mono<SchwabAccount> response = Mono.empty();
         SchwabAccount schwabAccount = accountMapByUserId.get(schwabUserId);
         if(schwabAccount != null) {
@@ -171,7 +171,7 @@ public class SchwabOauth2Controller {
      * @param schwabAccount {@literal @}NotNull {@link SchwabAccount}
      * @return {@link Mono}{@literal <}{@link SchwabAccount}{@literal >}
      */
-    public Mono<SchwabAccount> refreshAccessToken(@NotNull SchwabAccount schwabAccount) {
+    public Mono<SchwabAccount> refreshAccessToken(@NonNull SchwabAccount schwabAccount) {
         Mono<SchwabAccount> response;
         try {
             String tokenAuthorizationHeader = "Basic " + new String(Base64.getMimeEncoder().encode((schwabClientId + ":" + schwabClientSecret).getBytes(StandardCharsets.UTF_8)), StandardCharsets.UTF_8);

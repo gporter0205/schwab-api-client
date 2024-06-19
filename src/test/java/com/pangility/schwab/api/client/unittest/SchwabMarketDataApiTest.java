@@ -17,7 +17,7 @@ import com.pangility.schwab.api.client.marketdata.model.pricehistory.PriceHistor
 import com.pangility.schwab.api.client.marketdata.model.quotes.QuoteResponse;
 import com.pangility.schwab.api.client.oauth2.SchwabAccount;
 import com.pangility.schwab.api.client.oauth2.SchwabTokenHandler;
-import org.jetbrains.annotations.NotNull;
+import lombok.NonNull;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -317,12 +317,12 @@ public class SchwabMarketDataApiTest {
     public static class TestTokenHandler implements SchwabTokenHandler {
 
         @Override
-        public void onAccessTokenChange(@NotNull SchwabAccount schwabAccount) {
+        public void onAccessTokenChange(@NonNull SchwabAccount schwabAccount) {
             System.out.println("Test Access Token Change");
         }
 
         @Override
-        public void onRefreshTokenChange(@NotNull SchwabAccount schwabAccount) {
+        public void onRefreshTokenChange(@NonNull SchwabAccount schwabAccount) {
             System.out.println("Test Refresh Token Change");
         }
     }

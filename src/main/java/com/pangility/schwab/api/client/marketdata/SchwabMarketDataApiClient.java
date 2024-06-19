@@ -17,7 +17,7 @@ import com.pangility.schwab.api.client.marketdata.model.quotes.QuoteResponse;
 import com.pangility.schwab.api.client.oauth2.SchwabAccount;
 import com.pangility.schwab.api.client.oauth2.SchwabTokenHandler;
 import lombok.extern.slf4j.Slf4j;
-import org.jetbrains.annotations.NotNull;
+import lombok.NonNull;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnResource;
 import org.springframework.core.ParameterizedTypeReference;
@@ -59,7 +59,7 @@ public class SchwabMarketDataApiClient extends SchwabBaseApiClient {
      * @param tokenHandler {@link SchwabTokenHandler}
      */
     @Override
-    public void init(@NotNull SchwabAccount schwabAccount,
+    public void init(@NonNull SchwabAccount schwabAccount,
                      SchwabTokenHandler tokenHandler) {
         this.init(schwabAccount.getUserId(), Collections.singletonList(schwabAccount), tokenHandler);
 
@@ -71,7 +71,7 @@ public class SchwabMarketDataApiClient extends SchwabBaseApiClient {
      */
     @SuppressWarnings("unused")
     @Override
-    public void init(@NotNull SchwabAccount schwabAccount) {
+    public void init(@NonNull SchwabAccount schwabAccount) {
         this.init(schwabAccount.getUserId(), Collections.singletonList(schwabAccount), null);
     }
 
@@ -81,8 +81,8 @@ public class SchwabMarketDataApiClient extends SchwabBaseApiClient {
      * @param schwabAccounts List{@literal <}{@link SchwabAccount}{@literal >}
      */
     @SuppressWarnings("unused")
-    public void init(@NotNull String defaultUserId,
-                     @NotNull List<SchwabAccount> schwabAccounts) {
+    public void init(@NonNull String defaultUserId,
+                     @NonNull List<SchwabAccount> schwabAccounts) {
         this.init(defaultUserId, schwabAccounts, null);
     }
 
@@ -92,8 +92,8 @@ public class SchwabMarketDataApiClient extends SchwabBaseApiClient {
      * @param schwabAccounts List{@literal <}{@link SchwabAccount}{@literal >}
      * @param tokenHandler {@link SchwabTokenHandler}
      */
-    public void init(@NotNull String defaultUserId,
-                     @NotNull List<SchwabAccount> schwabAccounts,
+    public void init(@NonNull String defaultUserId,
+                     @NonNull List<SchwabAccount> schwabAccounts,
                      SchwabTokenHandler tokenHandler) {
         this.init(schwabAccounts, tokenHandler);
         this.defaultUserId = defaultUserId;
@@ -114,7 +114,7 @@ public class SchwabMarketDataApiClient extends SchwabBaseApiClient {
      * @return {@link QuoteResponse}
      */
     @Deprecated
-    public QuoteResponse fetchQuote(@NotNull String symbol) {
+    public QuoteResponse fetchQuote(@NonNull String symbol) {
         return fetchQuote(symbol, null);
     }
 
@@ -125,7 +125,7 @@ public class SchwabMarketDataApiClient extends SchwabBaseApiClient {
      * @return {@link QuoteResponse}
      */
     @Deprecated
-    public QuoteResponse fetchQuote(@NotNull String symbol,
+    public QuoteResponse fetchQuote(@NonNull String symbol,
                                     String fields) {
         return this.fetchQuoteToMono(symbol, fields).block();
     }
@@ -135,7 +135,7 @@ public class SchwabMarketDataApiClient extends SchwabBaseApiClient {
      * @param symbol {@literal @}NotNull String
      * @return {@link Mono}{@literal <}{@link QuoteResponse}{@literal >}
      */
-    public Mono<QuoteResponse> fetchQuoteToMono(@NotNull String symbol) {
+    public Mono<QuoteResponse> fetchQuoteToMono(@NonNull String symbol) {
         return this.fetchQuoteToMono(symbol, null);
     }
 
@@ -145,7 +145,7 @@ public class SchwabMarketDataApiClient extends SchwabBaseApiClient {
      * @param fields String (quote, fundamental or all)
      * @return {@link Mono}{@literal <}{@link QuoteResponse}{@literal >}
      */
-    public Mono<QuoteResponse> fetchQuoteToMono(@NotNull String symbol,
+    public Mono<QuoteResponse> fetchQuoteToMono(@NonNull String symbol,
                                                  String fields) {
         log.info("Fetch Quote [{}]", symbol);
         Mono<QuoteResponse> quoteResponseMono;
@@ -186,7 +186,7 @@ public class SchwabMarketDataApiClient extends SchwabBaseApiClient {
      * @return {@link Map}{@literal <}String, {@link QuoteResponse}{@literal >}
      */
     @Deprecated
-    public Map<String, QuoteResponse> fetchQuotes(@NotNull List<String> symbols) {
+    public Map<String, QuoteResponse> fetchQuotes(@NonNull List<String> symbols) {
         return fetchQuotes(symbols, null);
     }
 
@@ -197,7 +197,7 @@ public class SchwabMarketDataApiClient extends SchwabBaseApiClient {
      * @return {@link Map}{@literal <}String, {@link QuoteResponse}{@literal >}
      */
     @Deprecated
-    public Map<String, QuoteResponse> fetchQuotes(@NotNull List<String> symbols,
+    public Map<String, QuoteResponse> fetchQuotes(@NonNull List<String> symbols,
                                            String fields) {
         return fetchQuotes(symbols, fields, null);
     }
@@ -210,7 +210,7 @@ public class SchwabMarketDataApiClient extends SchwabBaseApiClient {
      * @return {@link Map}{@literal <}String, {@link QuoteResponse}{@literal >}
      */
     @Deprecated
-    public Map<String, QuoteResponse> fetchQuotes(@NotNull List<String> symbols,
+    public Map<String, QuoteResponse> fetchQuotes(@NonNull List<String> symbols,
                                                   String fields,
                                                   Boolean indicative) {
         return this.fetchQuotesToMono(symbols, fields, indicative).block();
@@ -221,7 +221,7 @@ public class SchwabMarketDataApiClient extends SchwabBaseApiClient {
      * @param symbols {@literal @}NotNull List{@literal <}String{@literal >}
      * @return {@link Mono}{@literal <}{@link Map}{@literal <}String, {@link QuoteResponse}{@literal >}{@literal >}
      */
-    public Mono<Map<String, QuoteResponse>> fetchQuotesToMono(@NotNull List<String> symbols) {
+    public Mono<Map<String, QuoteResponse>> fetchQuotesToMono(@NonNull List<String> symbols) {
         return this.fetchQuotesToMono(symbols, null);
     }
 
@@ -231,7 +231,7 @@ public class SchwabMarketDataApiClient extends SchwabBaseApiClient {
      * @param fields String (quote, fundamental or all)
      * @return {@link Mono}{@literal <}{@link Map}{@literal <}String, {@link QuoteResponse}{@literal >}{@literal >}
      */
-    public Mono<Map<String, QuoteResponse>> fetchQuotesToMono(@NotNull List<String> symbols,
+    public Mono<Map<String, QuoteResponse>> fetchQuotesToMono(@NonNull List<String> symbols,
                                                               String fields) {
         return this.fetchQuotesToMono(symbols, fields, null);
     }
@@ -243,7 +243,7 @@ public class SchwabMarketDataApiClient extends SchwabBaseApiClient {
      * @param indicative Boolean (include indicative symbol quotes for all ETF symbols in request)
      * @return {@link Mono}{@literal <}{@link Map}{@literal <}String, {@link QuoteResponse}{@literal >}{@literal >}
      */
-    public Mono<Map<String, QuoteResponse>> fetchQuotesToMono(@NotNull List<String> symbols,
+    public Mono<Map<String, QuoteResponse>> fetchQuotesToMono(@NonNull List<String> symbols,
                                                               String fields,
                                                               Boolean indicative) {
         log.info("Fetch Quotes -> [{}]", symbols);
@@ -287,7 +287,7 @@ public class SchwabMarketDataApiClient extends SchwabBaseApiClient {
      * @return {@link OptionChainResponse}
      */
     @Deprecated
-    public OptionChainResponse fetchOptionChain(@NotNull OptionChainRequest chainRequest) {
+    public OptionChainResponse fetchOptionChain(@NonNull OptionChainRequest chainRequest) {
         return this.fetchOptionChainToMono(chainRequest).block();
     }
 
@@ -296,7 +296,7 @@ public class SchwabMarketDataApiClient extends SchwabBaseApiClient {
      * @param chainRequest {@literal @}NotNull {@link OptionChainRequest}
      * @return {@link Mono}{@literal <}{@link OptionChainResponse}{@literal >}
      */
-    public Mono<OptionChainResponse> fetchOptionChainToMono(@NotNull OptionChainRequest chainRequest) {
+    public Mono<OptionChainResponse> fetchOptionChainToMono(@NonNull OptionChainRequest chainRequest) {
         log.info("Fetch Option Chain -> {}", chainRequest);
 
         if (chainRequest.getSymbol() == null || chainRequest.getSymbol().isEmpty()) {
@@ -375,7 +375,7 @@ public class SchwabMarketDataApiClient extends SchwabBaseApiClient {
      * @return {@link ExpirationChainResponse}
      */
     @Deprecated
-    public ExpirationChainResponse fetchExpirationChain(@NotNull String symbol) {
+    public ExpirationChainResponse fetchExpirationChain(@NonNull String symbol) {
         return this.fetchExpirationChainToMono(symbol).block();
     }
 
@@ -384,7 +384,7 @@ public class SchwabMarketDataApiClient extends SchwabBaseApiClient {
      * @param symbol {@literal @}NotNull String
      * @return {@link Mono}{@literal <}{@link ExpirationChainResponse}{@literal >}
      */
-    public Mono<ExpirationChainResponse> fetchExpirationChainToMono(@NotNull String symbol) {
+    public Mono<ExpirationChainResponse> fetchExpirationChainToMono(@NonNull String symbol) {
         log.info("Fetch Expiration Chain -> [{}]", symbol);
 
         if (symbol.isEmpty()) {
@@ -418,7 +418,7 @@ public class SchwabMarketDataApiClient extends SchwabBaseApiClient {
      * @return {@link PriceHistoryResponse}
      */
     @Deprecated
-    public PriceHistoryResponse fetchPriceHistory(@NotNull PriceHistoryRequest priceHistReq) {
+    public PriceHistoryResponse fetchPriceHistory(@NonNull PriceHistoryRequest priceHistReq) {
         return this.fetchPriceHistoryToMono(priceHistReq).block();
     }
 
@@ -427,7 +427,7 @@ public class SchwabMarketDataApiClient extends SchwabBaseApiClient {
      * @param priceHistReq {@literal @}NotNull {@link PriceHistoryRequest}
      * @return {@link Mono}{@literal <}{@link PriceHistoryResponse}{@literal >}
      */
-    public Mono<PriceHistoryResponse> fetchPriceHistoryToMono(@NotNull PriceHistoryRequest priceHistReq) {
+    public Mono<PriceHistoryResponse> fetchPriceHistoryToMono(@NonNull PriceHistoryRequest priceHistReq) {
         log.info("Fetch Price History -> {}", priceHistReq);
 
         if (priceHistReq.getSymbol() == null || priceHistReq.getSymbol().isEmpty()) {
@@ -503,7 +503,7 @@ public class SchwabMarketDataApiClient extends SchwabBaseApiClient {
      * @return {@link MoversResponse}
      */
     @Deprecated
-    public MoversResponse fetchMovers(@NotNull MoversRequest moversRequest) {
+    public MoversResponse fetchMovers(@NonNull MoversRequest moversRequest) {
         MoversResponse moversResponse = new MoversResponse();
         moversResponse.setScreeners(this.fetchMoversToFlux(moversRequest).toStream().toList());
         return moversResponse;
@@ -514,7 +514,7 @@ public class SchwabMarketDataApiClient extends SchwabBaseApiClient {
      * @param moversRequest {@literal @}NotNull {@link MoversRequest}
      * @return {@link Flux}{@literal <}{@link Screener}{@literal >}
      */
-    public Flux<Screener> fetchMoversToFlux(@NotNull MoversRequest moversRequest) {
+    public Flux<Screener> fetchMoversToFlux(@NonNull MoversRequest moversRequest) {
         log.info("Fetch Movers -> {}", moversRequest);
 
         if (moversRequest.getIndexSymbol() == null) {
@@ -543,7 +543,7 @@ public class SchwabMarketDataApiClient extends SchwabBaseApiClient {
      */
     @Deprecated
     @SuppressWarnings("unused")
-    public Map<String, Map<String, Hours>> fetchMarket(@NotNull Market market) {
+    public Map<String, Map<String, Hours>> fetchMarket(@NonNull Market market) {
         return fetchMarket(market, null);
     }
 
@@ -554,7 +554,7 @@ public class SchwabMarketDataApiClient extends SchwabBaseApiClient {
      * @return {@link Map}{@literal <}String, {@link Map}{@literal <}String, {@link Hours}{@literal >}{@literal >}
      */
     @Deprecated
-    public Map<String, Map<String, Hours>> fetchMarket(@NotNull Market market,
+    public Map<String, Map<String, Hours>> fetchMarket(@NonNull Market market,
                                                        LocalDate date) {
         return this.fetchMarkets(Collections.singletonList(market), date);
     }
@@ -565,7 +565,7 @@ public class SchwabMarketDataApiClient extends SchwabBaseApiClient {
      * @return {@link Map}{@literal <}String, {@link Map}{@literal <}String, {@link Hours}{@literal >}{@literal >}
      */
     @Deprecated
-    public Map<String, Map<String, Hours>> fetchMarkets(@NotNull List<Market> markets) {
+    public Map<String, Map<String, Hours>> fetchMarkets(@NonNull List<Market> markets) {
         return fetchMarkets(markets, null);
     }
 
@@ -576,7 +576,7 @@ public class SchwabMarketDataApiClient extends SchwabBaseApiClient {
      * @return {@link Map}{@literal <}String, {@link Map}{@literal <}String, {@link Hours}{@literal >}{@literal >}
      */
     @Deprecated
-    public Map<String, Map<String, Hours>> fetchMarkets(@NotNull List<Market> markets,
+    public Map<String, Map<String, Hours>> fetchMarkets(@NonNull List<Market> markets,
                                                         LocalDate date) {
         return this.fetchMarketsToMono(markets, date).block();
     }
@@ -587,7 +587,7 @@ public class SchwabMarketDataApiClient extends SchwabBaseApiClient {
      * @return {@link Mono}{@literal <}{@link Map}{@literal <}String, {@link Map}{@literal <}String, {@link Hours}{@literal >}{@literal >}{@literal >}
      */
     @SuppressWarnings("unused")
-    public Mono<Map<String, Map<String, Hours>>> fetchMarketToMono(@NotNull Market market) {
+    public Mono<Map<String, Map<String, Hours>>> fetchMarketToMono(@NonNull Market market) {
         return fetchMarketToMono(market, null);
     }
 
@@ -597,7 +597,7 @@ public class SchwabMarketDataApiClient extends SchwabBaseApiClient {
      * @param date LocalDate
      * @return {@link Mono}{@literal <}{@link Map}{@literal <}String, {@link Map}{@literal <}String, {@link Hours}{@literal >}{@literal >}{@literal >}
      */
-    public Mono<Map<String, Map<String, Hours>>> fetchMarketToMono(@NotNull Market market,
+    public Mono<Map<String, Map<String, Hours>>> fetchMarketToMono(@NonNull Market market,
                                                        LocalDate date) {
         return this.fetchMarketsToMono(Collections.singletonList(market), date);
     }
@@ -607,7 +607,7 @@ public class SchwabMarketDataApiClient extends SchwabBaseApiClient {
      * @param markets {@literal @}NotNull {@link List}{@literal <}{@link Market}{@literal >}
      * @return {@link Mono}{@literal <}{@link Map}{@literal <}String, {@link Map}{@literal <}String, {@link Hours}{@literal >}{@literal >}{@literal >}
      */
-    public Mono<Map<String, Map<String, Hours>>> fetchMarketsToMono(@NotNull List<Market> markets) {
+    public Mono<Map<String, Map<String, Hours>>> fetchMarketsToMono(@NonNull List<Market> markets) {
         return fetchMarketsToMono(markets, null);
     }
 
@@ -617,7 +617,7 @@ public class SchwabMarketDataApiClient extends SchwabBaseApiClient {
      * @param date LocalDate
      * @return {@link Mono}{@literal <}{@link Map}{@literal <}String, {@link Map}{@literal <}String, {@link Hours}{@literal >}{@literal >}{@literal >}
      */
-    public Mono<Map<String, Map<String, Hours>>> fetchMarketsToMono(@NotNull List<Market> markets,
+    public Mono<Map<String, Map<String, Hours>>> fetchMarketsToMono(@NonNull List<Market> markets,
                                     LocalDate date) {
         log.info("Fetch Market Hours -> {}", markets);
 
@@ -656,7 +656,7 @@ public class SchwabMarketDataApiClient extends SchwabBaseApiClient {
      * @return {@link InstrumentsResponse}
      */
     @Deprecated
-    public InstrumentsResponse fetchInstruments(@NotNull InstrumentsRequest instrumentsRequest) {
+    public InstrumentsResponse fetchInstruments(@NonNull InstrumentsRequest instrumentsRequest) {
         InstrumentsResponse instrumentsResponse = new InstrumentsResponse();
         instrumentsResponse.setInstruments(fetchInstrumentsToFlux(instrumentsRequest).toStream().toList());
         return instrumentsResponse;
@@ -667,7 +667,7 @@ public class SchwabMarketDataApiClient extends SchwabBaseApiClient {
      * @param instrumentsRequest {@literal @}NotNull {@link InstrumentsRequest}
      * @return {@link Flux}{@literal <}{@link Instrument}{@literal >}
      */
-    public Flux<Instrument> fetchInstrumentsToFlux(@NotNull InstrumentsRequest instrumentsRequest) {
+    public Flux<Instrument> fetchInstrumentsToFlux(@NonNull InstrumentsRequest instrumentsRequest) {
         log.info("Fetch Instruments -> {}", instrumentsRequest);
 
         if (instrumentsRequest.getSymbol() == null || instrumentsRequest.getSymbol().isEmpty() || instrumentsRequest.getProjection() == null) {
@@ -696,7 +696,7 @@ public class SchwabMarketDataApiClient extends SchwabBaseApiClient {
      * @return {@link InstrumentsResponse}
      */
     @Deprecated
-    public InstrumentsResponse fetchInstrumentsByCusip(@NotNull String cusip) {
+    public InstrumentsResponse fetchInstrumentsByCusip(@NonNull String cusip) {
         Instrument instrument = this.fetchInstrumentByCusipToMono(cusip).block();
         InstrumentsResponse instrumentsResponse = new InstrumentsResponse();
         if(instrument != null) {
@@ -710,7 +710,7 @@ public class SchwabMarketDataApiClient extends SchwabBaseApiClient {
      * @param cusip {@literal @}NotNull String
      * @return {@link Mono}{@literal <}{@link Instrument}{@literal >}
      */
-    public Mono<Instrument> fetchInstrumentByCusipToMono(@NotNull String cusip) {
+    public Mono<Instrument> fetchInstrumentByCusipToMono(@NonNull String cusip) {
         log.info("Fetch Instrument by cusip [{}]", cusip);
 
         if (cusip.isEmpty()) {
