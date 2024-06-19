@@ -1,8 +1,10 @@
 package com.pangility.schwab.api.client.marketdata.model.instruments;
 
+import lombok.Builder;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.ToString;
+import lombok.NoArgsConstructor;
+import lombok.AllArgsConstructor;
 
 /**
  * <p>
@@ -28,9 +30,11 @@ import lombok.ToString;
  *
  * @see Instrument.AssetType
  */
+@Builder(setterPrefix = "with")
 @Getter
 @ToString
 @NoArgsConstructor
+@AllArgsConstructor
 public class InstrumentsRequest {
     private String symbol;
     private Projection projection;
@@ -38,6 +42,7 @@ public class InstrumentsRequest {
     /**
      * Nested class for building request
      */
+    @Deprecated
     @NoArgsConstructor
     public static final class Builder {
 
@@ -48,6 +53,7 @@ public class InstrumentsRequest {
          * Create a builder for the request
          * @return {@link InstrumentsRequest.Builder}
          */
+        @Deprecated
         public static Builder instrumentsRequest() {
             return new InstrumentsRequest.Builder();
         }
@@ -57,6 +63,7 @@ public class InstrumentsRequest {
          * @param symbol String
          * @return {@link InstrumentsRequest.Builder}
          */
+        @Deprecated
         public Builder withSymbol(String symbol) {
             this.symbol = symbol;
             return this;
@@ -67,6 +74,7 @@ public class InstrumentsRequest {
          * @param projection {@link Projection}
          * @return {@link InstrumentsRequest.Builder}
          */
+        @Deprecated
         public Builder withProjection(Projection projection) {
             this.projection = projection;
             return this;
@@ -76,6 +84,7 @@ public class InstrumentsRequest {
          * Build the request with the passed values
          * @return {@link InstrumentsRequest}
          */
+        @Deprecated
         public InstrumentsRequest build() {
             InstrumentsRequest instrumentsRequest = new InstrumentsRequest();
             instrumentsRequest.symbol = this.symbol;

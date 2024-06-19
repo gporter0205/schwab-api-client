@@ -210,9 +210,9 @@ public class SchwabAccountsAndTradingApiTest {
 
     @Test
     public void ordersTest() {
-        OrderRequest orderRequest = OrderRequest.Builder.orderRequest()
-                .withFromEnteredDate(ZonedDateTime.now().minusDays(80))
-                .withToEnteredDate(ZonedDateTime.now())
+        OrderRequest orderRequest = OrderRequest.builder()
+                .withFromEnteredTime(ZonedDateTime.now().minusDays(80))
+                .withToEnteredTime(ZonedDateTime.now())
                 .build();
         Flux<Order> ordersResponse = schwabAccountsAndTradingApiClient.fetchOrdersToFlux(schwabUserId, orderRequest);
         StepVerifier
@@ -234,9 +234,9 @@ public class SchwabAccountsAndTradingApiTest {
 
         Long accountNumber = Long.valueOf(encryptedAccounts.get(0).getAccountNumber());
         String accountHash = encryptedAccounts.get(0).getHashValue();
-        OrderRequest orderRequest = OrderRequest.Builder.orderRequest()
-                .withFromEnteredDate(ZonedDateTime.now().minusDays(80))
-                .withToEnteredDate(ZonedDateTime.now())
+        OrderRequest orderRequest = OrderRequest.builder()
+                .withFromEnteredTime(ZonedDateTime.now().minusDays(80))
+                .withToEnteredTime(ZonedDateTime.now())
                 .build();
         Flux<Order> ordersResponse = schwabAccountsAndTradingApiClient.fetchOrdersToFlux(schwabUserId, accountHash, orderRequest);
         StepVerifier
@@ -294,7 +294,7 @@ public class SchwabAccountsAndTradingApiTest {
 
         String accountNumber = encryptedAccounts.get(0).getAccountNumber();
         String accountHash = encryptedAccounts.get(0).getHashValue();
-        TransactionRequest transactionRequest = TransactionRequest.Builder.transactionRequest()
+        TransactionRequest transactionRequest = TransactionRequest.builder()
                         .withStartDate(ZonedDateTime.now().minusDays(80))
                         .withEndDate(ZonedDateTime.now())
                         .build();

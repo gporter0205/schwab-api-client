@@ -1,8 +1,10 @@
 package com.pangility.schwab.api.client.marketdata.model.pricehistory;
 
+import lombok.Builder;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.ToString;
+import lombok.NoArgsConstructor;
+import lombok.AllArgsConstructor;
 
 import java.time.LocalDate;
 
@@ -10,9 +12,11 @@ import java.time.LocalDate;
  * Object used to pass the request parameters to the Schwab API <em>pricehistory</em> endpoint.
  * See the <a href="https://developer.schwab.com">Schwab Developer Portal</a> for more information
  */
+@Builder(setterPrefix = "with")
 @Getter
 @ToString
 @NoArgsConstructor
+@AllArgsConstructor
 public class PriceHistoryRequest {
   private String symbol;
   private PeriodType periodType;
@@ -27,6 +31,7 @@ public class PriceHistoryRequest {
   /**
    * Nested class for building request
    */
+  @Deprecated
   @NoArgsConstructor
   public static final class Builder {
 
@@ -44,6 +49,7 @@ public class PriceHistoryRequest {
      * Create a builder for the request
      * @return {@link PriceHistoryRequest.Builder}
      */
+    @Deprecated
     public static Builder priceHistReq() {
       return new Builder();
     }
@@ -53,6 +59,7 @@ public class PriceHistoryRequest {
      * @param symbol String
      * @return {@link PriceHistoryRequest.Builder}
      */
+    @Deprecated
     public Builder withSymbol(String symbol) {
       this.symbol = symbol;
       return this;
@@ -63,6 +70,7 @@ public class PriceHistoryRequest {
      * @param periodType {@link PeriodType}
      * @return {@link PriceHistoryRequest.Builder}
      */
+    @Deprecated
     public Builder withPeriodType(PeriodType periodType) {
       this.periodType = periodType;
       return this;
@@ -73,6 +81,7 @@ public class PriceHistoryRequest {
      * @param period Integer
      * @return {@link PriceHistoryRequest.Builder}
      */
+    @Deprecated
     public Builder withPeriod(Integer period) {
       this.period = period;
       return this;
@@ -83,6 +92,7 @@ public class PriceHistoryRequest {
      * @param frequencyType {@link FrequencyType}
      * @return {@link PriceHistoryRequest.Builder}
      */
+    @Deprecated
     public Builder withFrequencyType(FrequencyType frequencyType) {
       this.frequencyType = frequencyType;
       return this;
@@ -93,6 +103,7 @@ public class PriceHistoryRequest {
      * @param frequency Integer
      * @return {@link PriceHistoryRequest.Builder}
      */
+    @Deprecated
     public Builder withFrequency(Integer frequency) {
       this.frequency = frequency;
       return this;
@@ -103,6 +114,7 @@ public class PriceHistoryRequest {
      * @param startDate LocalDate
      * @return {@link PriceHistoryRequest.Builder}
      */
+    @Deprecated
     public Builder withStartDate(LocalDate startDate) {
       this.startDate = startDate;
       return this;
@@ -113,6 +125,7 @@ public class PriceHistoryRequest {
      * @param endDate LocalDate
      * @return {@link PriceHistoryRequest.Builder}
      */
+    @Deprecated
     public Builder withEndDate(LocalDate endDate) {
       this.endDate = endDate;
       return this;
@@ -123,6 +136,7 @@ public class PriceHistoryRequest {
      * @param needExtendedHoursData Boolean
      * @return {@link PriceHistoryRequest.Builder}
      */
+    @Deprecated
     public Builder withNeedExtendedHoursData(Boolean needExtendedHoursData) {
       this.needExtendedHoursData = needExtendedHoursData;
       return this;
@@ -133,6 +147,7 @@ public class PriceHistoryRequest {
      * @param needPreviousClose Boolean
      * @return {@link PriceHistoryRequest.Builder}
      */
+    @Deprecated
     public Builder withNeedPreviousClose(Boolean needPreviousClose) {
       this.needPreviousClose = needPreviousClose;
       return this;
@@ -142,6 +157,7 @@ public class PriceHistoryRequest {
      * Build the request with the passed values
      * @return {@link PriceHistoryRequest}
      */
+    @Deprecated
     public PriceHistoryRequest build() {
       PriceHistoryRequest priceHistoryRequest = new PriceHistoryRequest();
       priceHistoryRequest.symbol = this.symbol;

@@ -1,16 +1,20 @@
 package com.pangility.schwab.api.client.marketdata.model.movers;
 
+import lombok.Builder;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.ToString;
+import lombok.NoArgsConstructor;
+import lombok.AllArgsConstructor;
 
 /**
  * Object used to pass the request parameters to the Schwab API <em>movers</em> endpoint.
  * See the <a href="https://developer.schwab.com">Schwab Developer Portal</a> for more information
  */
+@Builder(setterPrefix = "with")
 @Getter
 @ToString
 @NoArgsConstructor
+@AllArgsConstructor
 public class MoversRequest {
   private IndexSymbol indexSymbol;
   private Sort sort;
@@ -19,6 +23,7 @@ public class MoversRequest {
   /**
    * Nested class for building request
    */
+  @Deprecated
   @NoArgsConstructor
   public static final class Builder {
 
@@ -30,6 +35,7 @@ public class MoversRequest {
      * Create a builder for the request
      * @return {@link MoversRequest.Builder}
      */
+    @Deprecated
     public static Builder moversRequest() {
       return new Builder();
     }
@@ -39,6 +45,7 @@ public class MoversRequest {
      * @param indexSymbol {@link IndexSymbol}
      * @return {@link MoversRequest.Builder}
      */
+    @Deprecated
     public Builder withIndexSymbol(IndexSymbol indexSymbol) {
       this.indexSymbol = indexSymbol;
       return this;
@@ -49,6 +56,7 @@ public class MoversRequest {
      * @param sort {@link Sort}
      * @return {@link MoversRequest.Builder}
      */
+    @Deprecated
     public Builder withSort(Sort sort) {
       this.sort = sort;
       return this;
@@ -59,6 +67,7 @@ public class MoversRequest {
      * @param frequency Integer
      * @return {@link MoversRequest.Builder}
      */
+    @Deprecated
     public Builder withFrequency(Integer frequency) {
       this.frequency = frequency;
       return this;
@@ -68,6 +77,7 @@ public class MoversRequest {
      * Build the request with the passed values
      * @return {@link MoversRequest}
      */
+    @Deprecated
     public MoversRequest build() {
       MoversRequest moversRequest = new MoversRequest();
       moversRequest.indexSymbol = this.indexSymbol;

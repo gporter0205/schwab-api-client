@@ -141,7 +141,7 @@ public class SchwabMarketDataApiTest {
 
     @Test
     public void chainsTest() {
-        OptionChainRequest optionChainRequest = OptionChainRequest.Builder.optionChainRequest().withSymbol("TQQQ").build();
+        OptionChainRequest optionChainRequest = OptionChainRequest.builder().withSymbol("TQQQ").build();
         Mono<OptionChainResponse> optionChainResponseMono = schwabMarketDataApiClient.fetchOptionChainToMono(optionChainRequest);
         StepVerifier
                 .create(optionChainResponseMono)
@@ -155,7 +155,7 @@ public class SchwabMarketDataApiTest {
     // Service returns a 400 - Bad Request instead of a 404 - Not Found
     /*@Test
     public void chainsNotFoundTest() {
-        OptionChainRequest optionChainRequest = OptionChainRequest.Builder.optionChainRequest().withSymbol("XXXXXX").build();
+        OptionChainRequest optionChainRequest = OptionChainRequest.builder().withSymbol("XXXXXX").build();
         Mono<OptionChainResponse> optionChainResponse = schwabMarketDataApiClient.fetchOptionChainToMono(optionChainRequest);
         StepVerifier
                 .create(optionChainResponse)
@@ -186,7 +186,7 @@ public class SchwabMarketDataApiTest {
 
     @Test
     public void priceHistoryTest() {
-        PriceHistoryRequest priceHistoryRequest = PriceHistoryRequest.Builder.priceHistReq().withSymbol("AAPL").withNeedPreviousClose(true).build();
+        PriceHistoryRequest priceHistoryRequest = PriceHistoryRequest.builder().withSymbol("AAPL").withNeedPreviousClose(true).build();
         Mono<PriceHistoryResponse> priceHistoryResponse = schwabMarketDataApiClient.fetchPriceHistoryToMono(priceHistoryRequest);
         StepVerifier
                 .create(priceHistoryResponse)
@@ -200,7 +200,7 @@ public class SchwabMarketDataApiTest {
 
     @Test
     public void priceHistoryNotFoundTest() {
-        PriceHistoryRequest priceHistoryRequest = PriceHistoryRequest.Builder.priceHistReq().withSymbol("XXXXXX").withNeedPreviousClose(true).build();
+        PriceHistoryRequest priceHistoryRequest = PriceHistoryRequest.builder().withSymbol("XXXXXX").withNeedPreviousClose(true).build();
         Mono<PriceHistoryResponse> priceHistoryResponse = schwabMarketDataApiClient.fetchPriceHistoryToMono(priceHistoryRequest);
         StepVerifier
                 .create(priceHistoryResponse)
@@ -210,7 +210,7 @@ public class SchwabMarketDataApiTest {
 
     @Test
     public void moversTest() {
-        MoversRequest moversRequest = MoversRequest.Builder.moversRequest().withIndexSymbol(MoversRequest.IndexSymbol.$DJI).build();
+        MoversRequest moversRequest = MoversRequest.builder().withIndexSymbol(MoversRequest.IndexSymbol.$DJI).build();
         Flux<Screener> moversResponse = schwabMarketDataApiClient.fetchMoversToFlux(moversRequest);
         StepVerifier
                 .create(moversResponse)
@@ -228,13 +228,6 @@ public class SchwabMarketDataApiTest {
                 .expectNextMatches(response -> !response.isEmpty() &&
                         response.containsKey(SchwabMarketDataApiClient.Market.EQUITY.value()))
                 .verifyComplete();
-
-        /*LocalDate testDate = LocalDate.of(2024, 4, 25);
-        hours = schwabMarketDataApiClient.fetchMarkets(Collections.singletonList(SchwabMarketDataApiClient.Market.EQUITY), testDate);
-        assertThat(hours).isNotNull();
-        assertThat(hours.size()).isEqualTo(1);
-        assertThat(hours.get(0).getDate()).isEqualTo(testDate);
-        assertThat(hours.get(0).getIsOpen()).isTrue();*/
     }
 
     @Test
@@ -250,7 +243,7 @@ public class SchwabMarketDataApiTest {
 
     @Test
     public void instrumentsTest() {
-        InstrumentsRequest instrumentsRequest = InstrumentsRequest.Builder.instrumentsRequest()
+        InstrumentsRequest instrumentsRequest = InstrumentsRequest.builder()
                 .withSymbol("AAPL")
                 .withProjection(InstrumentsRequest.Projection.SYMBOL_SEARCH)
                 .build();
@@ -267,7 +260,7 @@ public class SchwabMarketDataApiTest {
 
     @Test
     public void instrumentsNotFoundTest() {
-        InstrumentsRequest instrumentsRequest = InstrumentsRequest.Builder.instrumentsRequest()
+        InstrumentsRequest instrumentsRequest = InstrumentsRequest.builder()
                 .withSymbol("XXXXXX")
                 .withProjection(InstrumentsRequest.Projection.SYMBOL_SEARCH)
                 .build();
@@ -280,7 +273,7 @@ public class SchwabMarketDataApiTest {
 
     @Test
     public void instrumentsWithFundamentalsTest() {
-        InstrumentsRequest fundamentalRequest = InstrumentsRequest.Builder.instrumentsRequest()
+        InstrumentsRequest fundamentalRequest = InstrumentsRequest.builder()
                 .withSymbol("AAPL")
                 .withProjection(InstrumentsRequest.Projection.FUNDAMENTAL)
                 .build();
