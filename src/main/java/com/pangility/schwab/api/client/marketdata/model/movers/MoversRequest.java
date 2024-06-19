@@ -1,10 +1,10 @@
 package com.pangility.schwab.api.client.marketdata.model.movers;
 
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
-import lombok.ToString;
 import lombok.NoArgsConstructor;
-import lombok.AllArgsConstructor;
+import lombok.ToString;
 
 /**
  * Object used to pass the request parameters to the Schwab API <em>movers</em> endpoint.

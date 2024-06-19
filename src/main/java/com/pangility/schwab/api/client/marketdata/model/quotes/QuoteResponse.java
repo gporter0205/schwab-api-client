@@ -1,9 +1,17 @@
 package com.pangility.schwab.api.client.marketdata.model.quotes;
 
-import com.fasterxml.jackson.annotation.*;
+import com.fasterxml.jackson.annotation.JsonAnySetter;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonSubTypes;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.annotation.JsonTypeInfo.Id;
 import com.pangility.schwab.api.client.marketdata.model.AssetMainType;
-import com.pangility.schwab.api.client.marketdata.model.quotes.equity.*;
+import com.pangility.schwab.api.client.marketdata.model.quotes.equity.EquityAssetSubType;
+import com.pangility.schwab.api.client.marketdata.model.quotes.equity.ExtendedMarket;
+import com.pangility.schwab.api.client.marketdata.model.quotes.equity.QuoteEquity;
+import com.pangility.schwab.api.client.marketdata.model.quotes.equity.ReferenceEquity;
+import com.pangility.schwab.api.client.marketdata.model.quotes.equity.RegularMarket;
 import com.pangility.schwab.api.client.marketdata.model.quotes.forex.QuoteForex;
 import com.pangility.schwab.api.client.marketdata.model.quotes.forex.ReferenceForex;
 import com.pangility.schwab.api.client.marketdata.model.quotes.future.QuoteFuture;

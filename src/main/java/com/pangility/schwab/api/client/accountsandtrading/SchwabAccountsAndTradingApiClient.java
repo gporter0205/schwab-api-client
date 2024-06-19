@@ -8,8 +8,8 @@ import com.pangility.schwab.api.client.accountsandtrading.model.transaction.Tran
 import com.pangility.schwab.api.client.accountsandtrading.model.transaction.TransactionRequest;
 import com.pangility.schwab.api.client.accountsandtrading.model.userpreference.UserPreferenceResponse;
 import com.pangility.schwab.api.client.common.SchwabBaseApiClient;
-import lombok.extern.slf4j.Slf4j;
 import lombok.NonNull;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnResource;
 import org.springframework.http.HttpStatus;

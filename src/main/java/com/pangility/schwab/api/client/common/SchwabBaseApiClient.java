@@ -4,8 +4,8 @@ import com.pangility.schwab.api.client.common.deserializers.ApiTooManyRequestsEx
 import com.pangility.schwab.api.client.oauth2.SchwabAccount;
 import com.pangility.schwab.api.client.oauth2.SchwabOauth2Controller;
 import com.pangility.schwab.api.client.oauth2.SchwabTokenHandler;
-import lombok.extern.slf4j.Slf4j;
 import lombok.NonNull;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;

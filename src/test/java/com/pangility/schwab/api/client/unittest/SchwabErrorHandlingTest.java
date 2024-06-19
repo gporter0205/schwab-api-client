@@ -59,7 +59,7 @@ public class SchwabErrorHandlingTest {
         schwabMarketDataApiClient.init(schwabAccount, testTokenHandler);
 
         try {
-            InstrumentsRequest instrumentsRequest = InstrumentsRequest.Builder.instrumentsRequest()
+            InstrumentsRequest instrumentsRequest = InstrumentsRequest.builder()
                     .withSymbol("TSLA")
                     .withProjection(InstrumentsRequest.Projection.SYMBOL_SEARCH)
                     .build();
@@ -84,7 +84,7 @@ public class SchwabErrorHandlingTest {
         schwabAccount.setAccessExpiration(LocalDateTime.now().plusMinutes(10));
         schwabMarketDataApiClient.init(schwabAccount, testTokenHandler);
 
-        InstrumentsRequest instrumentsRequest = InstrumentsRequest.Builder.instrumentsRequest()
+        InstrumentsRequest instrumentsRequest = InstrumentsRequest.builder()
                 .withSymbol("TSLA")
                 .withProjection(InstrumentsRequest.Projection.SYMBOL_SEARCH)
                 .build();
@@ -107,7 +107,7 @@ public class SchwabErrorHandlingTest {
 
         assertThat(schwabAccount.getAccessToken()).isEqualTo("12345678".repeat(8));
 
-        InstrumentsRequest instrumentsRequest = InstrumentsRequest.Builder.instrumentsRequest()
+        InstrumentsRequest instrumentsRequest = InstrumentsRequest.builder()
                 .withSymbol("TSLA")
                 .withProjection(InstrumentsRequest.Projection.SYMBOL_SEARCH)
                 .build();
