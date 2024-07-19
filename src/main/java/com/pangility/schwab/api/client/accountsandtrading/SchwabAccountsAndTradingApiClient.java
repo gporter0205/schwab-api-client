@@ -110,7 +110,7 @@ public class SchwabAccountsAndTradingApiClient extends SchwabBaseApiClient {
         log.info("Fetch Account [{}] {}", encryptedAccount, fields != null && fields.equalsIgnoreCase("positions") ? "with positions" : "");
 
         if(encryptedAccount.isEmpty()) {
-            throw new IllegalArgumentException("Encrypted Account must not be empty");
+            return Mono.error(new IllegalArgumentException("Encrypted Account must not be empty"));
         }
 
         UriComponentsBuilder uriBuilder = this.getUriBuilder()
@@ -212,7 +212,7 @@ public class SchwabAccountsAndTradingApiClient extends SchwabBaseApiClient {
         log.info("Fetch Order [{}] for Encrypted Account [{}]", orderId, encryptedAccount);
 
         if(encryptedAccount.isEmpty() || orderId <= 0) {
-            throw new IllegalArgumentException("Account Number and Order ID are required");
+            return Mono.error(new IllegalArgumentException("Account Number and Order ID are required"));
         }
 
         UriComponentsBuilder uriBuilder = this.getUriBuilder()
@@ -285,7 +285,7 @@ public class SchwabAccountsAndTradingApiClient extends SchwabBaseApiClient {
         log.info("Fetch Orders for Account [{}] -> {}", encryptedAccount == null ? "all accounts" : encryptedAccount, orderRequest);
 
         if(orderRequest.getFromEnteredTime() == null || orderRequest.getToEnteredTime() == null) {
-            throw new IllegalArgumentException("Both From and To Entered date/times are required");
+            return Flux.error(new IllegalArgumentException("Both From and To Entered date/times are required"));
         }
 
         UriComponentsBuilder uriBuilder = this.getUriBuilder();
@@ -331,10 +331,10 @@ public class SchwabAccountsAndTradingApiClient extends SchwabBaseApiClient {
         log.info("Fetch Transaction [{}] for Account [{}]", activityId, encryptedAccount);
 
         if(encryptedAccount.isEmpty()) {
-            throw new IllegalArgumentException("Encrypted Account is required");
+            return Mono.error(new IllegalArgumentException("Encrypted Account is required"));
         }
         if(activityId <= 0) {
-            throw new IllegalArgumentException("Activity ID is required");
+            return Mono.error(new IllegalArgumentException("Activity ID is required"));
         }
 
         UriComponentsBuilder uriBuilder = this.getUriBuilder()
@@ -384,10 +384,10 @@ public class SchwabAccountsAndTradingApiClient extends SchwabBaseApiClient {
         log.info("Fetch Transactions for Account [{}] -> {}", encryptedAccount, transactionRequest);
 
         if(encryptedAccount.isEmpty()) {
-            throw new IllegalArgumentException("Encrypted Account is required");
+            return Flux.error(new IllegalArgumentException("Encrypted Account is required"));
         }
         if(transactionRequest.getStartDate() == null || transactionRequest.getEndDate() == null) {
-            throw new IllegalArgumentException("Both Start and End date/times are required");
+            return Flux.error(new IllegalArgumentException("Both Start and End date/times are required"));
         }
 
         UriComponentsBuilder uriBuilder = this.getUriBuilder()
@@ -447,7 +447,7 @@ public class SchwabAccountsAndTradingApiClient extends SchwabBaseApiClient {
         log.info("Place Order on Account [{}] -> {}", encryptedAccount, order);
 
         if(encryptedAccount.isEmpty()) {
-            throw new IllegalArgumentException("Encrypted account number is required");
+            return Mono.error(new IllegalArgumentException("Encrypted account number is required"));
         }
 
         UriComponentsBuilder uriBuilder = this.getUriBuilder()
@@ -470,10 +470,10 @@ public class SchwabAccountsAndTradingApiClient extends SchwabBaseApiClient {
         log.info("Replace Order [{}] on Account [{}] -> {}", orderId, encryptedAccount, order);
 
         if(encryptedAccount.isEmpty()) {
-            throw new IllegalArgumentException("Encrypted account number is required");
+            return Mono.error(new IllegalArgumentException("Encrypted account number is required"));
         }
         if(orderId <= 0) {
-            throw new IllegalArgumentException("Order ID is required");
+            return Mono.error(new IllegalArgumentException("Order ID is required"));
         }
 
         UriComponentsBuilder uriBuilder = this.getUriBuilder()
@@ -494,10 +494,10 @@ public class SchwabAccountsAndTradingApiClient extends SchwabBaseApiClient {
         log.info("Cancel Order [{}] on Account [{}]", orderId, encryptedAccount);
 
         if(encryptedAccount.isEmpty()) {
-            throw new IllegalArgumentException("Encrypted account number is required");
+            return Mono.error(new IllegalArgumentException("Encrypted account number is required"));
         }
         if(orderId <= 0) {
-            throw new IllegalArgumentException("Order Id is required");
+            return Mono.error(new IllegalArgumentException("Order Id is required"));
         }
 
         UriComponentsBuilder uriBuilder = this.getUriBuilder()

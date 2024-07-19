@@ -39,6 +39,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 
 @SpringBootTest
 @EnableSchwabMarketDataApi
@@ -80,19 +81,22 @@ public class SchwabMarketDataApiTest {
     @Test
     public void optionQuoteTest() {
         // get next Friday
-        LocalDate nextFriday = LocalDate.now().plusDays(3);
-        while(!nextFriday.getDayOfWeek().equals(DayOfWeek.FRIDAY)) {
-            nextFriday = nextFriday.plusDays(1);
-        }
-        String symbol = "TQQQ  " + nextFriday.format(DateTimeFormatter.ofPattern("yyMMdd")) + "C00051000";
+        Optional<LocalDate> nextFriday = LocalDate.now().plusDays(3).datesUntil(LocalDate.now().plusDays(10))
+                .filter(localDate -> localDate.getDayOfWeek().equals(DayOfWeek.FRIDAY))
+                .findFirst();
+        if(nextFriday.isPresent()) {
+            String symbol = "TQQQ  " + nextFriday.get().format(DateTimeFormatter.ofPattern("yyMMdd")) + "C00081000";
 
-        Mono<QuoteResponse> optionResponse = schwabMarketDataApiClient.fetchQuoteToMono(symbol);
-        StepVerifier
-                .create(optionResponse)
-                .expectNextMatches(response -> response.getSymbol() != null &&
-                        response.getSymbol().equalsIgnoreCase(symbol) &&
-                        response.getAssetMainType().equals(AssetMainType.OPTION))
-                .verifyComplete();
+            Mono<QuoteResponse> optionResponse = schwabMarketDataApiClient.fetchQuoteToMono(symbol);
+            StepVerifier
+                    .create(optionResponse)
+                    .expectNextMatches(response -> response.getSymbol() != null &&
+                            response.getSymbol().equalsIgnoreCase(symbol) &&
+                            response.getAssetMainType().equals(AssetMainType.OPTION))
+                    .verifyComplete();
+        } else {
+            throw new RuntimeException("Unable to determine next Friday");
+        }
     }
 
     @Test

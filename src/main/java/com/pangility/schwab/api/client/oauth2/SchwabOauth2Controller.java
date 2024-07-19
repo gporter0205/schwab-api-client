@@ -172,8 +172,8 @@ public class SchwabOauth2Controller {
      * @return {@link Mono}{@literal <}{@link SchwabAccount}{@literal >}
      */
     public Mono<SchwabAccount> refreshAccessToken(@NonNull SchwabAccount schwabAccount) {
-        Mono<SchwabAccount> response;
-        try {
+        //Mono<SchwabAccount> response;
+        //try {
             String tokenAuthorizationHeader = "Basic " + new String(Base64.getMimeEncoder().encode((schwabClientId + ":" + schwabClientSecret).getBytes(StandardCharsets.UTF_8)), StandardCharsets.UTF_8);
 
             URI uri = UriComponentsBuilder.newInstance()
@@ -187,7 +187,7 @@ public class SchwabOauth2Controller {
             bodyValues.add("grant_type", schwabRefreshGrantType);
             bodyValues.add("refresh_token", schwabAccount.getRefreshToken());
 
-            response = WebClient.create().post()
+            return WebClient.create().post()
                     .uri(uri)
                     .header(HttpHeaders.AUTHORIZATION, tokenAuthorizationHeader)
                     .contentType(MediaType.APPLICATION_FORM_URLENCODED)
@@ -221,9 +221,27 @@ public class SchwabOauth2Controller {
                             tokenHandler.onAccessTokenChange(schwabAccount);
                         }
                         return Mono.just(schwabAccount);
+                    })
+                    .onErrorResume(e -> {
+                        if(e instanceof WebClientResponseException wcre) {
+                            String errorBody = "Unable to retrieve token: " + wcre.getResponseBodyAsString()
+                                    .replaceAll("\n", "")
+                                    .replaceAll(" ", "")
+                                    .replaceAll("\\{", "{ ")
+                                    .replaceAll("}", " }")
+                                    .replaceAll(":", " : ")
+                                    .replaceAll(",", ", ");
+                            log.error(errorBody);
+                            throw new ResponseStatusException(
+                                    wcre.getStatusCode(), errorBody, wcre);
+                        } else {
+                            log.error(this.exceptionToString((Exception) e));
+                            throw new ResponseStatusException(
+                                    HttpStatus.INTERNAL_SERVER_ERROR, this.exceptionToString((Exception) e), e);
+                        }
                     });
 
-        } catch(WebClientResponseException wcre) {
+        /*} catch(WebClientResponseException wcre) {
             String errorBody = "Unable to retrieve token: " + wcre.getResponseBodyAsString()
                     .replaceAll("\n", "")
                     .replaceAll(" ", "")
@@ -239,7 +257,7 @@ public class SchwabOauth2Controller {
             throw new ResponseStatusException(
                     HttpStatus.INTERNAL_SERVER_ERROR, this.exceptionToString(e), e);
         }
-        return response;
+        return response;*/
     }
 
     /**
@@ -249,11 +267,11 @@ public class SchwabOauth2Controller {
      * @return {@link RedirectView}
      */
     @GetMapping(value = {"/oauth2/schwab/code"})
-    public RedirectView processCode(@RequestParam String code,
+    public Mono<RedirectView> processCode(@RequestParam String code,
                             @RequestParam String state) {
         String tokenAuthorizationHeader = "Basic " + new String(Base64.getMimeEncoder().encode((schwabClientId + ":" + schwabClientSecret).getBytes(StandardCharsets.UTF_8)), StandardCharsets.UTF_8);
         RedirectView redirectView = new RedirectView();
-        try {
+        //try {
             UUID paramUuid = UUID.fromString(state);
             if (uuids.containsKey(paramUuid)) {
                 UuidMapInfo uuidMapInfo = uuids.get(paramUuid);
@@ -274,7 +292,7 @@ public class SchwabOauth2Controller {
                 bodyValues.add("client_id", schwabClientId);
                 bodyValues.add("redirect_uri", schwabRedirectUri);
 
-                WebClient.create().post()
+                return WebClient.create().post()
                         .uri(uri)
                         .header(HttpHeaders.AUTHORIZATION, tokenAuthorizationHeader)
                         .contentType(MediaType.APPLICATION_FORM_URLENCODED)
@@ -291,7 +309,7 @@ public class SchwabOauth2Controller {
                         })
                         .retryWhen(Retry.backoff(3, Duration.ofSeconds(2)))
                         .flatMap(tokenInfo -> {
-                            Mono<SchwabAccount> retMono;
+                            Mono<RedirectView> retMono;
                             SchwabAccount schwabAccount;
                             if(!accountMapByUserId.containsKey(schwabUserId)) {
                                 schwabAccount = new SchwabAccount();
@@ -309,14 +327,34 @@ public class SchwabOauth2Controller {
                                     tokenHandler.onRefreshTokenChange(schwabAccount);
                                 }
                                 redirectView.setHosts(callback);
-                                retMono = Mono.just(schwabAccount);
+                                retMono = Mono.just(redirectView);
                             } else {
                                 retMono = Mono.error(new RefreshTokenException("Unable to retrieve refresh token", null));
                             }
                             return retMono;
-                        }).subscribe();
+                        })
+                        .onErrorResume(e -> {
+                            if(e instanceof WebClientResponseException wcre) {
+                                String errorBody = "Unable to retrieve token: " + wcre.getResponseBodyAsString()
+                                        .replaceAll("\n", "")
+                                        .replaceAll(" ", "")
+                                        .replaceAll("\\{", "{ ")
+                                        .replaceAll("}", " }")
+                                        .replaceAll(":", " : ")
+                                        .replaceAll(",", ", ");
+                                log.error(errorBody);
+                                throw new ResponseStatusException(
+                                        wcre.getStatusCode(), errorBody, wcre);
+                            } else {
+                                log.error(this.exceptionToString((Exception) e));
+                                throw new ResponseStatusException(
+                                        HttpStatus.INTERNAL_SERVER_ERROR, this.exceptionToString((Exception) e), e);
+                            }
+                        });
+            } else {
+                return Mono.empty();
             }
-        } catch(WebClientResponseException wcre) {
+        /*} catch(WebClientResponseException wcre) {
             String errorBody = "Unable to retrieve token: " + wcre.getResponseBodyAsString()
                     .replaceAll("\n", "")
                     .replaceAll(" ", "")
@@ -334,7 +372,7 @@ public class SchwabOauth2Controller {
             throw new ResponseStatusException(
                     HttpStatus.INTERNAL_SERVER_ERROR, this.exceptionToString(e), e);
         }
-        return redirectView;
+        return redirectView;*/
     }
 
     /**
