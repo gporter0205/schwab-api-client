@@ -674,24 +674,26 @@ public class SchwabBaseApiClient {
                                         @NonNull Boolean hasRetried401WithNewAccessToken) {
 
         return schwabOauth2Controller.getAccessToken(schwabUserId)
-                .flatMap(tokenInfo -> this.callApiPreProcess(schwabUserId, httpMethod, uriComponentsBuilder, body, tokenInfo).exchangeToMono(response -> {
-                    Mono<T> mono;
-                    if (response.statusCode().is2xxSuccessful()) {
-                        mono = response.bodyToMono(bodyTypeReference);
-                    } else if (response.statusCode().is4xxClientError() || response.statusCode().is5xxServerError()) {
-                        if (response.statusCode().isSameCodeAs(HttpStatus.UNAUTHORIZED)) {
-                            mono = Mono.error(new ApiUnauthorizedException());
-                        } else if (response.statusCode().isSameCodeAs(HttpStatus.TOO_MANY_REQUESTS)) {
-                                mono = Mono.error(new ApiTooManyRequestsException());
-                        } else {
-                            mono = response.createException()
-                                    .flatMap(Mono::error);
-                        }
-                    } else {
-                        mono = response.createException()
-                                .flatMap(Mono::error);
-                    }
-                    return mono;
+                .flatMap(tokenInfo -> this.callApiPreProcessToMono(schwabUserId, httpMethod, uriComponentsBuilder, body, tokenInfo)
+                        .flatMap(requestBodySpec -> requestBodySpec.exchangeToMono(response -> {
+                            Mono<T> mono;
+                            if (response.statusCode().is2xxSuccessful()) {
+                                mono = response.bodyToMono(bodyTypeReference);
+                            } else if (response.statusCode().is4xxClientError() || response.statusCode().is5xxServerError()) {
+                                if (response.statusCode().isSameCodeAs(HttpStatus.UNAUTHORIZED)) {
+                                    mono = Mono.error(new ApiUnauthorizedException());
+                                } else if (response.statusCode().isSameCodeAs(HttpStatus.TOO_MANY_REQUESTS)) {
+                                    mono = Mono.error(new ApiTooManyRequestsException());
+                                } else {
+                                    mono = response.createException()
+                                            .flatMap(Mono::error);
+                                }
+                            } else {
+                                mono = response.createException()
+                                        .flatMap(Mono::error);
+                            }
+                            return mono;
+
                 }))
                 .retryWhen(Retry.backoff(10, Duration.ofSeconds(1)).jitter(0.25)
                         .filter(throwable -> throwable instanceof ApiTooManyRequestsException)
@@ -704,7 +706,7 @@ public class SchwabBaseApiClient {
                     } else {
                         return Mono.error(throwable);
                     }
-                });
+                }));
     }
 
     private <T> Flux<T> callApiToFlux(@NonNull String schwabUserId,
@@ -730,25 +732,25 @@ public class SchwabBaseApiClient {
                                       @NonNull ParameterizedTypeReference<T> bodyTypeReference,
                                       @NonNull Boolean hasRetried401WithNewAccessToken) {
         return schwabOauth2Controller.getAccessToken(schwabUserId)
-                .flux()
-                .flatMap(tokenInfo -> this.callApiPreProcess(schwabUserId, httpMethod, uriComponentsBuilder, body, tokenInfo).exchangeToFlux(response -> {
-                    Flux<T> flux;
-                    if (response.statusCode().equals(HttpStatus.OK)) {
-                        flux = response.bodyToFlux(bodyTypeReference);
-                    } else if (response.statusCode().is4xxClientError() || response.statusCode().is5xxServerError()) {
-                        if (response.statusCode().isSameCodeAs(HttpStatus.UNAUTHORIZED)) {
-                            flux = Flux.error(new ApiUnauthorizedException());
-                        } else if (response.statusCode().isSameCodeAs(HttpStatus.TOO_MANY_REQUESTS)) {
-                            flux = Flux.error(new ApiTooManyRequestsException());
-                        } else {
-                            flux = response.createException().flux()
-                                    .flatMap(Flux::error);
-                        }
-                    } else {
-                        flux = response.createException().flux()
-                                .flatMap(Flux::error);
-                    }
-                    return flux;
+                .flatMapMany(tokenInfo -> this.callApiPreProcessToMono(schwabUserId, httpMethod, uriComponentsBuilder, body, tokenInfo)
+                        .flatMapMany(requestBodySpec -> requestBodySpec.exchangeToFlux(response -> {
+                            Flux<T> flux;
+                            if (response.statusCode().equals(HttpStatus.OK)) {
+                                flux = response.bodyToFlux(bodyTypeReference);
+                            } else if (response.statusCode().is4xxClientError() || response.statusCode().is5xxServerError()) {
+                                if (response.statusCode().isSameCodeAs(HttpStatus.UNAUTHORIZED)) {
+                                    flux = Flux.error(new ApiUnauthorizedException());
+                                } else if (response.statusCode().isSameCodeAs(HttpStatus.TOO_MANY_REQUESTS)) {
+                                    flux = Flux.error(new ApiTooManyRequestsException());
+                                } else {
+                                    flux = response.createException()
+                                            .flatMapMany(Flux::error);
+                                }
+                            } else {
+                                flux = response.createException()
+                                        .flatMapMany(Flux::error);
+                            }
+                            return flux;
                 }))
                 .retryWhen(Retry.backoff(10, Duration.ofSeconds(1)).jitter(0.25)
                         .filter(throwable -> throwable instanceof ApiTooManyRequestsException)
@@ -761,7 +763,7 @@ public class SchwabBaseApiClient {
                     } else {
                         return Flux.error(throwable);
                     }
-                });
+                }));
     }
 
     private WebClient.RequestBodySpec callApiPreProcess(@NonNull String schwabUserId,
@@ -769,21 +771,30 @@ public class SchwabBaseApiClient {
                                                         @NonNull UriComponentsBuilder uriComponentsBuilder,
                                                         Object body,
                                                         @NonNull SchwabAccount tokenInfo) {
-        schwabOauth2Controller.validateRefreshToken(tokenInfo);
+        return this.callApiPreProcessToMono(schwabUserId, httpMethod, uriComponentsBuilder, body, tokenInfo).block();
+    }
 
-        URI uri = uriComponentsBuilder
-                .scheme("https")
-                .host(schwabTargetUrl)
-                .build()
-                .toUri();
-        WebClient.RequestBodySpec bodySpec = schwabWebClient.getSchwabWebClient()
-                .method(httpMethod)
-                .uri(uri)
-                .headers(h -> h.setBearerAuth(tokenInfo.getAccessToken()));
-        if (body != null) {
-            bodySpec.body(BodyInserters.fromValue(body));
-        }
-        return bodySpec;
+    private Mono<WebClient.RequestBodySpec> callApiPreProcessToMono(@NonNull String schwabUserId,
+                                                                    @NonNull HttpMethod httpMethod,
+                                                                    @NonNull UriComponentsBuilder uriComponentsBuilder,
+                                                                    Object body,
+                                                                    @NonNull SchwabAccount tokenInfo) {
+        return schwabOauth2Controller.validateRefreshTokenToMono(tokenInfo)
+                .flatMap(schwabAccount -> {
+                    URI uri = uriComponentsBuilder
+                            .scheme("https")
+                            .host(schwabTargetUrl)
+                            .build()
+                            .toUri();
+                    WebClient.RequestBodySpec bodySpec = schwabWebClient.getSchwabWebClient()
+                            .method(httpMethod)
+                            .uri(uri)
+                            .headers(h -> h.setBearerAuth(tokenInfo.getAccessToken()));
+                    if (body != null) {
+                        bodySpec.body(BodyInserters.fromValue(body));
+                    }
+                    return Mono.just(bodySpec);
+                });
     }
 
     private <T> ParameterizedTypeReference<T> classToTypeReference(Class<T> clazz) {
