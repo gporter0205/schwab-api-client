@@ -273,85 +273,83 @@ public class SchwabOauth2Controller {
     public Mono<RedirectView> processCode(@RequestParam String code,
                             @RequestParam String state) {
         String tokenAuthorizationHeader = "Basic " + new String(Base64.getMimeEncoder().encode((schwabClientId + ":" + schwabClientSecret).getBytes(StandardCharsets.UTF_8)), StandardCharsets.UTF_8);
-        RedirectView redirectView = new RedirectView();
-            UUID paramUuid = UUID.fromString(state);
-            if (uuids.containsKey(paramUuid)) {
-                UuidMapInfo uuidMapInfo = uuids.get(paramUuid);
-                String schwabUserId = uuidMapInfo.getUserId();
-                String callback = uuidMapInfo.getCallback();
+        UUID paramUuid = UUID.fromString(state);
+        if (uuids.containsKey(paramUuid)) {
+            UuidMapInfo uuidMapInfo = uuids.get(paramUuid);
+            String schwabUserId = uuidMapInfo.getUserId();
+            String callback = uuidMapInfo.getCallback();
 
-                URI uri = UriComponentsBuilder.newInstance()
-                        .scheme("https")
-                        .host(schwabTargetUrl)
-                        .pathSegment(schwabApiVersion, schwabTokenUri)
-                        .build()
-                        .toUri();
+            URI uri = UriComponentsBuilder.newInstance()
+                    .scheme("https")
+                    .host(schwabTargetUrl)
+                    .pathSegment(schwabApiVersion, schwabTokenUri)
+                    .build()
+                    .toUri();
 
-                LinkedMultiValueMap<String, String> bodyValues = new LinkedMultiValueMap<>();
-                bodyValues.add("grant_type", schwabAuthorizationGrantType);
-                bodyValues.add("access_type", "offline");
-                bodyValues.add("code", code);
-                bodyValues.add("client_id", schwabClientId);
-                bodyValues.add("redirect_uri", schwabRedirectUri);
+            LinkedMultiValueMap<String, String> bodyValues = new LinkedMultiValueMap<>();
+            bodyValues.add("grant_type", schwabAuthorizationGrantType);
+            bodyValues.add("access_type", "offline");
+            bodyValues.add("code", code);
+            bodyValues.add("client_id", schwabClientId);
+            bodyValues.add("redirect_uri", schwabRedirectUri);
 
-                return WebClient.create().post()
-                        .uri(uri)
-                        .header(HttpHeaders.AUTHORIZATION, tokenAuthorizationHeader)
-                        .contentType(MediaType.APPLICATION_FORM_URLENCODED)
-                        .accept(MediaType.APPLICATION_JSON)
-                        .body(BodyInserters.fromFormData(bodyValues))
-                        .exchangeToMono(clientResponse -> {
-                            if(clientResponse.statusCode().is2xxSuccessful()) {
-                                return clientResponse.bodyToMono(AuthorizationTokenInfo.class);
-                            } else if(clientResponse.statusCode().is4xxClientError() || clientResponse.statusCode().is5xxServerError()){
-                                return Mono.error(new ResponseStatusException(clientResponse.statusCode()));
-                            }
-                            return Mono.empty();
-                        })
-                        .retryWhen(Retry.backoff(3, Duration.ofSeconds(2)))
-                        .flatMap(tokenInfo -> {
-                            SchwabAccount schwabAccount;
-                            if(!accountMapByUserId.containsKey(schwabUserId)) {
-                                schwabAccount = new SchwabAccount();
-                                schwabAccount.setUserId(schwabUserId);
+            return WebClient.create().post()
+                    .uri(uri)
+                    .header(HttpHeaders.AUTHORIZATION, tokenAuthorizationHeader)
+                    .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+                    .accept(MediaType.APPLICATION_JSON)
+                    .body(BodyInserters.fromFormData(bodyValues))
+                    .exchangeToMono(clientResponse -> {
+                        if(clientResponse.statusCode().is2xxSuccessful()) {
+                            return clientResponse.bodyToMono(AuthorizationTokenInfo.class);
+                        } else if(clientResponse.statusCode().is4xxClientError() || clientResponse.statusCode().is5xxServerError()){
+                            return Mono.error(new ResponseStatusException(clientResponse.statusCode()));
+                        }
+                        return Mono.empty();
+                    })
+                    .retryWhen(Retry.backoff(3, Duration.ofSeconds(2)))
+                    .flatMap(tokenInfo -> {
+                        SchwabAccount schwabAccount;
+                        if(!accountMapByUserId.containsKey(schwabUserId)) {
+                            schwabAccount = new SchwabAccount();
+                            schwabAccount.setUserId(schwabUserId);
+                        } else {
+                            schwabAccount = accountMapByUserId.get(schwabUserId);
+                        }
+                        if(schwabAccount != null) {
+                            schwabAccount.setRefreshToken(tokenInfo.getRefresh_token());
+                            schwabAccount.setRefreshExpiration(LocalDateTime.now().plusDays(7));
+                            schwabAccount.setAccessToken(tokenInfo.getAccess_token());
+                            schwabAccount.setAccessExpiration(LocalDateTime.now().plusSeconds(tokenInfo.getExpires_in()));
+                            if(accountMapByUserId.containsKey(schwabUserId)) {
+                                accountMapByUserId.replace(schwabUserId, schwabAccount);
                             } else {
-                                schwabAccount = accountMapByUserId.get(schwabUserId);
+                                accountMapByUserId.put(schwabUserId, schwabAccount);
                             }
-                            if(schwabAccount != null) {
-                                schwabAccount.setRefreshToken(tokenInfo.getRefresh_token());
-                                schwabAccount.setRefreshExpiration(LocalDateTime.now().plusDays(7));
-                                schwabAccount.setAccessToken(tokenInfo.getAccess_token());
-                                schwabAccount.setAccessExpiration(LocalDateTime.now().plusSeconds(tokenInfo.getExpires_in()));
-                                if(accountMapByUserId.containsKey(schwabUserId)) {
-                                    accountMapByUserId.replace(schwabUserId, schwabAccount);
-                                } else {
-                                    accountMapByUserId.put(schwabUserId, schwabAccount);
-                                }
-                                if(tokenHandler != null) {
-                                    tokenHandler.onRefreshTokenChange(schwabAccount);
-                                }
-                                redirectView.setHosts(callback);
-                                return Mono.just(redirectView);
-                            } else {
-                                return Mono.error(new RefreshTokenException("Unable to retrieve refresh token", null));
+                            if(tokenHandler != null) {
+                                tokenHandler.onRefreshTokenChange(schwabAccount);
                             }
-                        })
-                        .onErrorResume(e -> {
-                            if(e instanceof WebClientResponseException wcre) {
-                                String errorBody = "Unable to retrieve token: " + wcre.getResponseBodyAsString()
-                                        .replaceAll("\n", "")
-                                        .replaceAll(" ", "")
-                                        .replaceAll("\\{", "{ ")
-                                        .replaceAll("}", " }")
-                                        .replaceAll(":", " : ")
-                                        .replaceAll(",", ", ");
-                                log.error(errorBody);
-                                return Mono.error(new ResponseStatusException(wcre.getStatusCode(), errorBody, wcre));
-                            } else {
-                                log.error(this.exceptionToString((Exception) e));
-                                return Mono.error(new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, this.exceptionToString((Exception) e), e));
-                            }
-                        });
+                            return Mono.just(new RedirectView(callback));
+                        } else {
+                            return Mono.error(new RefreshTokenException("Unable to retrieve refresh token", null));
+                        }
+                    })
+                    .onErrorResume(e -> {
+                        if(e instanceof WebClientResponseException wcre) {
+                            String errorBody = "Unable to retrieve token: " + wcre.getResponseBodyAsString()
+                                    .replaceAll("\n", "")
+                                    .replaceAll(" ", "")
+                                    .replaceAll("\\{", "{ ")
+                                    .replaceAll("}", " }")
+                                    .replaceAll(":", " : ")
+                                    .replaceAll(",", ", ");
+                            log.error(errorBody);
+                            return Mono.error(new ResponseStatusException(wcre.getStatusCode(), errorBody, wcre));
+                        } else {
+                            log.error(this.exceptionToString((Exception) e));
+                            return Mono.error(new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, this.exceptionToString((Exception) e), e));
+                        }
+                    });
             } else {
                 return Mono.empty();
             }
