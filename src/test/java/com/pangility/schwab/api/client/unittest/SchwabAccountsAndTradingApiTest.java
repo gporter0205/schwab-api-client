@@ -13,7 +13,7 @@ import com.pangility.schwab.api.client.accountsandtrading.model.transaction.Tran
 import com.pangility.schwab.api.client.accountsandtrading.model.userpreference.UserPreferenceResponse;
 import com.pangility.schwab.api.client.oauth2.SchwabAccount;
 import com.pangility.schwab.api.client.oauth2.SchwabTokenHandler;
-import org.jetbrains.annotations.NotNull;
+import lombok.NonNull;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -210,9 +210,9 @@ public class SchwabAccountsAndTradingApiTest {
 
     @Test
     public void ordersTest() {
-        OrderRequest orderRequest = OrderRequest.Builder.orderRequest()
-                .withFromEnteredDate(ZonedDateTime.now().minusDays(80))
-                .withToEnteredDate(ZonedDateTime.now())
+        OrderRequest orderRequest = OrderRequest.builder()
+                .withFromEnteredTime(ZonedDateTime.now().minusDays(80))
+                .withToEnteredTime(ZonedDateTime.now())
                 .build();
         Flux<Order> ordersResponse = schwabAccountsAndTradingApiClient.fetchOrdersToFlux(schwabUserId, orderRequest);
         StepVerifier
@@ -234,9 +234,9 @@ public class SchwabAccountsAndTradingApiTest {
 
         Long accountNumber = Long.valueOf(encryptedAccounts.get(0).getAccountNumber());
         String accountHash = encryptedAccounts.get(0).getHashValue();
-        OrderRequest orderRequest = OrderRequest.Builder.orderRequest()
-                .withFromEnteredDate(ZonedDateTime.now().minusDays(80))
-                .withToEnteredDate(ZonedDateTime.now())
+        OrderRequest orderRequest = OrderRequest.builder()
+                .withFromEnteredTime(ZonedDateTime.now().minusDays(80))
+                .withToEnteredTime(ZonedDateTime.now())
                 .build();
         Flux<Order> ordersResponse = schwabAccountsAndTradingApiClient.fetchOrdersToFlux(schwabUserId, accountHash, orderRequest);
         StepVerifier
@@ -294,7 +294,7 @@ public class SchwabAccountsAndTradingApiTest {
 
         String accountNumber = encryptedAccounts.get(0).getAccountNumber();
         String accountHash = encryptedAccounts.get(0).getHashValue();
-        TransactionRequest transactionRequest = TransactionRequest.Builder.transactionRequest()
+        TransactionRequest transactionRequest = TransactionRequest.builder()
                         .withStartDate(ZonedDateTime.now().minusDays(80))
                         .withEndDate(ZonedDateTime.now())
                         .build();
@@ -385,12 +385,12 @@ public class SchwabAccountsAndTradingApiTest {
     public static class TestTokenHandler implements SchwabTokenHandler {
 
         @Override
-        public void onAccessTokenChange(@NotNull SchwabAccount schwabAccount) {
+        public void onAccessTokenChange(@NonNull SchwabAccount schwabAccount) {
             System.out.println("Testing - Access Token Change");
         }
 
         @Override
-        public void onRefreshTokenChange(@NotNull SchwabAccount schwabAccount) {
+        public void onRefreshTokenChange(@NonNull SchwabAccount schwabAccount) {
             System.out.println("Testing - Refresh Token Change");
         }
     }

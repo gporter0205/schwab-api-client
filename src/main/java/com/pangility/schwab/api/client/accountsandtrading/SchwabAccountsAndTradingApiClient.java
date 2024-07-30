@@ -8,8 +8,8 @@ import com.pangility.schwab.api.client.accountsandtrading.model.transaction.Tran
 import com.pangility.schwab.api.client.accountsandtrading.model.transaction.TransactionRequest;
 import com.pangility.schwab.api.client.accountsandtrading.model.userpreference.UserPreferenceResponse;
 import com.pangility.schwab.api.client.common.SchwabBaseApiClient;
+import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
-import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnResource;
 import org.springframework.http.HttpStatus;
@@ -42,7 +42,7 @@ public class SchwabAccountsAndTradingApiClient extends SchwabBaseApiClient {
      * @return {@link List}{@literal <}{@link EncryptedAccount}{@literal >}
      */
     @Deprecated
-    public List<EncryptedAccount> fetchEncryptedAccounts(@NotNull String schwabUserId) {
+    public List<EncryptedAccount> fetchEncryptedAccounts(@NonNull String schwabUserId) {
         return this.fetchEncryptedAccountsToFlux(schwabUserId).toStream().toList();
     }
 
@@ -52,7 +52,7 @@ public class SchwabAccountsAndTradingApiClient extends SchwabBaseApiClient {
      * @param schwabUserId the Charles Schwab user id of the account to be used for API authentication
      * @return {@link List}{@literal <}{@link EncryptedAccount}{@literal >}
      */
-    public Flux<EncryptedAccount> fetchEncryptedAccountsToFlux(@NotNull String schwabUserId) {
+    public Flux<EncryptedAccount> fetchEncryptedAccountsToFlux(@NonNull String schwabUserId) {
         log.info("Fetch Encrypted Accounts");
 
         UriComponentsBuilder uriBuilder = this.getUriBuilder()
@@ -67,8 +67,8 @@ public class SchwabAccountsAndTradingApiClient extends SchwabBaseApiClient {
      * @return {@link List}{@literal <}{@link Account}{@literal >}
      */
     @Deprecated
-    public Account fetchAccount(@NotNull String schwabUserId,
-                                @NotNull String encryptedAccount) {
+    public Account fetchAccount(@NonNull String schwabUserId,
+                                @NonNull String encryptedAccount) {
         return fetchAccount(schwabUserId, encryptedAccount, null);
     }
 
@@ -80,8 +80,8 @@ public class SchwabAccountsAndTradingApiClient extends SchwabBaseApiClient {
      * @return {@link List}{@literal <}{@link Account}{@literal >}
      */
     @Deprecated
-    public Account fetchAccount(@NotNull String schwabUserId,
-                                @NotNull String encryptedAccount,
+    public Account fetchAccount(@NonNull String schwabUserId,
+                                @NonNull String encryptedAccount,
                                 String fields) {
         return this.fetchAccountToMono(schwabUserId, encryptedAccount, fields).block();
     }
@@ -92,8 +92,8 @@ public class SchwabAccountsAndTradingApiClient extends SchwabBaseApiClient {
      * @param encryptedAccount encrypted account id
      * @return {@link Mono}{@literal <}{@link Account}{@literal >}
      */
-    public Mono<Account> fetchAccountToMono(@NotNull String schwabUserId,
-                                            @NotNull String encryptedAccount) {
+    public Mono<Account> fetchAccountToMono(@NonNull String schwabUserId,
+                                            @NonNull String encryptedAccount) {
         return this.fetchAccountToMono(schwabUserId, encryptedAccount, null);
     }
 
@@ -104,13 +104,13 @@ public class SchwabAccountsAndTradingApiClient extends SchwabBaseApiClient {
      * @param fields positions to include account position data or null
      * @return {@link Mono}{@literal <}{@link Account}{@literal >}
      */
-    public Mono<Account> fetchAccountToMono(@NotNull String schwabUserId,
-                                            @NotNull String encryptedAccount,
+    public Mono<Account> fetchAccountToMono(@NonNull String schwabUserId,
+                                            @NonNull String encryptedAccount,
                                             String fields) {
         log.info("Fetch Account [{}] {}", encryptedAccount, fields != null && fields.equalsIgnoreCase("positions") ? "with positions" : "");
 
         if(encryptedAccount.isEmpty()) {
-            throw new IllegalArgumentException("Encrypted Account must not be empty");
+            return Mono.error(new IllegalArgumentException("Encrypted Account must not be empty"));
         }
 
         UriComponentsBuilder uriBuilder = this.getUriBuilder()
@@ -142,7 +142,7 @@ public class SchwabAccountsAndTradingApiClient extends SchwabBaseApiClient {
      * @return {@link List}{@literal <}{@link Account}{@literal >}
      */
     @Deprecated
-    public List<Account> fetchAccounts(@NotNull String schwabUserId) {
+    public List<Account> fetchAccounts(@NonNull String schwabUserId) {
         return fetchAccounts(schwabUserId, null);
     }
 
@@ -153,7 +153,7 @@ public class SchwabAccountsAndTradingApiClient extends SchwabBaseApiClient {
      * @return {@link List}{@literal <}{@link Account}{@literal >}
      */
     @Deprecated
-    public List<Account> fetchAccounts(@NotNull String schwabUserId,
+    public List<Account> fetchAccounts(@NonNull String schwabUserId,
                                        String fields) {
         return this.fetchAccountsToFlux(schwabUserId, fields).toStream().toList();
     }
@@ -163,7 +163,7 @@ public class SchwabAccountsAndTradingApiClient extends SchwabBaseApiClient {
      * @param schwabUserId the Charles Schwab user id of the account to be used for API authentication
      * @return {@link Flux}{@literal <}{@link Account}{@literal >}
      */
-    public Flux<Account> fetchAccountsToFlux(@NotNull String schwabUserId) {
+    public Flux<Account> fetchAccountsToFlux(@NonNull String schwabUserId) {
         return fetchAccountsToFlux(schwabUserId, null);
     }
 
@@ -173,7 +173,7 @@ public class SchwabAccountsAndTradingApiClient extends SchwabBaseApiClient {
      * @param fields positions to include account position data or null
      * @return {@link Flux}{@literal <}{@link Account}{@literal >}
      */
-    public Flux<Account> fetchAccountsToFlux(@NotNull String schwabUserId,
+    public Flux<Account> fetchAccountsToFlux(@NonNull String schwabUserId,
                                        String fields) {
         log.info("Fetch All Accounts {}", fields != null && fields.equalsIgnoreCase("positions") ? "with positions" : "");
 
@@ -193,9 +193,9 @@ public class SchwabAccountsAndTradingApiClient extends SchwabBaseApiClient {
      * @return {@link Order}
      */
     @Deprecated
-    public Order fetchOrder(@NotNull String schwabUserId,
-                            @NotNull String encryptedAccount,
-                            @NotNull Long orderId) {
+    public Order fetchOrder(@NonNull String schwabUserId,
+                            @NonNull String encryptedAccount,
+                            @NonNull Long orderId) {
         return this.fetchOrderToMono(schwabUserId, encryptedAccount, orderId).block();
     }
 
@@ -206,13 +206,13 @@ public class SchwabAccountsAndTradingApiClient extends SchwabBaseApiClient {
      * @param orderId order id to fetch
      * @return {@link Mono}{@literal <}{@link Order}{@literal >}
      */
-    public Mono<Order> fetchOrderToMono(@NotNull String schwabUserId,
-                                        @NotNull String encryptedAccount,
-                                        @NotNull Long orderId) {
+    public Mono<Order> fetchOrderToMono(@NonNull String schwabUserId,
+                                        @NonNull String encryptedAccount,
+                                        @NonNull Long orderId) {
         log.info("Fetch Order [{}] for Encrypted Account [{}]", orderId, encryptedAccount);
 
         if(encryptedAccount.isEmpty() || orderId <= 0) {
-            throw new IllegalArgumentException("Account Number and Order ID are required");
+            return Mono.error(new IllegalArgumentException("Account Number and Order ID are required"));
         }
 
         UriComponentsBuilder uriBuilder = this.getUriBuilder()
@@ -242,8 +242,8 @@ public class SchwabAccountsAndTradingApiClient extends SchwabBaseApiClient {
      * @return {@link List}{@literal <}{@link Order}{@literal >}
      */
     @Deprecated
-    public List<Order> fetchOrders(@NotNull String schwabUserId,
-                                   @NotNull OrderRequest orderRequest) {
+    public List<Order> fetchOrders(@NonNull String schwabUserId,
+                                   @NonNull OrderRequest orderRequest) {
         return this.fetchOrders(schwabUserId, null, orderRequest);
     }
 
@@ -255,9 +255,9 @@ public class SchwabAccountsAndTradingApiClient extends SchwabBaseApiClient {
      * @return {@link List}{@literal <}{@link Order}{@literal >}
      */
     @Deprecated
-    public List<Order> fetchOrders(@NotNull String schwabUserId,
+    public List<Order> fetchOrders(@NonNull String schwabUserId,
                                    String encryptedAccount,
-                                   @NotNull OrderRequest orderRequest) {
+                                   @NonNull OrderRequest orderRequest) {
         return this.fetchOrdersToFlux(schwabUserId, encryptedAccount, orderRequest).toStream().toList();
     }
 
@@ -267,8 +267,8 @@ public class SchwabAccountsAndTradingApiClient extends SchwabBaseApiClient {
      * @param orderRequest parameters of the orders.  FromEnteredDate and ToEnteredDate are required.
      * @return {@link Flux}{@literal <}{@link Order}{@literal >}
      */
-    public Flux<Order> fetchOrdersToFlux(@NotNull String schwabUserId,
-                                       @NotNull OrderRequest orderRequest) {
+    public Flux<Order> fetchOrdersToFlux(@NonNull String schwabUserId,
+                                       @NonNull OrderRequest orderRequest) {
         return this.fetchOrdersToFlux(schwabUserId, null, orderRequest);
     }
 
@@ -279,13 +279,13 @@ public class SchwabAccountsAndTradingApiClient extends SchwabBaseApiClient {
      * @param orderRequest parameters of the orders.  FromEnteredDate and ToEnteredDate are required.
      * @return {@link Flux}{@literal <}{@link Order}{@literal >}
      */
-    public Flux<Order> fetchOrdersToFlux(@NotNull String schwabUserId,
+    public Flux<Order> fetchOrdersToFlux(@NonNull String schwabUserId,
                                            String encryptedAccount,
-                                           @NotNull OrderRequest orderRequest) {
+                                           @NonNull OrderRequest orderRequest) {
         log.info("Fetch Orders for Account [{}] -> {}", encryptedAccount == null ? "all accounts" : encryptedAccount, orderRequest);
 
         if(orderRequest.getFromEnteredTime() == null || orderRequest.getToEnteredTime() == null) {
-            throw new IllegalArgumentException("Both From and To Entered date/times are required");
+            return Flux.error(new IllegalArgumentException("Both From and To Entered date/times are required"));
         }
 
         UriComponentsBuilder uriBuilder = this.getUriBuilder();
@@ -312,9 +312,9 @@ public class SchwabAccountsAndTradingApiClient extends SchwabBaseApiClient {
      * @return {@link Transaction}
      */
     @Deprecated
-    public Transaction fetchTransaction(@NotNull String schwabUserId,
-                                        @NotNull String encryptedAccount,
-                                        @NotNull Long activityId) {
+    public Transaction fetchTransaction(@NonNull String schwabUserId,
+                                        @NonNull String encryptedAccount,
+                                        @NonNull Long activityId) {
         return this.fetchTransactionToMono(schwabUserId, encryptedAccount, activityId).block();
     }
 
@@ -325,16 +325,16 @@ public class SchwabAccountsAndTradingApiClient extends SchwabBaseApiClient {
      * @param activityId activity/transaction id
      * @return {@link Mono}{@literal <}{@link Transaction}{@literal >}
      */
-    public Mono<Transaction> fetchTransactionToMono(@NotNull String schwabUserId,
-                                            @NotNull String encryptedAccount,
-                                            @NotNull Long activityId) {
+    public Mono<Transaction> fetchTransactionToMono(@NonNull String schwabUserId,
+                                            @NonNull String encryptedAccount,
+                                            @NonNull Long activityId) {
         log.info("Fetch Transaction [{}] for Account [{}]", activityId, encryptedAccount);
 
         if(encryptedAccount.isEmpty()) {
-            throw new IllegalArgumentException("Encrypted Account is required");
+            return Mono.error(new IllegalArgumentException("Encrypted Account is required"));
         }
         if(activityId <= 0) {
-            throw new IllegalArgumentException("Activity ID is required");
+            return Mono.error(new IllegalArgumentException("Activity ID is required"));
         }
 
         UriComponentsBuilder uriBuilder = this.getUriBuilder()
@@ -365,9 +365,9 @@ public class SchwabAccountsAndTradingApiClient extends SchwabBaseApiClient {
      * @return {@link List}{@literal <}{@link Transaction}{@literal >}
      */
     @Deprecated
-    public List<Transaction> fetchTransactions(@NotNull String schwabUserId,
-                                               @NotNull String encryptedAccount,
-                                               @NotNull TransactionRequest transactionRequest) {
+    public List<Transaction> fetchTransactions(@NonNull String schwabUserId,
+                                               @NonNull String encryptedAccount,
+                                               @NonNull TransactionRequest transactionRequest) {
         return this.fetchTransactionsToFlux(schwabUserId, encryptedAccount, transactionRequest).toStream().toList();
     }
 
@@ -378,16 +378,16 @@ public class SchwabAccountsAndTradingApiClient extends SchwabBaseApiClient {
      * @param transactionRequest parameters of the orders.  FromEnteredDate and ToEnteredDate are required.
      * @return {@link Flux}{@literal <}{@link Transaction}{@literal >}
      */
-    public Flux<Transaction> fetchTransactionsToFlux(@NotNull String schwabUserId,
-                                                   @NotNull String encryptedAccount,
-                                                   @NotNull TransactionRequest transactionRequest) {
+    public Flux<Transaction> fetchTransactionsToFlux(@NonNull String schwabUserId,
+                                                   @NonNull String encryptedAccount,
+                                                   @NonNull TransactionRequest transactionRequest) {
         log.info("Fetch Transactions for Account [{}] -> {}", encryptedAccount, transactionRequest);
 
         if(encryptedAccount.isEmpty()) {
-            throw new IllegalArgumentException("Encrypted Account is required");
+            return Flux.error(new IllegalArgumentException("Encrypted Account is required"));
         }
         if(transactionRequest.getStartDate() == null || transactionRequest.getEndDate() == null) {
-            throw new IllegalArgumentException("Both Start and End date/times are required");
+            return Flux.error(new IllegalArgumentException("Both Start and End date/times are required"));
         }
 
         UriComponentsBuilder uriBuilder = this.getUriBuilder()
@@ -417,7 +417,7 @@ public class SchwabAccountsAndTradingApiClient extends SchwabBaseApiClient {
      * @return {@link UserPreferenceResponse}
      */
     @Deprecated
-    public UserPreferenceResponse fetchUserPreference(@NotNull String schwabUserId) {
+    public UserPreferenceResponse fetchUserPreference(@NonNull String schwabUserId) {
         return this.fetchUserPreferenceToMono(schwabUserId).block();
     }
 
@@ -426,7 +426,7 @@ public class SchwabAccountsAndTradingApiClient extends SchwabBaseApiClient {
      * @param schwabUserId the Charles Schwab user id of the account to be used for API authentication
      * @return {@link UserPreferenceResponse}
      */
-    public Mono<UserPreferenceResponse> fetchUserPreferenceToMono(@NotNull String schwabUserId) {
+    public Mono<UserPreferenceResponse> fetchUserPreferenceToMono(@NonNull String schwabUserId) {
         log.info("Fetch User Preference");
 
         UriComponentsBuilder uriBuilder = this.getUriBuilder()
@@ -441,13 +441,13 @@ public class SchwabAccountsAndTradingApiClient extends SchwabBaseApiClient {
      * @param order information to place the order
      * @return {@link Mono}{@literal <}String{@literal >}
      */
-    public Mono<String> placeOrder(@NotNull String schwabUserId,
-                           @NotNull String encryptedAccount,
-                           @NotNull Order order) {
+    public Mono<String> placeOrder(@NonNull String schwabUserId,
+                           @NonNull String encryptedAccount,
+                           @NonNull Order order) {
         log.info("Place Order on Account [{}] -> {}", encryptedAccount, order);
 
         if(encryptedAccount.isEmpty()) {
-            throw new IllegalArgumentException("Encrypted account number is required");
+            return Mono.error(new IllegalArgumentException("Encrypted account number is required"));
         }
 
         UriComponentsBuilder uriBuilder = this.getUriBuilder()
@@ -463,17 +463,17 @@ public class SchwabAccountsAndTradingApiClient extends SchwabBaseApiClient {
      * @param order replacement order information
      * @return {@link Mono}{@literal <}String{@literal >}
      */
-    public Mono<String> replaceOrder(@NotNull String schwabUserId,
-                             @NotNull String encryptedAccount,
-                             @NotNull Long orderId,
-                             @NotNull Order order) {
+    public Mono<String> replaceOrder(@NonNull String schwabUserId,
+                             @NonNull String encryptedAccount,
+                             @NonNull Long orderId,
+                             @NonNull Order order) {
         log.info("Replace Order [{}] on Account [{}] -> {}", orderId, encryptedAccount, order);
 
         if(encryptedAccount.isEmpty()) {
-            throw new IllegalArgumentException("Encrypted account number is required");
+            return Mono.error(new IllegalArgumentException("Encrypted account number is required"));
         }
         if(orderId <= 0) {
-            throw new IllegalArgumentException("Order ID is required");
+            return Mono.error(new IllegalArgumentException("Order ID is required"));
         }
 
         UriComponentsBuilder uriBuilder = this.getUriBuilder()
@@ -488,16 +488,16 @@ public class SchwabAccountsAndTradingApiClient extends SchwabBaseApiClient {
      * @param orderId order to be cancelled
      * @return {@link Mono}{@literal <}String{@literal >}
      */
-    public Mono<String> cancelOrder(@NotNull String schwabUserId,
-                            @NotNull String encryptedAccount,
-                            @NotNull Long orderId) {
+    public Mono<String> cancelOrder(@NonNull String schwabUserId,
+                            @NonNull String encryptedAccount,
+                            @NonNull Long orderId) {
         log.info("Cancel Order [{}] on Account [{}]", orderId, encryptedAccount);
 
         if(encryptedAccount.isEmpty()) {
-            throw new IllegalArgumentException("Encrypted account number is required");
+            return Mono.error(new IllegalArgumentException("Encrypted account number is required"));
         }
         if(orderId <= 0) {
-            throw new IllegalArgumentException("Order Id is required");
+            return Mono.error(new IllegalArgumentException("Order Id is required"));
         }
 
         UriComponentsBuilder uriBuilder = this.getUriBuilder()

@@ -1,5 +1,7 @@
 package com.pangility.schwab.api.client.marketdata.model.chains;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
@@ -11,9 +13,11 @@ import java.time.Month;
  * Object used to pass the request parameters to the Schwab API <em>chains</em> endpoint.
  * See the <a href="https://developer.schwab.com">Schwab Developer Portal</a> for more information
  */
+@Builder(setterPrefix = "with")
 @Getter
 @ToString
 @NoArgsConstructor
+@AllArgsConstructor
 public class OptionChainRequest {
   private String symbol;
   private ContractType contractType;
@@ -35,6 +39,7 @@ public class OptionChainRequest {
   /**
    * Nested class for building request
    */
+  @Deprecated
   @NoArgsConstructor
   public static final class Builder {
 
@@ -59,6 +64,7 @@ public class OptionChainRequest {
      * Create a builder for the request
      * @return {@link OptionChainRequest.Builder}
      */
+    @Deprecated
     public static Builder optionChainRequest() {
       return new Builder();
     }
@@ -68,6 +74,7 @@ public class OptionChainRequest {
      * @param symbol String
      * @return {@link OptionChainRequest.Builder}
      */
+    @Deprecated
     public Builder withSymbol(String symbol) {
       this.symbol = symbol;
       return this;
@@ -78,6 +85,7 @@ public class OptionChainRequest {
      * @param contractType {@link OptionChainRequest.ContractType}
      * @return {@link OptionChainRequest.Builder}
      */
+    @Deprecated
     public Builder withContractType(ContractType contractType) {
       this.contractType = contractType;
       return this;
@@ -88,6 +96,7 @@ public class OptionChainRequest {
      * @param strikeCount Integer
      * @return {@link OptionChainRequest.Builder}
      */
+    @Deprecated
     public Builder withStrikeCount(Integer strikeCount) {
       this.strikeCount = strikeCount;
       return this;
@@ -98,6 +107,7 @@ public class OptionChainRequest {
      * @param includeQuotes Boolean
      * @return {@link OptionChainRequest.Builder}
      */
+    @Deprecated
     public Builder withIncludeQuotes(Boolean includeQuotes) {
       this.includeQuotes = includeQuotes;
       return this;
@@ -108,6 +118,7 @@ public class OptionChainRequest {
      * @param strategy {@link OptionChainRequest.Strategy}
      * @return {@link OptionChainRequest.Builder}
      */
+    @Deprecated
     public Builder withStrategy(Strategy strategy) {
       this.strategy = strategy;
       return this;
@@ -118,6 +129,7 @@ public class OptionChainRequest {
      * @param interval Double
      * @return {@link OptionChainRequest.Builder}
      */
+    @Deprecated
     public Builder withInterval(Double interval) {
       this.interval = interval;
       return this;
@@ -128,6 +140,7 @@ public class OptionChainRequest {
      * @param strike Double
      * @return {@link OptionChainRequest.Builder}
      */
+    @Deprecated
     public Builder withStrike(Double strike) {
       this.strike = strike;
       return this;
@@ -138,6 +151,7 @@ public class OptionChainRequest {
      * @param range {@link OptionChainRequest.Range}
      * @return {@link OptionChainRequest.Builder}
      */
+    @Deprecated
     public Builder withRange(Range range) {
       this.range = range;
       return this;
@@ -148,6 +162,7 @@ public class OptionChainRequest {
      * @param fromDate LocalDateTime
      * @return {@link OptionChainRequest.Builder}
      */
+    @Deprecated
     public Builder withFromDate(LocalDateTime fromDate) {
       this.fromDate = fromDate;
       return this;
@@ -158,6 +173,7 @@ public class OptionChainRequest {
      * @param toDate LocalDateTime
      * @return {@link OptionChainRequest.Builder}
      */
+    @Deprecated
     public Builder withToDate(LocalDateTime toDate) {
       this.toDate = toDate;
       return this;
@@ -168,6 +184,7 @@ public class OptionChainRequest {
      * @param volatility Double
      * @return {@link OptionChainRequest.Builder}
      */
+    @Deprecated
     public Builder withVolatility(Double volatility) {
       this.volatility = volatility;
       return this;
@@ -178,6 +195,7 @@ public class OptionChainRequest {
      * @param underlyingPrice Double
      * @return {@link OptionChainRequest.Builder}
      */
+    @Deprecated
     public Builder withUnderlyingPrice(Double underlyingPrice) {
       this.underlyingPrice = underlyingPrice;
       return this;
@@ -188,6 +206,7 @@ public class OptionChainRequest {
      * @param interestRate Double
      * @return {@link OptionChainRequest.Builder}
      */
+    @Deprecated
     public Builder withInterestRate(Double interestRate) {
       this.interestRate = interestRate;
       return this;
@@ -198,6 +217,7 @@ public class OptionChainRequest {
      * @param daysToExpiration Integer
      * @return {@link OptionChainRequest.Builder}
      */
+    @Deprecated
     public Builder withDaysToExpiration(Integer daysToExpiration) {
       this.daysToExpiration = daysToExpiration;
       return this;
@@ -208,6 +228,7 @@ public class OptionChainRequest {
      * @param month {@link Month}
      * @return {@link OptionChainRequest.Builder}
      */
+    @Deprecated
     public Builder withMonth(Month month) {
       this.month = month;
       return this;
@@ -218,6 +239,7 @@ public class OptionChainRequest {
      * @param optionType {@link OptionType}
      * @return {@link OptionChainRequest.Builder}
      */
+    @Deprecated
     public Builder withOptionType(OptionType optionType) {
       this.optionType = optionType;
       return this;
@@ -227,6 +249,7 @@ public class OptionChainRequest {
      * Build the request with the passed values
      * @return {@link OptionChainRequest}
      */
+    @Deprecated
     public OptionChainRequest build() {
       OptionChainRequest optionChainRequest = new OptionChainRequest();
       optionChainRequest.symbol = this.symbol;

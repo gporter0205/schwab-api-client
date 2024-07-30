@@ -1,5 +1,7 @@
 package com.pangility.schwab.api.client.accountsandtrading.model.order;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
@@ -11,9 +13,11 @@ import java.time.ZonedDateTime;
  * from all valid dates will be returned for the account.
  * See the <a href="https://developer.schwab.com">Schwab Developer Portal</a> for more information
  */
+@Builder(setterPrefix = "with")
 @Getter
 @ToString
 @NoArgsConstructor
+@AllArgsConstructor
 public class OrderRequest {
   private Integer maxResults;
   private ZonedDateTime fromEnteredTime;
@@ -23,6 +27,7 @@ public class OrderRequest {
   /**
    * Nested class for building request
    */
+  @Deprecated
   @NoArgsConstructor
   public static final class Builder {
     private Integer maxResults;
@@ -34,6 +39,7 @@ public class OrderRequest {
      * Create a builder for the request
      * @return {@link OrderRequest.Builder}
      */
+    @Deprecated
     public static OrderRequest.Builder orderRequest() {
       return new OrderRequest.Builder();
     }
@@ -43,6 +49,7 @@ public class OrderRequest {
      * @param maxResults Integer
      * @return {@link OrderRequest.Builder}
      */
+    @Deprecated
     public OrderRequest.Builder withMaxResults(Integer maxResults) {
       this.maxResults = maxResults;
       return this;
@@ -53,6 +60,7 @@ public class OrderRequest {
      * @param fromEnteredDate {@link ZonedDateTime}
      * @return {@link OrderRequest.Builder}
      */
+    @Deprecated
     public OrderRequest.Builder withFromEnteredDate(ZonedDateTime fromEnteredDate) {
       this.fromEnteredTime = fromEnteredDate;
       return this;
@@ -63,6 +71,7 @@ public class OrderRequest {
      * @param toEnteredDate {@link ZonedDateTime}
      * @return {@link OrderRequest.Builder}
      */
+    @Deprecated
     public OrderRequest.Builder withToEnteredDate(ZonedDateTime toEnteredDate) {
       this.toEnteredTime = toEnteredDate;
       return this;
@@ -73,6 +82,7 @@ public class OrderRequest {
      * @param status {@link Status}
      * @return {@link OrderRequest.Builder}
      */
+    @Deprecated
     public OrderRequest.Builder withStatus(Status status) {
       this.status = status;
       return this;
@@ -82,6 +92,7 @@ public class OrderRequest {
      * Build the request with the passed values
      * @return {@link OrderRequest}
      */
+    @Deprecated
     public OrderRequest build() {
       OrderRequest orderRequest = new OrderRequest();
       orderRequest.maxResults = this.maxResults;

@@ -7,7 +7,7 @@ import com.pangility.schwab.api.client.marketdata.model.instruments.InstrumentsR
 import com.pangility.schwab.api.client.oauth2.RefreshTokenException;
 import com.pangility.schwab.api.client.oauth2.SchwabAccount;
 import com.pangility.schwab.api.client.oauth2.SchwabTokenHandler;
-import org.jetbrains.annotations.NotNull;
+import lombok.NonNull;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -59,7 +59,7 @@ public class SchwabErrorHandlingTest {
         schwabMarketDataApiClient.init(schwabAccount, testTokenHandler);
 
         try {
-            InstrumentsRequest instrumentsRequest = InstrumentsRequest.Builder.instrumentsRequest()
+            InstrumentsRequest instrumentsRequest = InstrumentsRequest.builder()
                     .withSymbol("TSLA")
                     .withProjection(InstrumentsRequest.Projection.SYMBOL_SEARCH)
                     .build();
@@ -84,7 +84,7 @@ public class SchwabErrorHandlingTest {
         schwabAccount.setAccessExpiration(LocalDateTime.now().plusMinutes(10));
         schwabMarketDataApiClient.init(schwabAccount, testTokenHandler);
 
-        InstrumentsRequest instrumentsRequest = InstrumentsRequest.Builder.instrumentsRequest()
+        InstrumentsRequest instrumentsRequest = InstrumentsRequest.builder()
                 .withSymbol("TSLA")
                 .withProjection(InstrumentsRequest.Projection.SYMBOL_SEARCH)
                 .build();
@@ -107,7 +107,7 @@ public class SchwabErrorHandlingTest {
 
         assertThat(schwabAccount.getAccessToken()).isEqualTo("12345678".repeat(8));
 
-        InstrumentsRequest instrumentsRequest = InstrumentsRequest.Builder.instrumentsRequest()
+        InstrumentsRequest instrumentsRequest = InstrumentsRequest.builder()
                 .withSymbol("TSLA")
                 .withProjection(InstrumentsRequest.Projection.SYMBOL_SEARCH)
                 .build();
@@ -125,12 +125,12 @@ public class SchwabErrorHandlingTest {
     public static class TestTokenHandler implements SchwabTokenHandler {
 
         @Override
-        public void onAccessTokenChange(@NotNull SchwabAccount schwabAccount) {
+        public void onAccessTokenChange(@NonNull SchwabAccount schwabAccount) {
             System.out.println("Test Access Token Change");
         }
 
         @Override
-        public void onRefreshTokenChange(@NotNull SchwabAccount schwabAccount) {
+        public void onRefreshTokenChange(@NonNull SchwabAccount schwabAccount) {
             System.out.println("Test Refresh Token Change");
         }
     }

@@ -17,7 +17,7 @@ import com.pangility.schwab.api.client.marketdata.model.pricehistory.PriceHistor
 import com.pangility.schwab.api.client.marketdata.model.quotes.QuoteResponse;
 import com.pangility.schwab.api.client.oauth2.SchwabAccount;
 import com.pangility.schwab.api.client.oauth2.SchwabTokenHandler;
-import org.jetbrains.annotations.NotNull;
+import lombok.NonNull;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,7 +34,12 @@ import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 
 @SpringBootTest
 @EnableSchwabMarketDataApi
@@ -76,19 +81,22 @@ public class SchwabMarketDataApiTest {
     @Test
     public void optionQuoteTest() {
         // get next Friday
-        LocalDate nextFriday = LocalDate.now().plusDays(3);
-        while(!nextFriday.getDayOfWeek().equals(DayOfWeek.FRIDAY)) {
-            nextFriday = nextFriday.plusDays(1);
-        }
-        String symbol = "TQQQ  " + nextFriday.format(DateTimeFormatter.ofPattern("yyMMdd")) + "C00051000";
+        Optional<LocalDate> nextFriday = LocalDate.now().plusDays(3).datesUntil(LocalDate.now().plusDays(10))
+                .filter(localDate -> localDate.getDayOfWeek().equals(DayOfWeek.FRIDAY))
+                .findFirst();
+        if(nextFriday.isPresent()) {
+            String symbol = "TQQQ  " + nextFriday.get().format(DateTimeFormatter.ofPattern("yyMMdd")) + "C00081000";
 
-        Mono<QuoteResponse> optionResponse = schwabMarketDataApiClient.fetchQuoteToMono(symbol);
-        StepVerifier
-                .create(optionResponse)
-                .expectNextMatches(response -> response.getSymbol() != null &&
-                        response.getSymbol().equalsIgnoreCase(symbol) &&
-                        response.getAssetMainType().equals(AssetMainType.OPTION))
-                .verifyComplete();
+            Mono<QuoteResponse> optionResponse = schwabMarketDataApiClient.fetchQuoteToMono(symbol);
+            StepVerifier
+                    .create(optionResponse)
+                    .expectNextMatches(response -> response.getSymbol() != null &&
+                            response.getSymbol().equalsIgnoreCase(symbol) &&
+                            response.getAssetMainType().equals(AssetMainType.OPTION))
+                    .verifyComplete();
+        } else {
+            throw new RuntimeException("Unable to determine next Friday");
+        }
     }
 
     @Test
@@ -141,10 +149,10 @@ public class SchwabMarketDataApiTest {
 
     @Test
     public void chainsTest() {
-        OptionChainRequest optionChainRequest = OptionChainRequest.Builder.optionChainRequest().withSymbol("TQQQ").build();
-        Mono<OptionChainResponse> optionChainResponse = schwabMarketDataApiClient.fetchOptionChainToMono(optionChainRequest);
+        OptionChainRequest optionChainRequest = OptionChainRequest.builder().withSymbol("TQQQ").build();
+        Mono<OptionChainResponse> optionChainResponseMono = schwabMarketDataApiClient.fetchOptionChainToMono(optionChainRequest);
         StepVerifier
-                .create(optionChainResponse)
+                .create(optionChainResponseMono)
                 .expectNextMatches(response -> response.getSymbol() != null &&
                         response.getSymbol().equalsIgnoreCase("TQQQ") &&
                         response.getCallExpDateMap() != null &&
@@ -155,7 +163,7 @@ public class SchwabMarketDataApiTest {
     // Service returns a 400 - Bad Request instead of a 404 - Not Found
     /*@Test
     public void chainsNotFoundTest() {
-        OptionChainRequest optionChainRequest = OptionChainRequest.Builder.optionChainRequest().withSymbol("XXXXXX").build();
+        OptionChainRequest optionChainRequest = OptionChainRequest.builder().withSymbol("XXXXXX").build();
         Mono<OptionChainResponse> optionChainResponse = schwabMarketDataApiClient.fetchOptionChainToMono(optionChainRequest);
         StepVerifier
                 .create(optionChainResponse)
@@ -186,7 +194,7 @@ public class SchwabMarketDataApiTest {
 
     @Test
     public void priceHistoryTest() {
-        PriceHistoryRequest priceHistoryRequest = PriceHistoryRequest.Builder.priceHistReq().withSymbol("AAPL").withNeedPreviousClose(true).build();
+        PriceHistoryRequest priceHistoryRequest = PriceHistoryRequest.builder().withSymbol("AAPL").withNeedPreviousClose(true).build();
         Mono<PriceHistoryResponse> priceHistoryResponse = schwabMarketDataApiClient.fetchPriceHistoryToMono(priceHistoryRequest);
         StepVerifier
                 .create(priceHistoryResponse)
@@ -200,7 +208,7 @@ public class SchwabMarketDataApiTest {
 
     @Test
     public void priceHistoryNotFoundTest() {
-        PriceHistoryRequest priceHistoryRequest = PriceHistoryRequest.Builder.priceHistReq().withSymbol("XXXXXX").withNeedPreviousClose(true).build();
+        PriceHistoryRequest priceHistoryRequest = PriceHistoryRequest.builder().withSymbol("XXXXXX").withNeedPreviousClose(true).build();
         Mono<PriceHistoryResponse> priceHistoryResponse = schwabMarketDataApiClient.fetchPriceHistoryToMono(priceHistoryRequest);
         StepVerifier
                 .create(priceHistoryResponse)
@@ -210,7 +218,7 @@ public class SchwabMarketDataApiTest {
 
     @Test
     public void moversTest() {
-        MoversRequest moversRequest = MoversRequest.Builder.moversRequest().withIndexSymbol(MoversRequest.IndexSymbol.$DJI).build();
+        MoversRequest moversRequest = MoversRequest.builder().withIndexSymbol(MoversRequest.IndexSymbol.$DJI).build();
         Flux<Screener> moversResponse = schwabMarketDataApiClient.fetchMoversToFlux(moversRequest);
         StepVerifier
                 .create(moversResponse)
@@ -228,13 +236,6 @@ public class SchwabMarketDataApiTest {
                 .expectNextMatches(response -> !response.isEmpty() &&
                         response.containsKey(SchwabMarketDataApiClient.Market.EQUITY.value()))
                 .verifyComplete();
-
-        /*LocalDate testDate = LocalDate.of(2024, 4, 25);
-        hours = schwabMarketDataApiClient.fetchMarkets(Collections.singletonList(SchwabMarketDataApiClient.Market.EQUITY), testDate);
-        assertThat(hours).isNotNull();
-        assertThat(hours.size()).isEqualTo(1);
-        assertThat(hours.get(0).getDate()).isEqualTo(testDate);
-        assertThat(hours.get(0).getIsOpen()).isTrue();*/
     }
 
     @Test
@@ -250,7 +251,7 @@ public class SchwabMarketDataApiTest {
 
     @Test
     public void instrumentsTest() {
-        InstrumentsRequest instrumentsRequest = InstrumentsRequest.Builder.instrumentsRequest()
+        InstrumentsRequest instrumentsRequest = InstrumentsRequest.builder()
                 .withSymbol("AAPL")
                 .withProjection(InstrumentsRequest.Projection.SYMBOL_SEARCH)
                 .build();
@@ -267,7 +268,7 @@ public class SchwabMarketDataApiTest {
 
     @Test
     public void instrumentsNotFoundTest() {
-        InstrumentsRequest instrumentsRequest = InstrumentsRequest.Builder.instrumentsRequest()
+        InstrumentsRequest instrumentsRequest = InstrumentsRequest.builder()
                 .withSymbol("XXXXXX")
                 .withProjection(InstrumentsRequest.Projection.SYMBOL_SEARCH)
                 .build();
@@ -280,7 +281,7 @@ public class SchwabMarketDataApiTest {
 
     @Test
     public void instrumentsWithFundamentalsTest() {
-        InstrumentsRequest fundamentalRequest = InstrumentsRequest.Builder.instrumentsRequest()
+        InstrumentsRequest fundamentalRequest = InstrumentsRequest.builder()
                 .withSymbol("AAPL")
                 .withProjection(InstrumentsRequest.Projection.FUNDAMENTAL)
                 .build();
@@ -317,12 +318,12 @@ public class SchwabMarketDataApiTest {
     public static class TestTokenHandler implements SchwabTokenHandler {
 
         @Override
-        public void onAccessTokenChange(@NotNull SchwabAccount schwabAccount) {
+        public void onAccessTokenChange(@NonNull SchwabAccount schwabAccount) {
             System.out.println("Test Access Token Change");
         }
 
         @Override
-        public void onRefreshTokenChange(@NotNull SchwabAccount schwabAccount) {
+        public void onRefreshTokenChange(@NonNull SchwabAccount schwabAccount) {
             System.out.println("Test Refresh Token Change");
         }
     }

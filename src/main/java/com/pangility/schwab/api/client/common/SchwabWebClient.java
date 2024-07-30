@@ -3,8 +3,8 @@ package com.pangility.schwab.api.client.common;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.pangility.schwab.api.client.common.deserializers.BigDecimalNanDeserializer;
+import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
-import org.jetbrains.annotations.NotNull;
 import org.reactivestreams.Publisher;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Conditional;
@@ -75,7 +75,7 @@ public class SchwabWebClient {
     private ClientRequest interceptBody(ClientRequest request) {
         return ClientRequest.from(request)
                 .body((outputMessage, context) -> request.body().insert(new ClientHttpRequestDecorator(outputMessage) {
-                    @Override public @NotNull Mono<Void> writeWith(@NotNull Publisher<? extends DataBuffer> body) {
+                    @Override public @NonNull Mono<Void> writeWith(@NonNull Publisher<? extends DataBuffer> body) {
                         return super.writeWith(Mono.from(body)
                                 .doOnNext(dataBuffer -> logRequestBody(dataBuffer)));
                     }

@@ -1,5 +1,7 @@
 package com.pangility.schwab.api.client.accountsandtrading.model.transaction;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
@@ -11,9 +13,11 @@ import java.time.ZonedDateTime;
  * from all valid dates will be returned for the account.
  * See the <a href="https://developer.schwab.com">Schwab Developer Portal</a> for more information
  */
+@Builder(setterPrefix = "with")
 @Getter
 @ToString
 @NoArgsConstructor
+@AllArgsConstructor
 public class TransactionRequest {
   private ZonedDateTime startDate;
   private ZonedDateTime endDate;
@@ -23,6 +27,7 @@ public class TransactionRequest {
   /**
    * Nested class for building request
    */
+  @Deprecated
   @NoArgsConstructor
   public static final class Builder {
     private ZonedDateTime startDate;
@@ -34,6 +39,7 @@ public class TransactionRequest {
      * Create a builder for the request
      * @return {@link TransactionRequest.Builder}
      */
+    @Deprecated
     public static TransactionRequest.Builder transactionRequest() {
       return new TransactionRequest.Builder();
     }
@@ -43,6 +49,7 @@ public class TransactionRequest {
      * @param startDate {@link ZonedDateTime}
      * @return {@link TransactionRequest.Builder}
      */
+    @Deprecated
     public TransactionRequest.Builder withStartDate(ZonedDateTime startDate) {
       this.startDate = startDate;
       return this;
@@ -53,6 +60,7 @@ public class TransactionRequest {
      * @param endDate {@link ZonedDateTime}
      * @return {@link TransactionRequest.Builder}
      */
+    @Deprecated
     public TransactionRequest.Builder withEndDate(ZonedDateTime endDate) {
       this.endDate = endDate;
       return this;
@@ -63,6 +71,7 @@ public class TransactionRequest {
      * @param symbol String
      * @return {@link TransactionRequest.Builder}
      */
+    @Deprecated
     public TransactionRequest.Builder withSymbol(String symbol) {
       this.symbol = symbol;
       return this;
@@ -73,6 +82,7 @@ public class TransactionRequest {
      * @param types String
      * @return {@link TransactionRequest.Builder}
      */
+    @Deprecated
     public TransactionRequest.Builder withTypes(String types) {
       this.types = types;
       return this;
@@ -82,6 +92,7 @@ public class TransactionRequest {
      * Build the request with the passed values
      * @return {@link TransactionRequest}
      */
+    @Deprecated
     public TransactionRequest build() {
       TransactionRequest transactionRequest = new TransactionRequest();
       transactionRequest.startDate = this.startDate;

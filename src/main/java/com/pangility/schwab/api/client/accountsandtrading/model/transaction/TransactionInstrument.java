@@ -1,6 +1,10 @@
 package com.pangility.schwab.api.client.accountsandtrading.model.transaction;
 
-import com.fasterxml.jackson.annotation.*;
+import com.fasterxml.jackson.annotation.JsonAnySetter;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonSubTypes;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.pangility.schwab.api.client.accountsandtrading.model.instrument.AssetType;
 import lombok.Getter;
 import lombok.Setter;

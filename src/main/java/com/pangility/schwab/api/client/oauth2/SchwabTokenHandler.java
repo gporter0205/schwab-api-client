@@ -1,6 +1,6 @@
 package com.pangility.schwab.api.client.oauth2;
 
-import org.jetbrains.annotations.NotNull;
+import lombok.NonNull;
 
 /**
  * Interface implemented by the client when needing a callback from
@@ -12,10 +12,10 @@ public interface SchwabTokenHandler {
      * method triggered when the <em>access</em> token changes.
      * @param schwabAccount {@link SchwabAccount}
      */
-    void onAccessTokenChange(@NotNull SchwabAccount schwabAccount);
+    void onAccessTokenChange(@NonNull SchwabAccount schwabAccount);
     /**
      * method triggered when the <em>refresh</em> token changes.
      * @param schwabAccount {@link SchwabAccount}
      */
-    void onRefreshTokenChange(@NotNull SchwabAccount schwabAccount);
+    void onRefreshTokenChange(@NonNull SchwabAccount schwabAccount);
 }
