@@ -4,13 +4,13 @@
   <parent>
     <groupId>org.springframework.boot</groupId>
     <artifactId>spring-boot-starter-parent</artifactId>
-    <version>3.2.5</version>
+    <version>3.3.2</version>
     <relativePath/> <!-- lookup parent from repository -->
   </parent>
 
   <groupId>com.pangility</groupId>
   <artifactId>schwab-api-client</artifactId>
-  <version>0.1.5-SNAPSHOT</version>
+  <version>0.1.5</version>
   <name>schwab-api-client</name>
   <description>Reactive Java Spring Boot Library for interacting with the Charles Schwab API</description>
   <packaging>jar</packaging>
@@ -33,7 +33,7 @@
 
   <properties>
     <java.version>17</java.version>
-    <lombok.version>1.18.32</lombok.version>
+    <lombok.version>1.18.34</lombok.version>
   </properties>
   <dependencies>
     <dependency>
@@ -69,7 +69,7 @@
       <groupId>io.projectreactor</groupId>
       <artifactId>reactor-test</artifactId>
       <scope>test</scope>
-      <version>3.6.6</version>
+      <version>3.6.8</version>
     </dependency>
   </dependencies>
   <build>
@@ -136,7 +136,7 @@
           <plugin>
             <groupId>org.sonatype.plugins</groupId>
             <artifactId>nexus-staging-maven-plugin</artifactId>
-            <version>1.6.7</version>
+            <version>1.6.14</version>
             <extensions>true</extensions>
             <configuration>
               <serverId>nexus</serverId>
