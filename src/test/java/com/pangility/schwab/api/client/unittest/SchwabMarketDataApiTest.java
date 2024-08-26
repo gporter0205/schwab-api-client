@@ -160,6 +160,23 @@ public class SchwabMarketDataApiTest {
                 .verifyComplete();
     }
 
+    @Test
+    public void chainsWithDatesTest() {
+        OptionChainRequest optionChainRequest = OptionChainRequest.builder()
+                .withSymbol("TQQQ")
+                .withFromDate(LocalDate.of(2024, 8, 10))
+                .withToDate(LocalDate.of(2024, 8, 17))
+                .build();
+        Mono<OptionChainResponse> optionChainResponseMono = schwabMarketDataApiClient.fetchOptionChainToMono(optionChainRequest);
+        StepVerifier
+                .create(optionChainResponseMono)
+                .expectNextMatches(response -> response.getSymbol() != null &&
+                        response.getSymbol().equalsIgnoreCase("TQQQ") &&
+                        response.getCallExpDateMap() != null &&
+                        !response.getCallExpDateMap().isEmpty())
+                .verifyComplete();
+    }
+
     // Service returns a 400 - Bad Request instead of a 404 - Not Found
     /*@Test
     public void chainsNotFoundTest() {

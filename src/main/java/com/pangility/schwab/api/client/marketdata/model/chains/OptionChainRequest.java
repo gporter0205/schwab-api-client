@@ -6,7 +6,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.time.Month;
 
 /**
@@ -27,8 +27,8 @@ public class OptionChainRequest {
   private Double interval;
   private Double strike;
   private Range range;
-  private LocalDateTime fromDate;
-  private LocalDateTime toDate;
+  private LocalDate fromDate;
+  private LocalDate toDate;
   private Double volatility;
   private Double underlyingPrice;
   private Double interestRate;
@@ -51,8 +51,8 @@ public class OptionChainRequest {
     private Double interval;
     private Double strike;
     private Range range;
-    private LocalDateTime fromDate;
-    private LocalDateTime toDate;
+    private LocalDate fromDate;
+    private LocalDate toDate;
     private Double volatility;
     private Double underlyingPrice;
     private Double interestRate;
@@ -159,22 +159,22 @@ public class OptionChainRequest {
 
     /**
      * Add the from date to the request
-     * @param fromDate LocalDateTime
+     * @param fromDate LocalDate
      * @return {@link OptionChainRequest.Builder}
      */
     @Deprecated
-    public Builder withFromDate(LocalDateTime fromDate) {
+    public Builder withFromDate(LocalDate fromDate) {
       this.fromDate = fromDate;
       return this;
     }
 
     /**
      * Add the to date to the request
-     * @param toDate LocalDateTime
+     * @param toDate LocalDate
      * @return {@link OptionChainRequest.Builder}
      */
     @Deprecated
-    public Builder withToDate(LocalDateTime toDate) {
+    public Builder withToDate(LocalDate toDate) {
       this.toDate = toDate;
       return this;
     }

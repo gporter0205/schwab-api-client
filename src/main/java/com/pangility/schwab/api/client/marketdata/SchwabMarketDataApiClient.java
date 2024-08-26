@@ -331,10 +331,10 @@ public class SchwabMarketDataApiClient extends SchwabBaseApiClient {
             uriBuilder.queryParam("strike", chainRequest.getStrike().toString());
         }
         if(chainRequest.getFromDate() != null) {
-            uriBuilder.queryParam("fromDate", chainRequest.getFromDate().format(DateTimeFormatter.ISO_DATE_TIME));
+            uriBuilder.queryParam("fromDate", chainRequest.getFromDate().format(DateTimeFormatter.ofPattern("yyyy-MM-dd")));
         }
         if(chainRequest.getToDate() != null) {
-            uriBuilder.queryParam("toDate", chainRequest.getToDate().format(DateTimeFormatter.ISO_DATE_TIME));
+            uriBuilder.queryParam("toDate", chainRequest.getToDate().format(DateTimeFormatter.ofPattern("yyyy-MM-dd")));
         }
         if(chainRequest.getVolatility() != null) {
             uriBuilder.queryParam("volatility", chainRequest.getVolatility().toString());
@@ -630,7 +630,7 @@ public class SchwabMarketDataApiClient extends SchwabBaseApiClient {
                 .pathSegment("markets")
                 .queryParam("markets", marketsString);
         if (date != null) {
-            uriBuilder.queryParam("date", date.format(DateTimeFormatter.ISO_DATE));
+            uriBuilder.queryParam("date", date.format(DateTimeFormatter.ofPattern("yyyy-MM-dd")));
         }
         return this.callGetApiToMono(defaultUserId, uriBuilder, new ParameterizedTypeReference<Map<String, Map<String, Hours>>>() {})
                 .onErrorResume(throwable -> {
