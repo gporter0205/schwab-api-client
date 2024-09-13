@@ -43,6 +43,7 @@ import java.util.Map;
  * Use {@literal @}Autowire to create the component in any class annotated with
  * {@literal @}EnableSchwabMarketDataApi or {@literal @}EnableSchwabApi
  */
+@SuppressWarnings("unused")
 @Service
 @ConditionalOnResource(resources = {"classpath:schwabapiclient.properties"})
 @Slf4j
@@ -69,7 +70,6 @@ public class SchwabMarketDataApiClient extends SchwabBaseApiClient {
      * Initialize the client controller
      * @param schwabAccount {@link SchwabAccount}
      */
-    @SuppressWarnings("unused")
     @Override
     public void init(@NonNull SchwabAccount schwabAccount) {
         this.init(schwabAccount.getUserId(), Collections.singletonList(schwabAccount), null);
@@ -80,7 +80,6 @@ public class SchwabMarketDataApiClient extends SchwabBaseApiClient {
      * @param defaultUserId String
      * @param schwabAccounts List{@literal <}{@link SchwabAccount}{@literal >}
      */
-    @SuppressWarnings("unused")
     public void init(@NonNull String defaultUserId,
                      @NonNull List<SchwabAccount> schwabAccounts) {
         this.init(defaultUserId, schwabAccounts, null);

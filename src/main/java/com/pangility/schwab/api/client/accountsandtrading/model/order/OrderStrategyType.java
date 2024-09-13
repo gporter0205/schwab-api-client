@@ -16,5 +16,9 @@ public enum OrderStrategyType {
   /**
    * Trigger
    */
-  TRIGGER
+  TRIGGER,
+  /**
+   * Flatten
+   */
+  FLATTEN,
 }
