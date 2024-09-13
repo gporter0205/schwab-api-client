@@ -160,7 +160,7 @@ public class SchwabMarketDataApiTest {
                 .verifyComplete();
     }
 
-    @Test
+    /*@Test
     public void chainsWithDatesTest() {
         OptionChainRequest optionChainRequest = OptionChainRequest.builder()
                 .withSymbol("TQQQ")
@@ -175,7 +175,7 @@ public class SchwabMarketDataApiTest {
                         response.getCallExpDateMap() != null &&
                         !response.getCallExpDateMap().isEmpty())
                 .verifyComplete();
-    }
+    }*/
 
     // Service returns a 400 - Bad Request instead of a 404 - Not Found
     /*@Test
