@@ -43,6 +43,7 @@ import java.util.Map;
  * Use {@literal @}Autowire to create the component in any class annotated with
  * {@literal @}EnableSchwabMarketDataApi or {@literal @}EnableSchwabApi
  */
+@SuppressWarnings("unused")
 @Service
 @ConditionalOnResource(resources = {"classpath:schwabapiclient.properties"})
 @Slf4j
@@ -69,7 +70,6 @@ public class SchwabMarketDataApiClient extends SchwabBaseApiClient {
      * Initialize the client controller
      * @param schwabAccount {@link SchwabAccount}
      */
-    @SuppressWarnings("unused")
     @Override
     public void init(@NonNull SchwabAccount schwabAccount) {
         this.init(schwabAccount.getUserId(), Collections.singletonList(schwabAccount), null);
@@ -80,7 +80,6 @@ public class SchwabMarketDataApiClient extends SchwabBaseApiClient {
      * @param defaultUserId String
      * @param schwabAccounts List{@literal <}{@link SchwabAccount}{@literal >}
      */
-    @SuppressWarnings("unused")
     public void init(@NonNull String defaultUserId,
                      @NonNull List<SchwabAccount> schwabAccounts) {
         this.init(defaultUserId, schwabAccounts, null);
@@ -331,10 +330,10 @@ public class SchwabMarketDataApiClient extends SchwabBaseApiClient {
             uriBuilder.queryParam("strike", chainRequest.getStrike().toString());
         }
         if(chainRequest.getFromDate() != null) {
-            uriBuilder.queryParam("fromDate", chainRequest.getFromDate().format(DateTimeFormatter.ISO_DATE_TIME));
+            uriBuilder.queryParam("fromDate", chainRequest.getFromDate().format(DateTimeFormatter.ofPattern("yyyy-MM-dd")));
         }
         if(chainRequest.getToDate() != null) {
-            uriBuilder.queryParam("toDate", chainRequest.getToDate().format(DateTimeFormatter.ISO_DATE_TIME));
+            uriBuilder.queryParam("toDate", chainRequest.getToDate().format(DateTimeFormatter.ofPattern("yyyy-MM-dd")));
         }
         if(chainRequest.getVolatility() != null) {
             uriBuilder.queryParam("volatility", chainRequest.getVolatility().toString());
@@ -630,7 +629,7 @@ public class SchwabMarketDataApiClient extends SchwabBaseApiClient {
                 .pathSegment("markets")
                 .queryParam("markets", marketsString);
         if (date != null) {
-            uriBuilder.queryParam("date", date.format(DateTimeFormatter.ISO_DATE));
+            uriBuilder.queryParam("date", date.format(DateTimeFormatter.ofPattern("yyyy-MM-dd")));
         }
         return this.callGetApiToMono(defaultUserId, uriBuilder, new ParameterizedTypeReference<Map<String, Map<String, Hours>>>() {})
                 .onErrorResume(throwable -> {
